@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/app_theme.dart';
 
-class MemberDashboard extends StatelessWidget {
-  const MemberDashboard({super.key});
+class TrainerDashboard extends StatelessWidget {
+  const TrainerDashboard({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -12,9 +12,9 @@ class MemberDashboard extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text('MEMBER DASHBOARD', style: TextStyle(color: AppColors.primaryFixed, fontWeight: FontWeight.bold)),
+        title: const Text('TRAINER HQ', style: TextStyle(color: AppColors.primaryFixed, fontWeight: FontWeight.bold)),
         actions: [
-          IconButton(icon: const Icon(Icons.person, color: AppColors.white), onPressed: () => context.push('/member/profile')),
+          IconButton(icon: const Icon(Icons.person, color: AppColors.white), onPressed: () => context.push('/trainer/profile')),
         ],
       ),
       body: SafeArea(
@@ -23,11 +23,11 @@ class MemberDashboard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _buildMetricCard(context, 'Next Session', 'Upper Body Power', Icons.fitness_center),
+              _buildMetricCard(context, 'Next Client', 'John Doe (10:00 AM)', Icons.schedule),
               const SizedBox(height: 16),
-              _buildMetricCard(context, 'Nutrition', '1,850 / 2,400 kcal', Icons.restaurant),
+              _buildMetricCard(context, 'Active Clients', '14 Assigned', Icons.people),
               const SizedBox(height: 32),
-              const Text('MODULES', style: TextStyle(color: AppColors.onSurfaceVariant, fontWeight: FontWeight.bold, letterSpacing: 2)),
+              const Text('MANAGEMENT', style: TextStyle(color: AppColors.onSurfaceVariant, fontWeight: FontWeight.bold, letterSpacing: 2)),
               const SizedBox(height: 16),
               GridView.count(
                 shrinkWrap: true,
@@ -36,21 +36,16 @@ class MemberDashboard extends StatelessWidget {
                 mainAxisSpacing: 16,
                 crossAxisSpacing: 16,
                 children: [
-                  _buildNavCard(context, 'Workout Center', Icons.fitness_center, '/member/workout-center'),
-                  _buildNavCard(context, 'Diet Center', Icons.apple, '/member/diet-center'),
-                  _buildNavCard(context, 'Exercise Library', Icons.menu_book, '/member/exercise-library'),
-                  _buildNavCard(context, 'AI Gym Buddy', Icons.smart_toy, '/member/ai-buddy'),
-                  _buildNavCard(context, 'AI Form Check', Icons.camera_alt, '/member/ai-form-check'),
-                  _buildNavCard(context, 'Progress Tracker', Icons.trending_up, '/member/progress-tracker'),
-                  _buildNavCard(context, 'Challenges', Icons.emoji_events, '/member/challenges'),
-                  _buildNavCard(context, 'Rewards', Icons.star, '/member/rewards'),
+                  _buildNavCard(context, 'Client Mgmt', Icons.people, '/trainer/clients'),
+                  _buildNavCard(context, 'Schedule', Icons.calendar_month, '/trainer/schedule'),
+                  _buildNavCard(context, 'Workout Assign', Icons.fitness_center, '/trainer/workout-assign'),
+                  _buildNavCard(context, 'Diet Assign', Icons.restaurant, '/trainer/diet-assign'),
                 ],
               ),
             ],
           ),
         ),
       ),
-      bottomNavigationBar: _buildBottomNav(context, 0),
     );
   }
 
@@ -91,28 +86,6 @@ class MemberDashboard extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildBottomNav(BuildContext context, int index) {
-    return BottomNavigationBar(
-      backgroundColor: AppColors.background,
-      selectedItemColor: AppColors.primaryFixed,
-      unselectedItemColor: AppColors.onSurfaceVariant,
-      currentIndex: index,
-      type: BottomNavigationBarType.fixed,
-      onTap: (i) {
-        if (i == 0) context.go('/member/dashboard');
-        if (i == 1) context.push('/member/workout-center');
-        if (i == 2) context.push('/member/diet-center');
-        if (i == 3) context.push('/member/progress-tracker');
-      },
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Home'),
-        BottomNavigationBarItem(icon: Icon(Icons.fitness_center), label: 'Workout'),
-        BottomNavigationBarItem(icon: Icon(Icons.restaurant), label: 'Diet'),
-        BottomNavigationBarItem(icon: Icon(Icons.trending_up), label: 'Progress'),
-      ],
     );
   }
 }

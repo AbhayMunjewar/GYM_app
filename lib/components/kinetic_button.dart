@@ -37,11 +37,11 @@ class _KineticButtonState extends State<KineticButton> {
           color: isPrimary ? AppColors.primary : Colors.transparent,
           border: isPrimary
               ? null
-              : Border.all(color: Colors.white.withOpacity(0.2), width: 1),
+              : Border.all(color: Colors.white.withValues(alpha: 0.2), width: 1),
           boxShadow: _isHovered && isPrimary
               ? [
                   BoxShadow(
-                    color: AppColors.primary.withOpacity(0.4),
+                    color: AppColors.primary.withValues(alpha: 0.4),
                     blurRadius: 12,
                     spreadRadius: 2,
                   )

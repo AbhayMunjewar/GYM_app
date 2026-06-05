@@ -2,29 +2,45 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'theme/app_theme.dart';
 import 'screens/landing_page.dart';
-import 'screens/auth/login_signup_screen.dart';
+import 'screens/role_selector_screen.dart';
+
+// Auth
+import 'screens/auth/login_screen.dart';
 import 'screens/auth/forgot_password_screen.dart';
-import 'screens/auth/onboarding_profile_screen.dart';
+import 'screens/auth/onboarding_screen.dart';
+
+// Member
 import 'screens/member/member_dashboard.dart';
-import 'screens/member/workout_center_screen.dart';
-import 'screens/member/diet_center_screen.dart';
-import 'screens/member/progress_tracker_screen.dart';
-import 'screens/member/rewards_center_screen.dart';
-import 'screens/member/profile_settings_screen.dart';
-import 'screens/trainer/trainer_dashboard_screen.dart';
-import 'screens/trainer/client_management_screen.dart';
-import 'screens/trainer/workout_assignment_screen.dart';
-import 'screens/trainer/exercise_library_screen.dart';
-import 'screens/trainer/diet_assignment_screen.dart';
-import 'screens/trainer/trainer_profile_screen.dart';
-import 'screens/owner/owner_dashboard_screen.dart';
-import 'screens/owner/analytics_reports_screen.dart';
-import 'screens/owner/billing_payments_screen.dart';
-import 'screens/owner/subscription_plan_management_screen.dart';
-import 'screens/owner/attendance_management_screen.dart';
-import 'screens/owner/communication_center_screen.dart';
-import 'screens/owner/notifications_center_screen.dart';
-import 'screens/owner/gym_settings_screen.dart';
+import 'screens/member/workout_center.dart';
+import 'screens/member/diet_center.dart';
+import 'screens/member/exercise_library.dart';
+import 'screens/member/ai_gym_buddy.dart';
+import 'screens/member/ai_form_check.dart';
+import 'screens/member/progress_tracker.dart';
+import 'screens/member/membership_center.dart';
+import 'screens/member/challenges_leaderboard.dart';
+import 'screens/member/rewards_center.dart';
+import 'screens/member/profile_settings.dart';
+
+// Trainer
+import 'screens/trainer/trainer_dashboard.dart';
+import 'screens/trainer/client_management.dart';
+import 'screens/trainer/schedule_calendar.dart';
+import 'screens/trainer/workout_assignment.dart';
+import 'screens/trainer/diet_assignment.dart';
+import 'screens/trainer/trainer_profile.dart';
+
+// Owner
+import 'screens/owner/owner_dashboard.dart';
+import 'screens/owner/members_management.dart';
+import 'screens/owner/attendance_management.dart';
+import 'screens/owner/trainer_management.dart';
+import 'screens/owner/billing_payments.dart';
+import 'screens/owner/analytics_reports.dart';
+import 'screens/owner/challenges_rewards.dart';
+import 'screens/owner/communication_center.dart';
+import 'screens/owner/gym_settings.dart';
+import 'screens/owner/subscription_plan.dart';
 
 void main() {
   runApp(const KineticApp());
@@ -33,102 +49,46 @@ void main() {
 final GoRouter _router = GoRouter(
   initialLocation: '/',
   routes: [
-    GoRoute(
-      path: '/',
-      builder: (context, state) => const LandingPage(),
-    ),
-    GoRoute(
-      path: '/auth',
-      builder: (context, state) => const LoginSignupScreen(),
-    ),
-    GoRoute(
-      path: '/forgot-password',
-      builder: (context, state) => const ForgotPasswordScreen(),
-    ),
-    GoRoute(
-      path: '/onboarding',
-      builder: (context, state) => const OnboardingProfileScreen(),
-    ),
-    GoRoute(
-      path: '/dashboard',
-      builder: (context, state) => const MemberDashboard(),
-    ),
-    GoRoute(
-      path: '/workout-center',
-      builder: (context, state) => const WorkoutCenterScreen(),
-    ),
-    GoRoute(
-      path: '/diet-center',
-      builder: (context, state) => const DietCenterScreen(),
-    ),
-    GoRoute(
-      path: '/progress',
-      builder: (context, state) => const ProgressTrackerScreen(),
-    ),
-    GoRoute(
-      path: '/rewards',
-      builder: (context, state) => const RewardsCenterScreen(),
-    ),
-    GoRoute(
-      path: '/profile',
-      builder: (context, state) => const ProfileSettingsScreen(),
-    ),
-    GoRoute(
-      path: '/trainer-dashboard',
-      builder: (context, state) => const TrainerDashboardScreen(),
-    ),
-    GoRoute(
-      path: '/trainer/clients',
-      builder: (context, state) => const ClientManagementScreen(),
-    ),
-    GoRoute(
-      path: '/trainer/assign',
-      builder: (context, state) => const WorkoutAssignmentScreen(),
-    ),
-    GoRoute(
-      path: '/trainer/library',
-      builder: (context, state) => const ExerciseLibraryScreen(),
-    ),
-    GoRoute(
-      path: '/owner-dashboard',
-      builder: (context, state) => const OwnerDashboardScreen(),
-    ),
-    GoRoute(
-      path: '/owner/analytics',
-      builder: (context, state) => const AnalyticsReportsScreen(),
-    ),
-    GoRoute(
-      path: '/owner/billing',
-      builder: (context, state) => const BillingPaymentsScreen(),
-    ),
-    GoRoute(
-      path: '/owner/subscriptions',
-      builder: (context, state) => const SubscriptionPlanManagementScreen(),
-    ),
-    GoRoute(
-      path: '/trainer/diet-assign',
-      builder: (context, state) => const DietAssignmentScreen(),
-    ),
-    GoRoute(
-      path: '/trainer/profile',
-      builder: (context, state) => const TrainerProfileScreen(),
-    ),
-    GoRoute(
-      path: '/owner/attendance',
-      builder: (context, state) => const AttendanceManagementScreen(),
-    ),
-    GoRoute(
-      path: '/owner/communications',
-      builder: (context, state) => const CommunicationCenterScreen(),
-    ),
-    GoRoute(
-      path: '/owner/notifications',
-      builder: (context, state) => const NotificationsCenterScreen(),
-    ),
-    GoRoute(
-      path: '/owner/settings',
-      builder: (context, state) => const GymSettingsScreen(),
-    ),
+    GoRoute(path: '/', builder: (context, state) => const LandingPage()),
+    GoRoute(path: '/role-selector', builder: (context, state) => const RoleSelectorScreen()),
+    
+    // Auth Routes
+    GoRoute(path: '/auth/login', builder: (context, state) => LoginScreen(targetRoute: state.extra as String? ?? '/member/dashboard')),
+    GoRoute(path: '/auth/forgot-password', builder: (context, state) => const ForgotPasswordScreen()),
+    GoRoute(path: '/auth/onboarding', builder: (context, state) => const OnboardingScreen()),
+    
+    // Member Routes
+    GoRoute(path: '/member/dashboard', builder: (context, state) => const MemberDashboard()),
+    GoRoute(path: '/member/workout-center', builder: (context, state) => const WorkoutCenter()),
+    GoRoute(path: '/member/diet-center', builder: (context, state) => const DietCenter()),
+    GoRoute(path: '/member/exercise-library', builder: (context, state) => const ExerciseLibrary()),
+    GoRoute(path: '/member/ai-buddy', builder: (context, state) => const AIGymBuddy()),
+    GoRoute(path: '/member/ai-form-check', builder: (context, state) => const AIFormCheck()),
+    GoRoute(path: '/member/progress-tracker', builder: (context, state) => const ProgressTracker()),
+    GoRoute(path: '/member/membership', builder: (context, state) => const MembershipCenter()),
+    GoRoute(path: '/member/challenges', builder: (context, state) => const ChallengesLeaderboard()),
+    GoRoute(path: '/member/rewards', builder: (context, state) => const RewardsCenter()),
+    GoRoute(path: '/member/profile', builder: (context, state) => const ProfileSettings()),
+    
+    // Trainer Routes
+    GoRoute(path: '/trainer/dashboard', builder: (context, state) => const TrainerDashboard()),
+    GoRoute(path: '/trainer/clients', builder: (context, state) => const ClientManagement()),
+    GoRoute(path: '/trainer/schedule', builder: (context, state) => const ScheduleCalendar()),
+    GoRoute(path: '/trainer/workout-assign', builder: (context, state) => const WorkoutAssignment()),
+    GoRoute(path: '/trainer/diet-assign', builder: (context, state) => const DietAssignment()),
+    GoRoute(path: '/trainer/profile', builder: (context, state) => const TrainerProfile()),
+    
+    // Owner Routes
+    GoRoute(path: '/owner/dashboard', builder: (context, state) => const OwnerDashboard()),
+    GoRoute(path: '/owner/members', builder: (context, state) => const MembersManagement()),
+    GoRoute(path: '/owner/attendance', builder: (context, state) => const AttendanceManagement()),
+    GoRoute(path: '/owner/trainers', builder: (context, state) => const TrainerManagement()),
+    GoRoute(path: '/owner/billing', builder: (context, state) => const BillingPayments()),
+    GoRoute(path: '/owner/analytics', builder: (context, state) => const AnalyticsReports()),
+    GoRoute(path: '/owner/challenges', builder: (context, state) => const ChallengesRewards()),
+    GoRoute(path: '/owner/communication', builder: (context, state) => const CommunicationCenter()),
+    GoRoute(path: '/owner/settings', builder: (context, state) => const GymSettings()),
+    GoRoute(path: '/owner/subscription', builder: (context, state) => const SubscriptionPlan()),
   ],
 );
 

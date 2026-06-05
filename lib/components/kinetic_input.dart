@@ -37,7 +37,7 @@ class _KineticInputState extends State<KineticInput> {
           boxShadow: _isFocused
               ? [
                   BoxShadow(
-                    color: AppColors.primary.withOpacity(0.2),
+                    color: AppColors.primary.withValues(alpha: 0.2),
                     blurRadius: 8,
                     spreadRadius: 1,
                   )
