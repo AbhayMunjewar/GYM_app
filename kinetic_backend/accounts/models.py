@@ -13,16 +13,18 @@ class UserManager(BaseUserManager):
         if not email:
             raise ValueError(_('The Email field must be set'))
         email = self.normalize_email(email)
-        # Fallback username if not provided
-        if not extra_fields.get('username'):
-            base_username = email.split('@')[0]
-            # Ensure uniqueness
-            username = base_username
-            counter = 1
-            while self.model.objects.filter(username=username).exists():
-                username = f"{base_username}{counter}"
-                counter += 1
-            extra_fields['username'] = username
+        # Ensure username is set and unique
+        username = extra_fields.get('username')
+        if not username:
+            username = email.split('@')[0]
+
+        base_username = username
+        counter = 1
+        while self.model.objects.filter(username=username).exists():
+            username = f"{base_username}{counter}"
+            counter += 1
+        extra_fields['username'] = username
+
 
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
