@@ -35,3 +35,6 @@ kinetic_app/build/
 *.swp
 .DS_Store
 Thumbs.db
+*.log
+kinetic_backend/*.log
+

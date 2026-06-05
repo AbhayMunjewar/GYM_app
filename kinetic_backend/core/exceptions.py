@@ -1,47 +1,44 @@
 import logging
 from rest_framework.views import exception_handler
-from rest_framework.response import Response
+from rest_framework import exceptions as drf_exceptions
+from django.core.exceptions import ValidationError as DjangoValidationError
+from core.responses import failure_response
 from rest_framework import status
 
 logger = logging.getLogger(__name__)
 
 def custom_exception_handler(exc, context):
+    # Handle Django Validation errors natively in DRF
+    if isinstance(exc, DjangoValidationError):
+        data = exc.message_dict if hasattr(exc, 'message_dict') else exc.messages
+        exc = drf_exceptions.ValidationError(detail=data)
+
     response = exception_handler(exc, context)
 
     if response is not None:
-        # Standardize DRF exceptions
-        details = response.data
-        message = "A validation or client error occurred."
-        
-        if isinstance(details, dict):
-            if 'detail' in details:
-                message = details.pop('detail')
-            elif len(details) > 0:
-                message = "Validation failed for one or more fields."
-        elif isinstance(details, list):
-            message = details[0]
+        message = "A client request error occurred."
+        errors = response.data
 
-        response.data = {
-            "success": False,
-            "error": {
-                "code": exc.__class__.__name__,
-                "message": message,
-                "details": details if details else None
-            }
-        }
-    else:
-        # Log unhandled exceptions (internal server errors)
-        logger.exception("Internal Server Error: %s", str(exc))
-        response = Response(
-            {
-                "success": False,
-                "error": {
-                    "code": "InternalServerError",
-                    "message": "An unexpected internal server error occurred.",
-                    "details": None
-                }
-            },
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        if isinstance(exc, drf_exceptions.ValidationError):
+            message = "Validation failed for one or more fields."
+        elif isinstance(exc, drf_exceptions.NotAuthenticated):
+            message = "Authentication credentials were not provided."
+        elif isinstance(exc, drf_exceptions.PermissionDenied):
+            message = "You do not have permission to access this resource."
+        elif hasattr(exc, 'detail') and isinstance(exc.detail, str):
+            message = exc.detail
+
+        # Format using standard failure_response utility
+        return failure_response(
+            message=message,
+            errors=errors,
+            status_code=response.status_code
         )
 
-    return response
+    # Capture 500 error logs and standardize output
+    logger.exception("Unhandled server exception: %s", str(exc))
+    return failure_response(
+        message="An unexpected server error occurred.",
+        errors=[{"message": "Please contact system administrator."}],
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+    )

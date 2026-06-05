@@ -1,27 +1,17 @@
 import os
-import sys
 from pathlib import Path
 from datetime import timedelta
-import environ
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Add apps folder to sys.path
-sys.path.insert(0, os.path.join(BASE_DIR, 'apps'))
-
-# Initialize environ
-env = environ.Env(
-    DEBUG=(bool, False)
-)
-# Read environment variables from .env
-environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
-
-SECRET_KEY = env('SECRET_KEY', default='django-insecure-kinetic-secret-key-default')
-DEBUG = env('DEBUG')
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-kinetic-secret-key-default')
+DEBUG = config('DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS = ['*']
 
+# Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -34,12 +24,10 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
+    'drf_yasg',
     
-    # Core/Local apps
+    # Local apps
     'accounts',
-    'gyms',
-    'members',
-    'trainers',
 ]
 
 MIDDLEWARE = [
@@ -72,10 +60,42 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-# Database configuration with Postgres/SQLite fallback
+# Database Configuration with PostgreSQL and SQLite Fallback
 DATABASES = {
-    'default': env.db('DATABASE_URL', default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}")
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': config('DATABASE_NAME', default='kinetic_db'),
+        'USER': config('DATABASE_USER', default='postgres'),
+        'PASSWORD': config('DATABASE_PASSWORD', default='postgres'),
+        'HOST': config('DATABASE_HOST', default='127.0.0.1'),
+        'PORT': config('DATABASE_PORT', default='5432'),
+    }
 }
+
+# Auto-fallback to SQLite if PostgreSQL is unavailable
+try:
+    import psycopg2
+    # Quick probe connection
+    conn = psycopg2.connect(
+        dbname=DATABASES['default']['NAME'],
+        user=DATABASES['default']['USER'],
+        password=DATABASES['default']['PASSWORD'],
+        host=DATABASES['default']['HOST'],
+        port=DATABASES['default']['PORT'],
+        connect_timeout=2
+    )
+    conn.close()
+except Exception:
+    import sys
+    print("\n[!] WARNING: PostgreSQL connection failed (connection refused/offline).", file=sys.stderr)
+    print("[!] Falling back to SQLite for local development out-of-the-box.\n", file=sys.stderr)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+
 
 # Custom User Model
 AUTH_USER_MODEL = 'accounts.User'
@@ -96,7 +116,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# REST Framework Configuration
+# REST Framework Settings
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -107,7 +127,7 @@ REST_FRAMEWORK = {
     'EXCEPTION_HANDLER': 'core.exceptions.custom_exception_handler',
 }
 
-# SimpleJWT Settings
+# SimpleJWT Configuration
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
@@ -120,6 +140,43 @@ SIMPLE_JWT = {
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
 }
 
+# Python Logging Configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[{asctime}] {levelname} {name} - {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'kinetic_backend.log'),
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'accounts': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+}
+
 # Internationalization
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
@@ -127,6 +184,5 @@ USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
-# Static files
 STATIC_URL = '/static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

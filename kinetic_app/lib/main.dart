@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'theme/app_theme.dart';
 import 'screens/landing_page.dart';
 import 'screens/role_selector_screen.dart';
+import 'services/auth_service.dart';
 
 // Auth
 import 'screens/auth/login_screen.dart';
@@ -42,7 +43,9 @@ import 'screens/owner/communication_center.dart';
 import 'screens/owner/gym_settings.dart';
 import 'screens/owner/subscription_plan.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await authService.loadSession();
   runApp(const KineticApp());
 }
 

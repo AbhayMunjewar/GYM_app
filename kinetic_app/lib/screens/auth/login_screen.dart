@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/app_theme.dart';
+import '../../services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
   final String targetRoute;
@@ -13,6 +14,26 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   bool isLogin = true;
   bool isOtp = false;
+
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _fullNameController = TextEditingController();
+  String? _errorMessage;
+  bool _localLoading = false;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _fullNameController.dispose();
+    super.dispose();
+  }
+
+  String get _currentRoleString {
+    if (widget.targetRoute.contains('/owner')) return 'OWNER';
+    if (widget.targetRoute.contains('/trainer')) return 'TRAINER';
+    return 'MEMBER';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -113,7 +134,10 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               Expanded(
                 child: GestureDetector(
-                  onTap: () => setState(() => isLogin = true),
+                  onTap: () => setState(() {
+                    isLogin = true;
+                    _errorMessage = null;
+                  }),
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     decoration: BoxDecoration(
@@ -133,7 +157,10 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               Expanded(
                 child: GestureDetector(
-                  onTap: () => setState(() => isLogin = false),
+                  onTap: () => setState(() {
+                    isLogin = false;
+                    _errorMessage = null;
+                  }),
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     decoration: BoxDecoration(
@@ -155,13 +182,52 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
         const SizedBox(height: 32),
+
+        // Error message card
+        if (_errorMessage != null) ...[
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.red.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+            ),
+            child: Text(
+              _errorMessage!,
+              style: const TextStyle(color: Colors.redAccent, fontSize: 13),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
         
-        // Form
+        // Form Fields
+        if (!isLogin) ...[
+          Text('FULL NAME', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: const Color(0xFF8F9378))),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _fullNameController,
+            style: const TextStyle(color: AppColors.white),
+            decoration: InputDecoration(
+              hintText: 'Alex Rivera',
+              hintStyle: const TextStyle(color: AppColors.onSurfaceVariant),
+              filled: true,
+              fillColor: const Color(0xFF201F1F),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
+
         Text('WORK EMAIL', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: const Color(0xFF8F9378))),
         const SizedBox(height: 8),
         TextField(
+          controller: _emailController,
+          style: const TextStyle(color: AppColors.white),
+          keyboardType: TextInputType.emailAddress,
           decoration: InputDecoration(
             hintText: 'alex@velocity.ai',
+            hintStyle: const TextStyle(color: AppColors.onSurfaceVariant),
             filled: true,
             fillColor: const Color(0xFF201F1F),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -182,9 +248,12 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         const SizedBox(height: 8),
         TextField(
+          controller: _passwordController,
           obscureText: true,
+          style: const TextStyle(color: AppColors.white),
           decoration: InputDecoration(
             hintText: '••••••••',
+            hintStyle: const TextStyle(color: AppColors.onSurfaceVariant),
             filled: true,
             fillColor: const Color(0xFF201F1F),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -193,27 +262,100 @@ class _LoginScreenState extends State<LoginScreen> {
         const SizedBox(height: 24),
         
         ElevatedButton(
-          onPressed: () {
-            if (isLogin) {
-              setState(() => isOtp = true);
-            } else {
-              context.push('/auth/onboarding');
-            }
-          },
+          onPressed: _localLoading
+              ? null
+              : () async {
+                  setState(() {
+                    _errorMessage = null;
+                  });
+
+                  final email = _emailController.text.trim();
+                  final password = _passwordController.text.trim();
+                  final fullName = _fullNameController.text.trim();
+
+                  if (email.isEmpty || password.isEmpty) {
+                    setState(() {
+                      _errorMessage = 'Email and password are required.';
+                    });
+                    return;
+                  }
+
+                  if (!isLogin && fullName.isEmpty) {
+                    setState(() {
+                      _errorMessage = 'Full name is required.';
+                    });
+                    return;
+                  }
+
+                  setState(() {
+                    _localLoading = true;
+                  });
+
+                  if (isLogin) {
+                    final err = await authService.login(email, password);
+                    setState(() {
+                      _localLoading = false;
+                    });
+                    if (err == null) {
+                      setState(() => isOtp = true);
+                    } else {
+                      setState(() {
+                        _errorMessage = err;
+                      });
+                    }
+                  } else {
+                    final err = await authService.register(
+                      fullName: fullName,
+                      username: email.split('@')[0],
+                      email: email,
+                      password: password,
+                      role: _currentRoleString,
+                    );
+                    setState(() {
+                      _localLoading = false;
+                    });
+                    if (err == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Registration successful! Please login.'),
+                          backgroundColor: AppColors.primaryFixed,
+                        ),
+                      );
+                      setState(() {
+                        isLogin = true;
+                        _errorMessage = null;
+                        _passwordController.clear();
+                      });
+                    } else {
+                      setState(() {
+                        _errorMessage = err;
+                      });
+                    }
+                  }
+                },
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primaryFixed,
             foregroundColor: AppColors.onPrimaryFixed,
             padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
-              Text('CONTINUE', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1)),
-              SizedBox(width: 8),
-              Icon(Icons.arrow_forward),
-            ],
-          ),
+          child: _localLoading
+              ? const SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.onPrimaryFixed),
+                  ),
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Text('CONTINUE', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1)),
+                    SizedBox(width: 8),
+                    Icon(Icons.arrow_forward),
+                  ],
+                ),
         ),
         
         const SizedBox(height: 32),
