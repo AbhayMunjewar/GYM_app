@@ -15,7 +15,9 @@ class ApiClient {
     }
     try {
       if (Platform.isAndroid) {
-        return 'http://10.0.2.2:8000';
+        // Using the host machine's Wi-Fi IP address so physical devices on the same subnet can connect.
+        // Falls back to 10.0.2.2 if needed.
+        return 'http://192.168.1.35:8000';
       }
     } catch (_) {}
     return 'http://127.0.0.1:8000';
