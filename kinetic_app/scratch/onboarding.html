@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kinetic AI | Onboarding</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&amp;family=JetBrains+Mono:wght@500&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=JetBrains+Mono:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline-variant": "#444932",
+                        "outline": "#8f9378",
+                        "on-primary-fixed-variant": "#3e4c00",
+                        "on-primary-container": "#596c00",
+                        "on-tertiary-container": "#636565",
+                        "secondary-container": "#4b8eff",
+                        "on-tertiary-fixed-variant": "#454747",
+                        "inverse-primary": "#536600",
+                        "on-surface": "#e5e2e1",
+                        "tertiary-container": "#e2e2e2",
+                        "surface-dim": "#131313",
+                        "on-primary": "#2a3400",
+                        "secondary": "#adc6ff",
+                        "on-secondary-fixed": "#001a41",
+                        "primary-container": "#caf300",
+                        "tertiary": "#ffffff",
+                        "surface-tint": "#b0d500",
+                        "error-container": "#93000a",
+                        "on-tertiary": "#2f3131",
+                        "tertiary-fixed-dim": "#c6c6c7",
+                        "secondary-fixed-dim": "#adc6ff",
+                        "inverse-surface": "#e5e2e1",
+                        "background": "#131313",
+                        "surface-container": "#201f1f",
+                        "surface": "#131313",
+                        "on-primary-fixed": "#171e00",
+                        "primary-fixed": "#caf300",
+                        "surface-container-low": "#1c1b1b",
+                        "secondary-fixed": "#d8e2ff",
+                        "tertiary-fixed": "#e2e2e2",
+                        "on-surface-variant": "#c5c9ac",
+                        "error": "#ffb4ab",
+                        "surface-bright": "#3a3939",
+                        "primary-fixed-dim": "#b0d500",
+                        "surface-container-high": "#2a2a2a",
+                        "primary": "#ffffff",
+                        "surface-container-lowest": "#0e0e0e",
+                        "surface-container-highest": "#353534",
+                        "on-tertiary-fixed": "#1a1c1c",
+                        "surface-variant": "#353534",
+                        "inverse-on-surface": "#313030",
+                        "on-error": "#690005",
+                        "on-secondary": "#002e69",
+                        "on-error-container": "#ffdad6",
+                        "on-secondary-container": "#00285c",
+                        "on-secondary-fixed-variant": "#004493",
+                        "on-background": "#e5e2e1"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "section-gap": "80px",
+                        "container-margin-mobile": "20px",
+                        "unit": "8px",
+                        "container-margin-desktop": "40px",
+                        "component-gap": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "label-md": ["JetBrains Mono"],
+                        "label-sm": ["JetBrains Mono"],
+                        "headline-lg": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "display-lg-mobile": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "letterSpacing": "0", "fontWeight": "400"}],
+                        "display-lg": ["64px", {"lineHeight": "72px", "letterSpacing": "-0.04em", "fontWeight": "800"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.08em", "fontWeight": "500"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "letterSpacing": "0", "fontWeight": "400"}],
+                        "display-lg-mobile": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .glass {
+            background: rgba(28, 28, 30, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .step-transition {
+            transition: opacity 0.4s ease-out, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            background: #caf300;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(202, 243, 0, 0.5);
+        }
+        .kinetic-glow {
+            box-shadow: 0 0 20px rgba(202, 243, 0, 0.15);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md overflow-x-hidden">
+<!-- Top Navigation Anchor (Manual construction based on Shared Component JSON) -->
+<header class="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-xl border-b border-white/10 flex justify-between items-center px-gutter h-16 shadow-[0_20px_40px_rgba(0,0,0,0.5)]">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-fixed" data-icon="bolt">bolt</span>
+<span class="font-display-lg-mobile text-display-lg-mobile italic tracking-tighter text-primary-fixed">VELOCITY AI</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-on-surface-variant hover:opacity-80 transition-opacity cursor-pointer" data-icon="notifications">notifications</span>
+</div>
+</header>
+<main class="flex-grow pt-32 pb-24 px-gutter flex flex-col items-center">
+<!-- Progress Bar Container -->
+<div class="w-full max-w-2xl mb-12">
+<div class="flex justify-between items-end mb-4 px-1">
+<span class="font-label-md text-label-md text-primary-fixed" id="step-indicator">STEP 1 OF 4</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest" id="step-name">Profile Identity</span>
+</div>
+<div class="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-secondary-container to-primary-fixed transition-all duration-700 ease-in-out" id="progress-bar" style="width: 25%;"></div>
+</div>
+</div>
+<!-- Onboarding Canvas -->
+<div class="w-full max-w-4xl relative" id="onboarding-canvas">
+<!-- Step 1: Gender and Age -->
+<section class="step-transition opacity-100 transform translate-x-0" id="step-1">
+<div class="text-center mb-12">
+<h1 class="font-headline-lg text-headline-lg mb-4">Define your baseline.</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">We need your bio-data to calibrate the AI model for peak efficiency.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-2xl mx-auto">
+<!-- Male -->
+<div class="glass rounded-xl p-8 cursor-pointer flex flex-col items-center gap-4 hover:border-primary-fixed/50 transition-all active:scale-95 group data-selected:border-primary-fixed data-selected:bg-primary-container/10" data-group="gender" id="gender-male" onclick="selectOption('gender', 'male')">
+<div class="w-16 h-16 rounded-full flex items-center justify-center bg-white/5 group-hover:bg-primary-fixed/20 transition-colors">
+<span class="material-symbols-outlined text-4xl group-hover:text-primary-fixed transition-colors" data-icon="male">male</span>
+</div>
+<span class="font-headline-md text-headline-md">MALE</span>
+</div>
+<!-- Female -->
+<div class="glass rounded-xl p-8 cursor-pointer flex flex-col items-center gap-4 hover:border-primary-fixed/50 transition-all active:scale-95 group data-selected:border-primary-fixed data-selected:bg-primary-container/10" data-group="gender" id="gender-female" onclick="selectOption('gender', 'female')">
+<div class="w-16 h-16 rounded-full flex items-center justify-center bg-white/5 group-hover:bg-primary-fixed/20 transition-colors">
+<span class="material-symbols-outlined text-4xl group-hover:text-primary-fixed transition-colors" data-icon="female">female</span>
+</div>
+<span class="font-headline-md text-headline-md">FEMALE</span>
+</div>
+</div>
+<div class="mt-12 max-w-md mx-auto">
+<label class="font-label-md text-label-md text-on-surface-variant block mb-4 text-center">HOW OLD ARE YOU?</label>
+<input class="w-full bg-surface-container border-none rounded-xl h-16 text-center text-2xl font-bold focus:ring-2 focus:ring-primary-fixed transition-all outline-none" placeholder="24" type="number"/>
+</div>
+</section>
+<!-- Step 2: Height and Weight (Hidden initially) -->
+<section class="step-transition hidden opacity-0 transform translate-x-20" id="step-2">
+<div class="text-center mb-12">
+<h1 class="font-headline-lg text-headline-lg mb-4">Physical Specs.</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Precise metrics allow for high-performance calorie and load tracking.</p>
+</div>
+<div class="glass rounded-xl p-10 max-w-2xl mx-auto space-y-16">
+<div class="space-y-6">
+<div class="flex justify-between items-center">
+<span class="font-label-md text-label-md">HEIGHT</span>
+<span class="font-headline-md text-headline-md text-primary-fixed" id="height-val">175 cm</span>
+</div>
+<input class="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer" max="220" min="140" oninput="document.getElementById('height-val').innerText = this.value + ' cm'" type="range" value="175"/>
+</div>
+<div class="space-y-6">
+<div class="flex justify-between items-center">
+<span class="font-label-md text-label-md">WEIGHT</span>
+<span class="font-headline-md text-headline-md text-primary-fixed" id="weight-val">72 kg</span>
+</div>
+<input class="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer" max="150" min="40" oninput="document.getElementById('weight-val').innerText = this.value + ' kg'" type="range" value="72"/>
+</div>
+</div>
+</section>
+<!-- Step 3: Fitness Goal -->
+<section class="step-transition hidden opacity-0 transform translate-x-20" id="step-3">
+<div class="text-center mb-12">
+<h1 class="font-headline-lg text-headline-lg mb-4">What's the mission?</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Select your primary objective to customize your training protocol.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Fat Loss -->
+<div class="glass rounded-xl p-6 cursor-pointer hover:border-primary-fixed/50 transition-all group data-selected:border-primary-fixed data-selected:bg-primary-container/10" data-group="goal" id="goal-fat_loss" onclick="selectOption('goal', 'fat_loss')">
+<span class="material-symbols-outlined text-primary-fixed mb-4" data-icon="local_fire_department">local_fire_department</span>
+<h3 class="font-headline-md text-headline-md mb-2">SHRED</h3>
+<p class="text-label-sm text-on-surface-variant">Focus on fat loss and cardiovascular endurance.</p>
+</div>
+<!-- Muscle Gain -->
+<div class="glass rounded-xl p-6 cursor-pointer hover:border-primary-fixed/50 transition-all group data-selected:border-primary-fixed data-selected:bg-primary-container/10" data-group="goal" id="goal-muscle" onclick="selectOption('goal', 'muscle')">
+<span class="material-symbols-outlined text-primary-fixed mb-4" data-icon="fitness_center">fitness_center</span>
+<h3 class="font-headline-md text-headline-md mb-2">BUILD</h3>
+<p class="text-label-sm text-on-surface-variant">Hypertrophy focused training for maximum muscle mass.</p>
+</div>
+<!-- Performance -->
+<div class="glass rounded-xl p-6 cursor-pointer hover:border-primary-fixed/50 transition-all group data-selected:border-primary-fixed data-selected:bg-primary-container/10" data-group="goal" id="goal-athlete" onclick="selectOption('goal', 'athlete')">
+<span class="material-symbols-outlined text-primary-fixed mb-4" data-icon="electric_bolt">electric_bolt</span>
+<h3 class="font-headline-md text-headline-md mb-2">PERFORM</h3>
+<p class="text-label-sm text-on-surface-variant">Explosive power and functional athletic performance.</p>
+</div>
+</div>
+</section>
+<!-- Step 4: Budget and Diet -->
+<section class="step-transition hidden opacity-0 transform translate-x-20" id="step-4">
+<div class="text-center mb-12">
+<h1 class="font-headline-lg text-headline-lg mb-4">Fueling &amp; Logistics.</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Optimize your nutrition within your lifestyle constraints.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="glass rounded-xl p-8 space-y-8">
+<label class="font-label-md text-label-md text-primary-fixed block uppercase">Dietary Strategy</label>
+<select class="w-full bg-surface-container-highest border-none rounded-lg h-12 px-4 focus:ring-2 focus:ring-primary-fixed text-on-surface">
+<option>Anything Goes</option>
+<option>High Protein / Low Carb</option>
+<option>Plant Based / Vegan</option>
+<option>Keto Protocols</option>
+<option>Paleo / Whole Foods</option>
+</select>
+<div class="flex flex-wrap gap-2">
+<span class="px-3 py-1 bg-white/5 rounded-full text-[10px] font-bold border border-white/10 uppercase">Gluten Free</span>
+<span class="px-3 py-1 bg-white/5 rounded-full text-[10px] font-bold border border-white/10 uppercase">No Dairy</span>
+<span class="px-3 py-1 bg-white/5 rounded-full text-[10px] font-bold border border-white/10 uppercase">Nut Allergy</span>
+</div>
+</div>
+<div class="glass rounded-xl p-8 space-y-8">
+<label class="font-label-md text-label-md text-primary-fixed block uppercase">Monthly Budget (USD)</label>
+<div class="relative pt-4">
+<div class="flex justify-between text-2xl font-bold mb-4">
+<span>$0</span>
+<span class="text-primary-fixed" id="budget-val">$400</span>
+<span>$1k+</span>
+</div>
+<input class="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer" max="1000" min="50" oninput="document.getElementById('budget-val').innerText = '$' + this.value" step="50" type="range" value="400"/>
+<p class="text-[10px] text-on-surface-variant mt-4 text-center">Allocated for food, supplements, and gym fees.</p>
+</div>
+</div>
+</div>
+<!-- Summary/Submit UI -->
+<div class="mt-16 text-center">
+<p class="font-label-sm text-label-sm text-on-surface-variant mb-6">By clicking Finish, you authorize the AI to build your profile.</p>
+</div>
+</section>
+</div>
+<!-- Sticky Controls -->
+<div class="fixed bottom-0 left-0 w-full p-gutter flex justify-center pointer-events-none">
+<div class="glass rounded-full px-8 py-4 flex gap-4 pointer-events-auto shadow-2xl kinetic-glow">
+<button class="hidden h-12 w-12 rounded-full flex items-center justify-center border border-white/10 hover:bg-white/5 active:scale-90 transition-all" id="prev-btn" onclick="prevStep()">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<button class="h-12 px-12 rounded-full bg-primary-fixed text-black font-bold uppercase tracking-widest hover:opacity-90 active:scale-95 transition-all" id="next-btn" onclick="nextStep()">
+                    Continue
+                </button>
+</div>
+</div>
+</main>
+<!-- Background Decoration (Ambient kinetic glows) -->
+<div class="fixed top-1/4 -right-1/4 w-96 h-96 bg-primary-fixed/5 blur-[120px] rounded-full -z-10 pointer-events-none"></div>
+<div class="fixed bottom-1/4 -left-1/4 w-96 h-96 bg-secondary-container/10 blur-[120px] rounded-full -z-10 pointer-events-none"></div>
+<script>
+        let currentStep = 1;
+        const totalSteps = 4;
+        const stepNames = ["Profile Identity", "Physical Specs", "The Mission", "Fueling Logistics"];
+
+        function updateStepUI() {
+            // Update Progress Bar
+            const progress = (currentStep / totalSteps) * 100;
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+            document.getElementById('step-indicator').innerText = `STEP ${currentStep} OF ${totalSteps}`;
+            document.getElementById('step-name').innerText = stepNames[currentStep - 1];
+
+            // Toggle visibility of sections
+            for (let i = 1; i <= totalSteps; i++) {
+                const section = document.getElementById(`step-${i}`);
+                if (i === currentStep) {
+                    section.classList.remove('hidden');
+                    setTimeout(() => {
+                        section.classList.remove('opacity-0', 'translate-x-20', 'translate-x--20');
+                        section.classList.add('opacity-100', 'translate-x-0');
+                    }, 50);
+                } else {
+                    section.classList.add('opacity-0');
+                    section.classList.remove('opacity-100', 'translate-x-0');
+                    // Delay hiding to allow transition to finish
+                    setTimeout(() => {
+                        if (currentStep !== i) section.classList.add('hidden');
+                    }, 400);
+                }
+            }
+
+            // Update Buttons
+            document.getElementById('prev-btn').classList.toggle('hidden', currentStep === 1);
+            const nextBtn = document.getElementById('next-btn');
+            if (currentStep === totalSteps) {
+                nextBtn.innerText = "Initialize Core";
+                nextBtn.classList.remove('bg-primary-fixed');
+                nextBtn.classList.add('bg-white');
+            } else {
+                nextBtn.innerText = "Continue";
+                nextBtn.classList.remove('bg-white');
+                nextBtn.classList.add('bg-primary-fixed');
+            }
+        }
+
+        function nextStep() {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateStepUI();
+            } else {
+                // Final Submission effect
+                const btn = document.getElementById('next-btn');
+                btn.innerHTML = `<span class="material-symbols-outlined animate-spin">sync</span>`;
+                setTimeout(() => {
+                    alert("Kinetic Engine Synchronized. Redirecting to Dashboard...");
+                    window.location.reload();
+                }, 2000);
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                updateStepUI();
+            }
+        }
+
+        function selectOption(group, value) {
+            // Deselect others in the same group
+            document.querySelectorAll(`[data-group="${group}"]`).forEach(el => {
+                el.removeAttribute('data-selected');
+                el.classList.remove('border-primary-fixed', 'bg-primary-container/10');
+            });
+            // Select this one
+            const selected = document.getElementById(`${group}-${value}`);
+            selected.setAttribute('data-selected', 'true');
+            selected.classList.add('border-primary-fixed', 'bg-primary-container/10');
+        }
+    </script>
+</body></html>

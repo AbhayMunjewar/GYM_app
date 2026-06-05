@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kinetic AI | Transform Your Performance</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&amp;family=JetBrains+Mono:wght@500&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=JetBrains+Mono:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "outline-variant": "#444932",
+                      "outline": "#8f9378",
+                      "on-primary-fixed-variant": "#3e4c00",
+                      "on-primary-container": "#596c00",
+                      "on-tertiary-container": "#636565",
+                      "secondary-container": "#4b8eff",
+                      "on-tertiary-fixed-variant": "#454747",
+                      "inverse-primary": "#536600",
+                      "on-surface": "#e5e2e1",
+                      "tertiary-container": "#e2e2e2",
+                      "surface-dim": "#131313",
+                      "on-primary": "#2a3400",
+                      "secondary": "#adc6ff",
+                      "on-secondary-fixed": "#001a41",
+                      "primary-container": "#caf300",
+                      "tertiary": "#ffffff",
+                      "surface-tint": "#b0d500",
+                      "error-container": "#93000a",
+                      "on-tertiary": "#2f3131",
+                      "tertiary-fixed-dim": "#c6c6c7",
+                      "secondary-fixed-dim": "#adc6ff",
+                      "inverse-surface": "#e5e2e1",
+                      "background": "#131313",
+                      "surface-container": "#201f1f",
+                      "surface": "#131313",
+                      "on-primary-fixed": "#171e00",
+                      "primary-fixed": "#caf300",
+                      "surface-container-low": "#1c1b1b",
+                      "secondary-fixed": "#d8e2ff",
+                      "tertiary-fixed": "#e2e2e2",
+                      "on-surface-variant": "#c5c9ac",
+                      "error": "#ffb4ab",
+                      "surface-bright": "#3a3939",
+                      "primary-fixed-dim": "#b0d500",
+                      "surface-container-high": "#2a2a2a",
+                      "primary": "#ffffff",
+                      "surface-container-lowest": "#0e0e0e",
+                      "surface-container-highest": "#353534",
+                      "on-tertiary-fixed": "#1a1c1c",
+                      "surface-variant": "#353534",
+                      "inverse-on-surface": "#313030",
+                      "on-error": "#690005",
+                      "on-secondary": "#002e69",
+                      "on-error-container": "#ffdad6",
+                      "on-secondary-container": "#00285c",
+                      "on-secondary-fixed-variant": "#004493",
+                      "on-background": "#e5e2e1"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "gutter": "24px",
+                      "section-gap": "80px",
+                      "container-margin-mobile": "20px",
+                      "unit": "8px",
+                      "container-margin-desktop": "40px",
+                      "component-gap": "16px"
+              },
+              "fontFamily": {
+                      "headline-md": ["Inter"],
+                      "body-md": ["Inter"],
+                      "display-lg": ["Inter"],
+                      "label-md": ["JetBrains Mono"],
+                      "label-sm": ["JetBrains Mono"],
+                      "headline-lg": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "display-lg-mobile": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "letterSpacing": "0", "fontWeight": "400"}],
+                      "display-lg": ["64px", {"lineHeight": "72px", "letterSpacing": "-0.04em", "fontWeight": "800"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.08em", "fontWeight": "500"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "letterSpacing": "0", "fontWeight": "400"}],
+                      "display-lg-mobile": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(28, 28, 30, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .kinetic-gradient {
+            background: radial-gradient(circle at top right, rgba(202, 243, 0, 0.15), transparent 50%),
+                        radial-gradient(circle at bottom left, rgba(173, 198, 255, 0.1), transparent 50%);
+        }
+        .kinetic-glow {
+            box-shadow: 0 0 20px rgba(202, 243, 0, 0.3);
+        }
+        body {
+            background-color: #0A0A0A;
+            color: #e5e2e1;
+            overflow-x: hidden;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body-md text-body-md">
+<!-- Top Navigation (Shell Implementation) -->
+<header class="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-xl border-b border-white/10 shadow-[0_20px_40px_rgba(0,0,0,0.5)] flex justify-between items-center px-gutter h-16">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-fixed active:scale-95 transition-transform cursor-pointer">bolt</span>
+<h1 class="font-display-lg-mobile text-display-lg-mobile italic tracking-tighter text-primary-fixed">VELOCITY AI</h1>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-on-surface-variant hover:opacity-80 transition-opacity cursor-pointer">notifications</span>
+<span class="material-symbols-outlined text-on-surface-variant md:hidden">menu</span>
+</div>
+</header>
+<main class="pt-16 pb-24">
+<!-- Hero Section -->
+<section class="relative min-h-[751px] flex flex-col justify-center px-gutter kinetic-gradient overflow-hidden">
+<div class="absolute -top-24 -right-24 w-96 h-96 bg-primary-fixed/20 blur-[120px] rounded-full"></div>
+<div class="relative z-10 space-y-6">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-container/10 border border-primary-container/20">
+<span class="w-2 h-2 rounded-full bg-primary-fixed animate-pulse"></span>
+<span class="font-label-sm text-label-sm text-primary-fixed uppercase">Next-Gen AI Fitness</span>
+</div>
+<h2 class="font-display-lg-mobile text-display-lg-mobile text-white leading-tight">
+                    Transform <br/>
+<span class="text-primary-fixed italic">Your Life</span>
+</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-md">
+                    Unlock peak performance with the world's most advanced AI training ecosystem. Precision data, elite coaching, and real-time biomechanics.
+                </p>
+<div class="flex flex-col gap-4 pt-4">
+<button class="bg-primary-fixed text-on-primary-fixed font-bold py-4 px-8 rounded-xl kinetic-glow active:scale-95 transition-all flex items-center justify-center gap-2">
+                        GET STARTED
+                        <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+<button class="bg-white/5 border border-white/10 backdrop-blur-md text-white font-bold py-4 px-8 rounded-xl active:scale-95 transition-all flex items-center justify-center gap-2">
+                        WATCH DEMO
+                        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">play_circle</span>
+</button>
+</div>
+</div>
+<!-- Floating KPI Card for Hero Depth -->
+<div class="mt-12 glass-card p-6 rounded-2xl relative overflow-hidden">
+<div class="flex justify-between items-end">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant mb-1">CURRENT RECOVERY</p>
+<h3 class="font-display-lg-mobile text-display-lg-mobile text-primary-fixed">94%</h3>
+</div>
+<div class="text-right">
+<span class="material-symbols-outlined text-secondary-container text-4xl">trending_up</span>
+</div>
+</div>
+<div class="mt-4 h-12 w-full flex items-end gap-1">
+<div class="bg-primary-fixed/20 h-4 w-full rounded-t-sm"></div>
+<div class="bg-primary-fixed/30 h-6 w-full rounded-t-sm"></div>
+<div class="bg-primary-fixed/40 h-8 w-full rounded-t-sm"></div>
+<div class="bg-primary-fixed/60 h-10 w-full rounded-t-sm"></div>
+<div class="bg-primary-fixed h-12 w-full rounded-t-sm"></div>
+</div>
+</div>
+</section>
+<!-- Features Showcase -->
+<section class="mt-section-gap px-gutter">
+<div class="mb-10 text-center">
+<h2 class="font-headline-lg text-headline-lg text-white mb-2">Technical Precision</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Data-driven tools built for elite athletes.</p>
+</div>
+<div class="grid gap-6">
+<!-- Feature 1 -->
+<div class="glass-card p-6 rounded-2xl group transition-all duration-300 hover:border-primary-fixed/40">
+<div class="w-12 h-12 rounded-xl bg-primary-fixed/10 flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-primary-fixed text-3xl">smart_toy</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-white mb-2">AI Coaching</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                        Personalized training logic that adapts in real-time based on your HRV, sleep data, and past performance.
+                    </p>
+<div class="mt-6 pt-6 border-t border-white/5 flex items-center justify-between text-primary-fixed">
+<span class="font-label-md text-label-md">LEARN MORE</span>
+<span class="material-symbols-outlined">chevron_right</span>
+</div>
+</div>
+<!-- Feature 2 -->
+<div class="glass-card p-6 rounded-2xl group transition-all duration-300 hover:border-secondary-container/40">
+<div class="w-12 h-12 rounded-xl bg-secondary-container/10 flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-secondary-container text-3xl">restaurant</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-white mb-2">Diet Planning</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                        Fuel your engine with precision macros calculated for your specific metabolic output and daily goals.
+                    </p>
+<div class="mt-6 pt-6 border-t border-white/5 flex items-center justify-between text-secondary-container">
+<span class="font-label-md text-label-md">VIEW PLANS</span>
+<span class="material-symbols-outlined">chevron_right</span>
+</div>
+</div>
+<!-- Feature 3 -->
+<div class="glass-card p-6 rounded-2xl group transition-all duration-300 hover:border-white/40">
+<div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-white text-3xl">fitness_center</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-white mb-2">Form Check</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                        Computer vision analyzes your movement patterns to prevent injury and maximize every repetition.
+                    </p>
+<div class="mt-6 pt-6 border-t border-white/5 flex items-center justify-between text-white">
+<span class="font-label-md text-label-md">TRY IT NOW</span>
+<span class="material-symbols-outlined">chevron_right</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Testimonials Slider -->
+<section class="mt-section-gap">
+<div class="px-gutter mb-8">
+<h2 class="font-headline-lg text-headline-lg text-white">Elite Athletes</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Join the community of 1M+ performers.</p>
+</div>
+<div class="flex overflow-x-auto gap-6 px-gutter pb-8 no-scrollbar snap-x">
+<!-- Testimonial 1 -->
+<div class="min-w-[85vw] snap-center glass-card rounded-3xl overflow-hidden flex flex-col">
+<div class="h-64 w-full relative">
+<img class="w-full h-full object-cover" data-alt="A focused male athlete training in a high-tech gym. The lighting is cinematic with deep blue and neon lime accents, casting sharp shadows on his muscular frame. He wears premium dark athletic apparel. The background shows blurred gym equipment and digital displays, creating a mood of intense focus and futuristic performance." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRQgloyW4d0rvFk6n0CdSOntLZTR6zWvguU44pHF-RUeaHMCVicqkw2OwTRSqRSMHTYmdxvgekByubLR2NHot6VYTWeDFvO28LDzDJ3-m-4OHaNCQJfDG4sjqrSxwbnHvv53FGpyxxirzjkMESL00dghKdxeXxg4bnKBeEsvdSbPsknfur_sk_IrffflCHHiT4r0fxodSmArGYUBmwv9vNNt9BlsA3ujnU4dZ1a5fjp0-O0KoEJDUwW2QGXYWMtUXNg77Bft-xQbQ"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent"></div>
+</div>
+<div class="p-6">
+<div class="flex gap-1 text-primary-fixed mb-4">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<p class="italic text-white mb-6">"Velocity AI completely changed how I approach my recovery days. The precision is unmatched."</p>
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-fixed/20"></div>
+<div>
+<p class="font-label-md text-label-md text-white">Marcus Sterling</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Pro Triathlete</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Testimonial 2 -->
+<div class="min-w-[85vw] snap-center glass-card rounded-3xl overflow-hidden flex flex-col">
+<div class="h-64 w-full relative">
+<img class="w-full h-full object-cover" data-alt="A powerful female athlete preparing for a sprint on a dark, illuminated track at night. The scene is bathed in a cool blue ambient light with a single high-intensity lime green light source from the side. Her expression is one of pure determination. The atmosphere is crisp, high-contrast, and embodies technical excellence." src="https://lh3.googleusercontent.com/aida-public/AB6AXuALDB2gnSnTyBeDW73F01PGufdUgVferJmBGD3K5O_VAYlOokPSnbDEDTIEgtIZJfmIMpZyss56nh5do0B8q6srLoA6BhNXd97UdZ6CpKe0QFnU8eRu3X4GOdVIknqH7lZEaiD5cjdK8KuyW8wO3wVZPjEW323t3Ntzr3_Wukhb87kppeYGLWVevVWBDj6KI7IlFIFMZw7Bp8g9p08z6qlGXATU_zKY0wp8ANJMoYc4hjQfzG4dsb7He1NnUzBPvuHW4ru45BfbBiM"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent"></div>
+</div>
+<div class="p-6">
+<div class="flex gap-1 text-primary-fixed mb-4">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<p class="italic text-white mb-6">"The form check feature caught a shoulder misalignment my human coach missed. Essential tool."</p>
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-secondary-container/20"></div>
+<div>
+<p class="font-label-md text-label-md text-white">Elena Rodriguez</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Olympic Hopeful</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Final CTA / Download Section -->
+<section class="mt-section-gap px-gutter mb-20">
+<div class="bg-primary-container p-10 rounded-[32px] text-center relative overflow-hidden">
+<div class="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,_var(--tw-gradient-stops))] from-white/20 to-transparent pointer-events-none"></div>
+<h2 class="font-display-lg-mobile text-display-lg-mobile text-on-primary-fixed-variant mb-4">READY TO ASCEND?</h2>
+<p class="font-body-md text-body-md text-on-primary-container mb-10 max-w-xs mx-auto">
+                    Download the app and start your 14-day free trial today. No commitment required.
+                </p>
+<div class="flex flex-col gap-4">
+<button class="bg-on-background text-background font-bold py-4 px-8 rounded-2xl flex items-center justify-center gap-3 shadow-xl active:scale-95 transition-transform">
+<span class="material-symbols-outlined">ios</span>
+                        APP STORE
+                    </button>
+<button class="bg-white/10 backdrop-blur-xl border border-on-primary-container/20 text-on-primary-fixed-variant font-bold py-4 px-8 rounded-2xl flex items-center justify-center gap-3 active:scale-95 transition-transform">
+<span class="material-symbols-outlined">play_arrow</span>
+                        GOOGLE PLAY
+                    </button>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar (Shell Implementation) -->
+<nav class="fixed bottom-0 w-full rounded-t-xl z-50 bg-surface-container-lowest/80 backdrop-blur-3xl border-t border-white/10 shadow-[0_-10px_30px_rgba(0,0,0,0.3)] h-20 px-2 flex justify-around items-center">
+<!-- Active: Home (Landing page context) -->
+<div class="flex flex-col items-center justify-center text-primary-fixed relative after:content-[''] after:absolute after:-bottom-1 after:w-1 after:h-1 after:bg-primary-fixed after:rounded-full cursor-pointer hover:text-primary-fixed active:scale-90 duration-150">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant cursor-pointer hover:text-primary-fixed active:scale-90 duration-150">
+<span class="material-symbols-outlined">exercise</span>
+<span class="font-label-sm text-label-sm">Workouts</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant cursor-pointer hover:text-primary-fixed active:scale-90 duration-150">
+<span class="material-symbols-outlined">smart_toy</span>
+<span class="font-label-sm text-label-sm">AI Buddy</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant cursor-pointer hover:text-primary-fixed active:scale-90 duration-150">
+<span class="material-symbols-outlined">equalizer</span>
+<span class="font-label-sm text-label-sm">Stats</span>
+</div>
+</nav>
+<script>
+        // Micro-interactions and parallax effects
+        document.addEventListener('mousemove', (e) => {
+            const glow = document.querySelector('.kinetic-gradient');
+            const mouseX = e.clientX / window.innerWidth;
+            const mouseY = e.clientY / window.innerHeight;
+            
+            glow.style.background = `radial-gradient(circle at ${mouseX * 100}% ${mouseY * 100}%, rgba(202, 243, 0, 0.15), transparent 50%),
+                                     radial-gradient(circle at bottom left, rgba(173, 198, 255, 0.1), transparent 50%)`;
+        });
+
+        // Horizontal scroll animation for testimonials
+        const testimonials = document.querySelector('.no-scrollbar');
+        let isDown = false;
+        let startX;
+        let scrollLeft;
+
+        testimonials.addEventListener('mousedown', (e) => {
+            isDown = true;
+            startX = e.pageX - testimonials.offsetLeft;
+            scrollLeft = testimonials.scrollLeft;
+        });
+        testimonials.addEventListener('mouseleave', () => { isDown = false; });
+        testimonials.addEventListener('mouseup', () => { isDown = false; });
+        testimonials.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - testimonials.offsetLeft;
+            const walk = (x - startX) * 2;
+            testimonials.scrollLeft = scrollLeft - walk;
+        });
+    </script>
+</body></html>

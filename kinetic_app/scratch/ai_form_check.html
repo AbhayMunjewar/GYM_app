@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Velocity AI - AI Form Check</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-fixed": "#001a41",
+                    "surface-tint": "#b0d500",
+                    "secondary-container": "#4b8eff",
+                    "surface-container-high": "#2a2a2a",
+                    "on-error-container": "#ffdad6",
+                    "tertiary-fixed-dim": "#c6c6c7",
+                    "surface-container": "#201f1f",
+                    "on-tertiary-fixed": "#1a1c1c",
+                    "on-secondary": "#002e69",
+                    "error": "#ffb4ab",
+                    "surface-container-highest": "#353534",
+                    "on-primary-container": "#596c00",
+                    "primary-fixed-dim": "#b0d500",
+                    "surface-container-low": "#1c1b1b",
+                    "on-tertiary": "#2f3131",
+                    "background": "#131313",
+                    "on-primary-fixed": "#171e00",
+                    "inverse-primary": "#536600",
+                    "on-secondary-fixed-variant": "#004493",
+                    "error-container": "#93000a",
+                    "inverse-surface": "#e5e2e1",
+                    "secondary-fixed-dim": "#adc6ff",
+                    "on-primary-fixed-variant": "#3e4c00",
+                    "surface-container-lowest": "#0e0e0e",
+                    "on-tertiary-fixed-variant": "#454747",
+                    "on-surface": "#e5e2e1",
+                    "inverse-on-surface": "#313030",
+                    "surface-dim": "#131313",
+                    "surface-variant": "#353534",
+                    "on-primary": "#2a3400",
+                    "on-error": "#690005",
+                    "primary-fixed": "#caf300",
+                    "secondary": "#adc6ff",
+                    "on-background": "#e5e2e1",
+                    "on-surface-variant": "#c5c9ac",
+                    "tertiary-fixed": "#e2e2e2",
+                    "surface-bright": "#3a3939",
+                    "primary": "#ffffff",
+                    "surface": "#131313",
+                    "on-secondary-container": "#00285c",
+                    "tertiary-container": "#e2e2e2",
+                    "outline": "#8f9378",
+                    "secondary-fixed": "#d8e2ff",
+                    "outline-variant": "#444932",
+                    "primary-container": "#caf300",
+                    "tertiary": "#ffffff",
+                    "on-tertiary-container": "#636565"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "unit": "8px",
+                    "section-gap": "80px",
+                    "component-gap": "16px",
+                    "gutter": "24px",
+                    "container-margin-desktop": "40px",
+                    "container-margin-mobile": "20px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "label-sm": ["JetBrains Mono"],
+                    "label-md": ["JetBrains Mono"],
+                    "display-lg-mobile": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "letterSpacing": "0", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.08em", "fontWeight": "500"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                    "display-lg-mobile": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "display-lg": ["64px", {"lineHeight": "72px", "letterSpacing": "-0.04em", "fontWeight": "800"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "letterSpacing": "0", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(28, 28, 30, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .skeleton-line {
+            stroke: #caf300;
+            stroke-width: 4;
+            stroke-linecap: round;
+            filter: drop-shadow(0 0 8px rgba(202, 243, 0, 0.8));
+        }
+        .skeleton-joint {
+            fill: #ffffff;
+            stroke: #caf300;
+            stroke-width: 2;
+        }
+        .error-glow {
+            filter: drop-shadow(0 0 12px #ffb4ab);
+            stroke: #ffb4ab;
+        }
+        @keyframes scan {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+        .scan-line {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #caf300, transparent);
+            animation: scan 3s linear infinite;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-xl text-primary-fixed border-b border-white/10 shadow-[0_20px_40px_rgba(0,0,0,0.5)] flex justify-between items-center px-gutter h-16">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined active:scale-95 transition-transform cursor-pointer" data-icon="bolt">bolt</span>
+<h1 class="font-display-lg-mobile text-display-lg-mobile italic tracking-tighter text-primary-fixed">VELOCITY AI</h1>
+</div>
+<div class="flex items-center gap-6">
+<nav class="hidden md:flex gap-8">
+<span class="font-label-md text-label-md text-primary-fixed cursor-pointer hover:opacity-80 transition-opacity">Dashboard</span>
+<span class="font-label-md text-label-md text-on-surface-variant cursor-pointer hover:opacity-80 transition-opacity">Training</span>
+<span class="font-label-md text-label-md text-on-surface-variant cursor-pointer hover:opacity-80 transition-opacity">Analytics</span>
+</nav>
+<span class="material-symbols-outlined active:scale-95 transition-transform cursor-pointer" data-icon="notifications">notifications</span>
+</div>
+</header>
+<main class="pt-24 pb-32 px-gutter max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Left: Analysis Viewport -->
+<section class="lg:col-span-8 flex flex-col gap-6">
+<div class="relative aspect-video rounded-xl overflow-hidden glass-card shadow-2xl group">
+<!-- Video Feed Placeholder -->
+<img class="w-full h-full object-cover opacity-60" data-alt="A professional athlete performing a deep barbell squat in a dark, high-performance training facility. The scene is lit with dramatic overhead spotlights and cool blue ambient lighting, reflecting off high-end gym equipment. The athlete is in peak concentric phase, showcasing technical precision and focus. The overall mood is intense, kinetic, and technologically advanced, aligned with a premium sports brand aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCVHGjPeAKtHeUbW7nAf-symjrsHUViphgL4L5UKqUemIYUmEhcK1SX51-aBi1WZ_vIGIOfFCcBWvB9PJ6onsyTgESGnmcccP0U9VOfPyJoOiSBJ2A-P7W2bXBRyx7KdUpLy4aSLIpspyAy9LwR9TOUnF6oTwT06X4gG2sXz_SKh3qVnyW9RS-jOVBcckU6b67pTaJbgkmvee4hIrgyTHnU78Ge_yV5K_3SOiMYnqZDqjDSj9nmDvmEBCEDzOdZe5e_GM3pnbPM_z0"/>
+<!-- Skeleton Overlay (SVG) -->
+<svg class="absolute inset-0 w-full h-full pointer-events-none" viewbox="0 0 1000 562">
+<!-- Spine/Torso -->
+<line class="skeleton-line" x1="500" x2="500" y1="150" y2="300"></line>
+<!-- Shoulders -->
+<line class="skeleton-line" x1="420" x2="580" y1="170" y2="170"></line>
+<!-- Arms -->
+<line class="skeleton-line" x1="420" x2="380" y1="170" y2="250"></line>
+<line class="skeleton-line" x1="580" x2="620" y1="170" y2="250"></line>
+<!-- Hips -->
+<line class="skeleton-line" x1="450" x2="550" y1="300" y2="300"></line>
+<!-- Legs (Squat Pose) -->
+<line class="skeleton-line" x1="450" x2="400" y1="300" y2="400"></line>
+<line class="skeleton-line error-glow" x1="400" x2="460" y1="400" y2="520"></line> <!-- Mistake Highlight -->
+<line class="skeleton-line" x1="550" x2="600" y1="300" y2="400"></line>
+<line class="skeleton-line" x1="600" x2="540" y1="400" y2="520"></line>
+<!-- Joints -->
+<circle class="skeleton-joint" cx="500" cy="150" r="6"></circle>
+<circle class="skeleton-joint" cx="420" cy="170" r="6"></circle>
+<circle class="skeleton-joint" cx="580" cy="170" r="6"></circle>
+<circle class="skeleton-joint" cx="450" cy="300" r="6"></circle>
+<circle class="skeleton-joint" cx="550" cy="300" r="6"></circle>
+<circle class="skeleton-joint" cx="400" cy="400" r="6"></circle>
+<circle class="skeleton-joint" cx="600" cy="400" r="6"></circle>
+<circle class="skeleton-joint fill-error border-error" cx="460" cy="520" r="6"></circle> <!-- Error Joint -->
+<circle class="skeleton-joint" cx="540" cy="520" r="6"></circle>
+</svg>
+<!-- Scanning Line Effect -->
+<div class="scan-line absolute top-0 left-0 w-full z-10 pointer-events-none"></div>
+<!-- HUD Overlays -->
+<div class="absolute top-6 left-6 flex flex-col gap-2">
+<div class="flex items-center gap-2 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
+<span class="w-2 h-2 rounded-full bg-error animate-pulse"></span>
+<span class="font-label-sm text-label-sm uppercase tracking-widest text-white">Live Analysis</span>
+</div>
+</div>
+<div class="absolute bottom-6 left-6 right-6 flex justify-between items-end">
+<div class="flex gap-4">
+<button class="w-14 h-14 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center text-white active:scale-90 transition-transform">
+<span class="material-symbols-outlined" data-icon="videocam">videocam</span>
+</button>
+<button class="w-14 h-14 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center text-white active:scale-90 transition-transform">
+<span class="material-symbols-outlined" data-icon="upload">upload</span>
+</button>
+</div>
+<div class="bg-primary-fixed text-on-primary-fixed px-6 py-3 rounded-xl font-headline-md text-headline-md flex items-center gap-3 shadow-xl">
+<span class="font-label-sm text-label-sm opacity-70">DEPTH</span>
+                        94%
+                    </div>
+</div>
+</div>
+<!-- Controls & Mode Selector -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+<div class="glass-card p-4 rounded-xl flex flex-col gap-1 border-primary-fixed/30 border-l-4">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Current Exercise</span>
+<span class="font-headline-md text-headline-md text-white">Back Squat</span>
+</div>
+<div class="glass-card p-4 rounded-xl flex flex-col gap-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Rep Counter</span>
+<span class="font-headline-md text-headline-md text-primary-fixed">08 <span class="text-body-md text-on-surface-variant">/ 12</span></span>
+</div>
+<div class="glass-card p-4 rounded-xl flex flex-col gap-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Tempo</span>
+<span class="font-headline-md text-headline-md text-white">3-1-1</span>
+</div>
+<div class="glass-card p-4 rounded-xl flex flex-col gap-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Power Output</span>
+<span class="font-headline-md text-headline-md text-secondary">420W</span>
+</div>
+</div>
+</section>
+<!-- Right: Real-time Stats & Feedback -->
+<aside class="lg:col-span-4 flex flex-col gap-6">
+<!-- Form Score Ring -->
+<div class="glass-card p-8 rounded-2xl flex flex-col items-center text-center gap-6 relative overflow-hidden">
+<div class="absolute top-0 right-0 p-4">
+<span class="material-symbols-outlined text-primary-fixed/20 text-6xl" data-icon="auto_graph">auto_graph</span>
+</div>
+<h3 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest">Global Form Score</h3>
+<div class="relative w-48 h-48">
+<svg class="w-full h-full -rotate-90" viewbox="0 0 100 100">
+<circle cx="50" cy="50" fill="transparent" r="42" stroke="rgba(255,255,255,0.05)" stroke-width="8"></circle>
+<circle cx="50" cy="50" fill="transparent" r="42" stroke="url(#gradient)" stroke-dasharray="264" stroke-dashoffset="31.6" stroke-linecap="round" stroke-width="10"></circle>
+<defs>
+<lineargradient id="gradient" x1="0%" x2="100%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#adc6ff"></stop>
+<stop offset="100%" stop-color="#caf300"></stop>
+</lineargradient>
+</defs>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="font-display-lg text-display-lg text-white">88<span class="text-headline-md">%</span></span>
+<span class="font-label-sm text-label-sm text-primary-fixed">OPTIMAL</span>
+</div>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Your overall mechanical efficiency is high. Stability has improved by 4% since your last set.</p>
+</div>
+<!-- Active Alerts -->
+<div class="glass-card p-6 rounded-2xl border-l-4 border-error flex flex-col gap-4">
+<div class="flex items-center gap-3 text-error">
+<span class="material-symbols-outlined" data-icon="warning" data-weight="fill" style="font-variation-settings: 'FILL' 1;">warning</span>
+<h4 class="font-headline-md text-headline-md">Form Alert</h4>
+</div>
+<div class="flex flex-col gap-2">
+<div class="flex justify-between items-center">
+<span class="font-body-lg text-body-lg text-white font-bold">Knees Past Toes</span>
+<span class="font-label-sm text-label-sm bg-error/20 text-error px-2 py-0.5 rounded">CRITICAL</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Your knees are drifting too far forward during the descent. Shift weight slightly back toward your heels to protect joint integrity.</p>
+</div>
+</div>
+<!-- Improvement Tips -->
+<div class="glass-card p-6 rounded-2xl flex flex-col gap-4">
+<h4 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest">AI Insights</h4>
+<div class="flex flex-col gap-4">
+<div class="flex gap-4 items-start">
+<div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary-fixed shrink-0">
+<span class="material-symbols-outlined" data-icon="tips_and_updates">tips_and_updates</span>
+</div>
+<div>
+<span class="font-label-md text-label-md text-white block mb-1">Drive from Heels</span>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">Focus on pressing the floor away with your mid-foot and heels to engage more posterior chain.</p>
+</div>
+</div>
+<div class="flex gap-4 items-start">
+<div class="w-10 h-10 rounded-lg bg-secondary-container/10 flex items-center justify-center text-secondary shrink-0">
+<span class="material-symbols-outlined" data-icon="compress">compress</span>
+</div>
+<div>
+<span class="font-label-md text-label-md text-white block mb-1">Core Bracing</span>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">Maintain intra-abdominal pressure. Your lumbar is slightly rounding at the bottom of the squat.</p>
+</div>
+</div>
+</div>
+</div>
+</aside>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 w-full rounded-t-xl z-50 bg-surface-container-lowest/80 backdrop-blur-3xl border-t border-white/10 shadow-[0_-10px_30px_rgba(0,0,0,0.3)] flex justify-around items-center h-20 px-2">
+<div class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary-fixed active:scale-90 duration-150 cursor-pointer">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</div>
+<div class="flex flex-col items-center justify-center text-primary-fixed relative after:content-[''] after:absolute after:-bottom-1 after:w-1 after:h-1 after:bg-primary-fixed after:rounded-full active:scale-90 duration-150 cursor-pointer">
+<span class="material-symbols-outlined" data-icon="exercise">exercise</span>
+<span class="font-label-sm text-label-sm">Workouts</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary-fixed active:scale-90 duration-150 cursor-pointer">
+<span class="material-symbols-outlined" data-icon="smart_toy">smart_toy</span>
+<span class="font-label-sm text-label-sm">AI Buddy</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary-fixed active:scale-90 duration-150 cursor-pointer">
+<span class="material-symbols-outlined" data-icon="equalizer">equalizer</span>
+<span class="font-label-sm text-label-sm">Stats</span>
+</div>
+</nav>
+<!-- Interactive elements for visual flair -->
+<script>
+        // Simple logic to oscillate the skeleton opacity or pulse nodes
+        const joints = document.querySelectorAll('.skeleton-joint');
+        setInterval(() => {
+            joints.forEach(joint => {
+                if(!joint.classList.contains('fill-error')) {
+                    const opacity = 0.7 + Math.random() * 0.3;
+                    joint.setAttribute('fill-opacity', opacity);
+                }
+            });
+        }, 100);
+
+        // Simulate HUD text updates
+        const powerOutput = document.querySelector('.secondary');
+        setInterval(() => {
+            if(powerOutput) {
+                const current = parseInt(powerOutput.innerText);
+                const variance = Math.floor(Math.random() * 20) - 10;
+                powerOutput.innerText = (current + variance) + "W";
+            }
+        }, 2000);
+    </script>
+</body></html>

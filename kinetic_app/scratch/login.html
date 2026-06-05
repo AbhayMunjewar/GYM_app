@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kinetic AI | Login</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&amp;family=JetBrains+Mono:wght@500&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=JetBrains+Mono:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "outline-variant": "#444932",
+                      "outline": "#8f9378",
+                      "on-primary-fixed-variant": "#3e4c00",
+                      "on-primary-container": "#596c00",
+                      "on-tertiary-container": "#636565",
+                      "secondary-container": "#4b8eff",
+                      "on-tertiary-fixed-variant": "#454747",
+                      "inverse-primary": "#536600",
+                      "on-surface": "#e5e2e1",
+                      "tertiary-container": "#e2e2e2",
+                      "surface-dim": "#131313",
+                      "on-primary": "#2a3400",
+                      "secondary": "#adc6ff",
+                      "on-secondary-fixed": "#001a41",
+                      "primary-container": "#caf300",
+                      "tertiary": "#ffffff",
+                      "surface-tint": "#b0d500",
+                      "error-container": "#93000a",
+                      "on-tertiary": "#2f3131",
+                      "tertiary-fixed-dim": "#c6c6c7",
+                      "secondary-fixed-dim": "#adc6ff",
+                      "inverse-surface": "#e5e2e1",
+                      "background": "#131313",
+                      "surface-container": "#201f1f",
+                      "surface": "#131313",
+                      "on-primary-fixed": "#171e00",
+                      "primary-fixed": "#caf300",
+                      "surface-container-low": "#1c1b1b",
+                      "secondary-fixed": "#d8e2ff",
+                      "tertiary-fixed": "#e2e2e2",
+                      "on-surface-variant": "#c5c9ac",
+                      "error": "#ffb4ab",
+                      "surface-bright": "#3a3939",
+                      "primary-fixed-dim": "#b0d500",
+                      "surface-container-high": "#2a2a2a",
+                      "primary": "#ffffff",
+                      "surface-container-lowest": "#0e0e0e",
+                      "surface-container-highest": "#353534",
+                      "on-tertiary-fixed": "#1a1c1c",
+                      "surface-variant": "#353534",
+                      "inverse-on-surface": "#313030",
+                      "on-error": "#690005",
+                      "on-secondary": "#002e69",
+                      "on-error-container": "#ffdad6",
+                      "on-secondary-container": "#00285c",
+                      "on-secondary-fixed-variant": "#004493",
+                      "on-background": "#e5e2e1"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "gutter": "24px",
+                      "section-gap": "80px",
+                      "container-margin-mobile": "20px",
+                      "unit": "8px",
+                      "container-margin-desktop": "40px",
+                      "component-gap": "16px"
+              },
+              "fontFamily": {
+                      "headline-md": ["Inter"],
+                      "body-md": ["Inter"],
+                      "display-lg": ["Inter"],
+                      "label-md": ["JetBrains Mono"],
+                      "label-sm": ["JetBrains Mono"],
+                      "headline-lg": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "display-lg-mobile": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "letterSpacing": "0", "fontWeight": "400"}],
+                      "display-lg": ["64px", {"lineHeight": "72px", "letterSpacing": "-0.04em", "fontWeight": "800"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.08em", "fontWeight": "500"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "letterSpacing": "0", "fontWeight": "400"}],
+                      "display-lg-mobile": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(28, 28, 30, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .kinetic-glow:hover {
+            box-shadow: 0 0 15px rgba(202, 243, 0, 0.4);
+        }
+        .step-transition {
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
+        }
+        input:focus {
+            outline: none;
+            border-color: #caf300 !important;
+            box-shadow: 0 0 8px rgba(202, 243, 0, 0.2);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen flex flex-col overflow-x-hidden">
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-xl border-b border-white/10 flex justify-between items-center px-gutter h-16 w-full shadow-[0_20px_40px_rgba(0,0,0,0.5)]">
+<div class="font-display-lg-mobile text-display-lg-mobile italic tracking-tighter text-primary-fixed">VELOCITY AI</div>
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-primary-fixed active:scale-95 transition-transform cursor-pointer">bolt</span>
+</div>
+</header>
+<main class="flex-grow pt-24 pb-12 px-gutter flex flex-col items-center justify-center max-w-md mx-auto w-full relative">
+<!-- Background Ambient Glow -->
+<div class="absolute -top-24 -left-24 w-64 h-64 bg-primary-fixed/5 rounded-full blur-[100px] pointer-events-none"></div>
+<div class="absolute -bottom-24 -right-24 w-64 h-64 bg-secondary-container/5 rounded-full blur-[100px] pointer-events-none"></div>
+<!-- Auth Container -->
+<div class="w-full space-y-8" id="auth-container">
+<!-- Login/Signup Form -->
+<div class="step-transition opacity-100 scale-100" id="form-section">
+<div class="text-center mb-8">
+<h1 class="font-headline-lg text-headline-lg-mobile text-white mb-2">Push Beyond.</h1>
+<p class="font-body-md text-on-surface-variant">Access your high-performance lab.</p>
+</div>
+<!-- Toggle -->
+<div class="flex p-1 bg-surface-container-low rounded-xl mb-8">
+<button class="flex-1 py-2 rounded-lg font-label-md text-label-md transition-all bg-primary-container/20 text-primary-fixed border-r-0 border-primary-fixed" id="btn-login" onclick="switchTab('login')">LOGIN</button>
+<button class="flex-1 py-2 rounded-lg font-label-md text-label-md transition-all text-on-surface-variant hover:text-white" id="btn-signup" onclick="switchTab('signup')">SIGNUP</button>
+</div>
+<form class="space-y-4" id="auth-form" onsubmit="event.preventDefault(); goToOtp();">
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm text-outline ml-1">WORK EMAIL</label>
+<input class="w-full h-14 bg-surface-container rounded-xl px-4 border-none text-on-surface font-body-md" placeholder="alex@velocity.ai" required="" type="email"/>
+</div>
+<div class="space-y-1">
+<div class="flex justify-between items-center ml-1">
+<label class="font-label-sm text-label-sm text-outline">PASSWORD</label>
+<a class="font-label-sm text-label-sm text-primary-fixed opacity-70 hover:opacity-100" href="#">FORGOT?</a>
+</div>
+<input class="w-full h-14 bg-surface-container rounded-xl px-4 border-none text-on-surface font-body-md" placeholder="••••••••" required="" type="password"/>
+</div>
+<button class="w-full h-14 bg-primary-fixed text-on-primary-fixed font-headline-md text-headline-md rounded-xl kinetic-glow transition-all active:scale-95 flex items-center justify-center gap-2 mt-4 uppercase" type="submit">
+                        Continue <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</form>
+<div class="relative my-10 flex items-center">
+<div class="flex-grow border-t border-white/10"></div>
+<span class="px-4 font-label-sm text-label-sm text-outline-variant bg-background">OR KINETIC SYNC</span>
+<div class="flex-grow border-t border-white/10"></div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<button class="flex items-center justify-center gap-2 h-14 glass-card rounded-xl hover:bg-white/5 transition-all active:scale-95">
+<svg class="w-6 h-6 fill-white" viewbox="0 0 24 24"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.74s2.1-.82 3.67-.65c1.47.17 2.59.73 3.22 1.63-3.15 1.89-2.64 6.27.53 7.57-.65 1.63-1.48 3.01-2.5 3.68zM12.03 7.25c-.02-2.23 1.76-4.07 3.9-4.25.19 2.25-2.11 4.29-3.9 4.25z"></path></svg>
+<span class="font-label-md text-label-md">APPLE</span>
+</button>
+<button class="flex items-center justify-center gap-2 h-14 glass-card rounded-xl hover:bg-white/5 transition-all active:scale-95">
+<svg class="w-5 h-5" viewbox="0 0 24 24"><path d="M24 12.25c0-.85-.07-1.68-.21-2.47H12.25v4.68h6.6c-.28 1.48-1.12 2.74-2.38 3.58v2.98h3.84C22.56 19.06 24 15.93 24 12.25z" fill="#EA4335"></path><path d="M12.25 24c3.24 0 5.95-1.08 7.93-2.91l-3.84-2.98c-1.08.72-2.45 1.15-4.09 1.15-3.15 0-5.81-2.13-6.76-4.99H1.63v3.08C3.61 21.28 7.64 24 12.25 24z" fill="#FBBC05"></path><path d="M5.49 14.27c-.24-.72-.38-1.49-.38-2.27s.14-1.55.38-2.27V6.65H1.63C.59 8.72 0 11.04 0 13.5s.59 4.78 1.63 6.85l3.86-3.08z" fill="#34A853"></path><path d="M12.25 4.75c1.77 0 3.35.61 4.6 1.8l3.45-3.45C18.19 1.19 15.49 0 12.25 0 7.64 0 3.61 2.72 1.63 6.65L5.49 9.73c.95-2.86 3.61-4.98 6.76-4.98z" fill="#4285F4"></path></svg>
+<span class="font-label-md text-label-md">GOOGLE</span>
+</button>
+</div>
+</div>
+<!-- OTP Section (Hidden by default) -->
+<div class="step-transition hidden opacity-0 translate-y-8" id="otp-section">
+<div class="text-center mb-8">
+<div class="w-16 h-16 bg-primary-container/20 text-primary-fixed rounded-full flex items-center justify-center mx-auto mb-6">
+<span class="material-symbols-outlined text-4xl">verified_user</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg-mobile text-white mb-2">Verify Performance</h1>
+<p class="font-body-md text-on-surface-variant">We've sent a 4-digit token to your email.</p>
+</div>
+<div class="flex justify-center gap-4 mb-8">
+<input autofocus="" class="w-14 h-16 bg-surface-container rounded-xl text-center font-display-lg-mobile text-primary-fixed border-none focus:ring-2 focus:ring-primary-fixed" maxlength="1" type="text"/>
+<input class="w-14 h-16 bg-surface-container rounded-xl text-center font-display-lg-mobile text-primary-fixed border-none focus:ring-2 focus:ring-primary-fixed" maxlength="1" type="text"/>
+<input class="w-14 h-16 bg-surface-container rounded-xl text-center font-display-lg-mobile text-primary-fixed border-none focus:ring-2 focus:ring-primary-fixed" maxlength="1" type="text"/>
+<input class="w-14 h-16 bg-surface-container rounded-xl text-center font-display-lg-mobile text-primary-fixed border-none focus:ring-2 focus:ring-primary-fixed" maxlength="1" type="text"/>
+</div>
+<button class="w-full h-14 bg-primary-fixed text-on-primary-fixed font-headline-md text-headline-md rounded-xl kinetic-glow transition-all active:scale-95 flex items-center justify-center gap-2 uppercase" onclick="window.location.reload()">
+                    Verify &amp; Launch <span class="material-symbols-outlined">rocket_launch</span>
+</button>
+<p class="text-center mt-6 font-label-md text-label-md text-on-surface-variant">
+                    Didn't receive it? <a class="text-primary-fixed" href="#">Resend Code (45s)</a>
+</p>
+<button class="w-full mt-4 py-2 font-label-sm text-label-sm text-outline-variant hover:text-white transition-colors flex items-center justify-center gap-2" onclick="backToLogin()">
+<span class="material-symbols-outlined text-sm">arrow_back</span> CHANGE EMAIL
+                </button>
+</div>
+</div>
+</main>
+<!-- Visual Polish Elements -->
+<div class="fixed top-0 left-0 w-full h-full pointer-events-none opacity-20">
+<div class="absolute w-[500px] h-[500px] bg-primary-fixed/10 rounded-full blur-[120px] -top-[250px] -left-[100px]"></div>
+<img alt="texture overlay" class="absolute inset-0 opacity-10 mix-blend-overlay" src="https://www.transparenttextures.com/patterns/carbon-fibre.png"/>
+</div>
+<!-- Script for Interactions -->
+<script>
+        function switchTab(type) {
+            const loginBtn = document.getElementById('btn-login');
+            const signupBtn = document.getElementById('btn-signup');
+            const formTitle = document.querySelector('#form-section h1');
+            const formSub = document.querySelector('#form-section p');
+            
+            if (type === 'login') {
+                loginBtn.classList.add('bg-primary-container/20', 'text-primary-fixed');
+                signupBtn.classList.remove('bg-primary-container/20', 'text-primary-fixed');
+                signupBtn.classList.add('text-on-surface-variant');
+                formTitle.textContent = "Push Beyond.";
+                formSub.textContent = "Access your high-performance lab.";
+            } else {
+                signupBtn.classList.add('bg-primary-container/20', 'text-primary-fixed');
+                loginBtn.classList.remove('bg-primary-container/20', 'text-primary-fixed');
+                loginBtn.classList.add('text-on-surface-variant');
+                formTitle.textContent = "Join the Elite.";
+                formSub.textContent = "Initialize your athletic data engine.";
+            }
+        }
+
+        function goToOtp() {
+            const formSection = document.getElementById('form-section');
+            const otpSection = document.getElementById('otp-section');
+            
+            formSection.classList.add('opacity-0', '-translate-y-8');
+            setTimeout(() => {
+                formSection.classList.add('hidden');
+                otpSection.classList.remove('hidden');
+                setTimeout(() => {
+                    otpSection.classList.remove('opacity-0', 'translate-y-8');
+                    otpSection.classList.add('opacity-100', 'translate-y-0');
+                }, 50);
+            }, 400);
+        }
+
+        function backToLogin() {
+            const formSection = document.getElementById('form-section');
+            const otpSection = document.getElementById('otp-section');
+            
+            otpSection.classList.add('opacity-0', 'translate-y-8');
+            setTimeout(() => {
+                otpSection.classList.add('hidden');
+                formSection.classList.remove('hidden');
+                setTimeout(() => {
+                    formSection.classList.remove('opacity-0', '-translate-y-8');
+                    formSection.classList.add('opacity-100', 'scale-100');
+                }, 50);
+            }, 400);
+        }
+
+        // Auto-focus OTP inputs
+        const inputs = document.querySelectorAll('#otp-section input');
+        inputs.forEach((input, index) => {
+            input.addEventListener('keyup', (e) => {
+                if (e.target.value.length === 1 && index < inputs.length - 1) {
+                    inputs[index + 1].focus();
+                }
+                if (e.key === 'Backspace' && index > 0) {
+                    inputs[index - 1].focus();
+                }
+            });
+        });
+    </script>
+</body></html>

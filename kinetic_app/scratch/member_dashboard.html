@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Velocity AI - Member Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&amp;family=JetBrains+Mono:wght@500&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=JetBrains+Mono:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(28, 28, 30, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .kinetic-glow {
+            box-shadow: 0 0 20px rgba(202, 243, 0, 0.15);
+        }
+        .progress-gradient {
+            background: linear-gradient(90deg, #adc6ff 0%, #caf300 100%);
+        }
+        body {
+            background-color: #0A0A0A;
+            color: #e5e2e1;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary-fixed": "#001a41",
+                      "surface-tint": "#b0d500",
+                      "secondary-container": "#4b8eff",
+                      "surface-container-high": "#2a2a2a",
+                      "on-error-container": "#ffdad6",
+                      "tertiary-fixed-dim": "#c6c6c7",
+                      "surface-container": "#201f1f",
+                      "on-tertiary-fixed": "#1a1c1c",
+                      "on-secondary": "#002e69",
+                      "error": "#ffb4ab",
+                      "surface-container-highest": "#353534",
+                      "on-primary-container": "#596c00",
+                      "primary-fixed-dim": "#b0d500",
+                      "surface-container-low": "#1c1b1b",
+                      "on-tertiary": "#2f3131",
+                      "background": "#131313",
+                      "on-primary-fixed": "#171e00",
+                      "inverse-primary": "#536600",
+                      "on-secondary-fixed-variant": "#004493",
+                      "error-container": "#93000a",
+                      "inverse-surface": "#e5e2e1",
+                      "secondary-fixed-dim": "#adc6ff",
+                      "on-primary-fixed-variant": "#3e4c00",
+                      "surface-container-lowest": "#0e0e0e",
+                      "on-tertiary-fixed-variant": "#454747",
+                      "on-surface": "#e5e2e1",
+                      "inverse-on-surface": "#313030",
+                      "surface-dim": "#131313",
+                      "surface-variant": "#353534",
+                      "on-primary": "#2a3400",
+                      "on-error": "#690005",
+                      "primary-fixed": "#caf300",
+                      "secondary": "#adc6ff",
+                      "on-background": "#e5e2e1",
+                      "on-surface-variant": "#c5c9ac",
+                      "tertiary-fixed": "#e2e2e2",
+                      "surface-bright": "#3a3939",
+                      "primary": "#ffffff",
+                      "surface": "#131313",
+                      "on-secondary-container": "#00285c",
+                      "tertiary-container": "#e2e2e2",
+                      "outline": "#8f9378",
+                      "secondary-fixed": "#d8e2ff",
+                      "outline-variant": "#444932",
+                      "primary-container": "#caf300",
+                      "tertiary": "#ffffff",
+                      "on-tertiary-container": "#636565"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "unit": "8px",
+                      "section-gap": "80px",
+                      "component-gap": "16px",
+                      "gutter": "24px",
+                      "container-margin-desktop": "40px",
+                      "container-margin-mobile": "20px"
+              },
+              "fontFamily": {
+                      "headline-lg": ["Inter"],
+                      "body-md": ["Inter"],
+                      "label-sm": ["JetBrains Mono"],
+                      "label-md": ["JetBrains Mono"],
+                      "display-lg-mobile": ["Inter"],
+                      "display-lg": ["Inter"],
+                      "headline-md": ["Inter"],
+                      "body-lg": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "letterSpacing": "0", "fontWeight": "400"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.08em", "fontWeight": "500"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                      "display-lg-mobile": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                      "display-lg": ["64px", {"lineHeight": "72px", "letterSpacing": "-0.04em", "fontWeight": "800"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "letterSpacing": "0", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body-md text-on-background selection:bg-primary-fixed selection:text-on-primary-fixed pb-24 md:pb-0 md:pl-72">
+<!-- Navigation Drawer (Desktop Only) -->
+<nav class="hidden md:flex flex-col py-8 px-4 gap-4 bg-surface-container/70 backdrop-blur-2xl text-primary-fixed font-label-md text-label-md h-full w-72 fixed left-0 top-0 z-40 border-r border-white/10 shadow-2xl">
+<div class="mb-8 px-4">
+<span class="font-headline-lg text-headline-lg text-primary-fixed italic tracking-tighter">VELOCITY AI</span>
+</div>
+<div class="flex items-center gap-4 px-4 py-6 mb-4 rounded-xl bg-white/5">
+<img alt="User Profile Avatar" class="w-12 h-12 rounded-full object-cover border border-primary-fixed/30" data-alt="A professional close-up portrait of a determined athlete with a focused expression. The lighting is dramatic and moody with a cool blue and neon lime color palette reflecting from gym equipment in the background. The style is high-contrast, premium fitness photography, capturing a sense of peak physical condition and intensity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBu6H65sJKld-CLeybZd7EmkaFkr0oP0kj5gwpz7CjaB20Fjd1yIQbvWFQJXiEgabQlbRL9hm2wkIMswRIpm5kzofFFwSKPISm6sEbaqY4CIOULLhcxPy0T3yKkWcmqEUsBVF8o7r6gu6q9FOPVxOYb7lhDml7ZOONNYbaaOwKB-LAAq-RAdDc5Z2aHkoWl1QiU5gQlpQqeaJ6OWBVwdex3ZGImJ_aVWZ_fVhGcpiz7ohDt2Ek-eyVqAFImmWmxLRcBzg3ZOq4c0os"/>
+<div>
+<p class="font-headline-md text-headline-md text-primary-fixed leading-none">Alex Rivers</p>
+<p class="text-on-surface-variant text-label-sm uppercase tracking-widest mt-1">Pro Athlete • Level 42</p>
+</div>
+</div>
+<div class="space-y-2">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg bg-primary-container/20 text-primary-fixed border-r-4 border-primary-fixed cursor-pointer transition-all">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span> Dashboard
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-white hover:bg-white/5 transition-all cursor-pointer">
+<span class="material-symbols-outlined" data-icon="fitness_center">fitness_center</span> Training
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-white hover:bg-white/5 transition-all cursor-pointer">
+<span class="material-symbols-outlined" data-icon="monitoring">monitoring</span> Analytics
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-white hover:bg-white/5 transition-all cursor-pointer">
+<span class="material-symbols-outlined" data-icon="group">group</span> Members
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-white hover:bg-white/5 transition-all cursor-pointer">
+<span class="material-symbols-outlined" data-icon="military_tech">military_tech</span> Rewards
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-white hover:bg-white/5 transition-all cursor-pointer">
+<span class="material-symbols-outlined" data-icon="settings">settings</span> Settings
+            </a>
+</div>
+</nav>
+<!-- Top App Bar -->
+<header class="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-xl border-b border-white/10 shadow-[0_20px_40px_rgba(0,0,0,0.5)] flex justify-between items-center px-gutter h-16 md:hidden">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-fixed" data-icon="bolt">bolt</span>
+<span class="font-display-lg-mobile text-display-lg-mobile italic tracking-tighter text-primary-fixed">VELOCITY</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-on-surface-variant active:scale-95 transition-transform" data-icon="notifications">notifications</span>
+<img alt="Avatar" class="w-8 h-8 rounded-full border border-primary-fixed/30" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDusNxgVkgcyeUqDWRLPj2hdfDD902Keon7_B3zk5eNGqE-pNBTVSP8JRKfWkBBic7UYTJnRhKQQa0_mGlcpu0VrYuY9fRcmbqK_ejQQctYGo9MH6ndr81n8cd2EwbVSqj1pKPLIla-ebVjz5OrmQ2Uafwc2go1NEURYgZfXE7e-BAUMx4zuqkfykpxbC4vmW5g921wjKGQdgahwX9e9PNURLKB4Ico9Y04SYNV6vLRKN5v4KNphTKZJmoPrRYcINVRv0yWABGzDeA"/>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="pt-24 md:pt-12 px-container-margin-mobile md:px-container-margin-desktop max-w-7xl mx-auto space-y-section-gap pb-32">
+<!-- Hero Header -->
+<section class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div>
+<span class="bg-primary-fixed text-on-primary-fixed px-3 py-1 rounded-full font-label-sm text-label-sm uppercase font-bold kinetic-glow">Pro Elite Member</span>
+<h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg mt-4 text-white">READY TO CRUSH IT, <span class="text-primary-fixed">ALEX?</span></h1>
+</div>
+<div class="flex items-center gap-4 glass-card p-4 rounded-xl">
+<div class="text-right">
+<p class="text-on-surface-variant font-label-sm uppercase tracking-widest">Current Streak</p>
+<p class="font-headline-lg text-headline-lg text-white">12 DAYS</p>
+</div>
+<div class="w-12 h-12 flex items-center justify-center bg-primary-fixed/20 rounded-full">
+<span class="material-symbols-outlined text-primary-fixed" data-icon="local_fire_department" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+</div>
+</div>
+</section>
+<!-- Bento Dashboard Grid -->
+<section class="grid grid-cols-1 md:grid-cols-12 gap-gutter">
+<!-- Today's Workout -->
+<div class="md:col-span-8 glass-card rounded-2xl overflow-hidden relative group cursor-pointer transition-all hover:scale-[1.01]">
+<div class="absolute inset-0 z-0 opacity-40 group-hover:opacity-60 transition-opacity">
+<img alt="Power Chest Workout" class="w-full h-full object-cover" data-alt="A cinematic, low-angle shot of a high-performance gym environment with specialized equipment. Dramatic lighting illuminates the textures of heavy metal weights and polished floor. The atmosphere is energetic and intense, utilizing a color palette of deep charcoal, electric lime, and sharp white highlights to emphasize peak physical training." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD5tJg_RPTRJYrSOyD_MCH5G-Hj___8_mCKMgSu3RYXBabKb585IxHF8N_ZYMp2KxJENxHzutKHeJlz3dpYKATeB9htvytzpE5VXdI40B1SzwRz_fRqtRsCNxI6hcpZ-TQDtsQzOI7287m_qbfmcynS8QSQHpcUspFRCOZeoIVvodcTgqacinhOfgWEptquBJZtCxnR-BFkIOqGAhsrX6ClYt3A2lDg-xuFoTWh4ShBc7ooVOHLgZF8TOqUTsHX4Oot3nN0bganO78"/>
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent z-10"></div>
+<div class="relative z-20 p-8 h-full flex flex-col justify-end min-h-[320px]">
+<div class="flex items-center gap-2 text-primary-fixed mb-2">
+<span class="material-symbols-outlined text-sm" data-icon="schedule">schedule</span>
+<span class="font-label-sm uppercase tracking-widest">Today's Focus • 45 Min</span>
+</div>
+<h2 class="font-display-lg-mobile text-display-lg-mobile text-white mb-6 uppercase italic">Power Chest &amp; Triceps</h2>
+<div class="flex flex-wrap gap-4">
+<button class="bg-primary-fixed text-on-primary-fixed px-8 py-3 rounded-full font-label-md font-bold uppercase tracking-wider flex items-center gap-2 hover:shadow-[0_0_20px_rgba(202,243,0,0.4)] transition-all active:scale-95">
+<span class="material-symbols-outlined" data-icon="play_arrow" style="font-variation-settings: 'FILL' 1;">play_arrow</span> Start Workout
+                        </button>
+<button class="bg-white/10 backdrop-blur-md text-white border border-white/20 px-8 py-3 rounded-full font-label-md font-bold uppercase tracking-wider hover:bg-white/20 transition-all">
+                            View Routine
+                        </button>
+</div>
+</div>
+</div>
+<!-- Health Metrics Column -->
+<div class="md:col-span-4 space-y-gutter">
+<!-- Calories Card -->
+<div class="glass-card p-6 rounded-2xl">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined text-primary-fixed" data-icon="nutrition">nutrition</span>
+<span class="text-on-surface-variant font-label-sm uppercase">Calories</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-display-lg-mobile text-display-lg-mobile text-white">1,240</span>
+<span class="text-on-surface-variant font-body-md">/ 2,500 kcal</span>
+</div>
+<div class="mt-4 w-full h-2 bg-white/5 rounded-full overflow-hidden">
+<div class="h-full progress-gradient" style="width: 49.6%"></div>
+</div>
+</div>
+<!-- Water Card -->
+<div class="glass-card p-6 rounded-2xl">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined text-secondary" data-icon="water_drop">water_drop</span>
+<span class="text-on-surface-variant font-label-sm uppercase">Hydration</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-display-lg-mobile text-display-lg-mobile text-white">2.1</span>
+<span class="text-on-surface-variant font-body-md">/ 3.0 L</span>
+</div>
+<div class="mt-4 w-full h-2 bg-white/5 rounded-full overflow-hidden">
+<div class="h-full bg-secondary-container" style="width: 70%"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- AI & Actions Section -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- AI Buddy Insights -->
+<div class="lg:col-span-7 glass-card p-8 rounded-2xl border-l-4 border-primary-fixed relative overflow-hidden">
+<div class="absolute top-0 right-0 p-8 opacity-10">
+<span class="material-symbols-outlined text-[120px]" data-icon="smart_toy">smart_toy</span>
+</div>
+<div class="relative z-10">
+<div class="flex items-center gap-3 mb-6">
+<div class="bg-primary-fixed/20 p-2 rounded-lg">
+<span class="material-symbols-outlined text-primary-fixed" data-icon="auto_awesome">auto_awesome</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-white">AI Coach Recommendations</h3>
+</div>
+<div class="space-y-4">
+<div class="bg-white/5 p-4 rounded-xl border border-white/5 hover:border-primary-fixed/30 transition-colors">
+<p class="text-primary-fixed font-label-md uppercase mb-1">Nutrition Optimization</p>
+<p class="text-on-surface">"Alex, your recovery metrics suggest a slight deficit. <span class="text-white font-bold underline decoration-primary-fixed">Increase protein intake by 15g</span> for today's post-workout meal to optimize muscle synthesis."</p>
+</div>
+<div class="bg-white/5 p-4 rounded-xl border border-white/5">
+<p class="text-secondary font-label-md uppercase mb-1">Sleep Insight</p>
+<p class="text-on-surface">"Restorative sleep was 12% higher last night. You're primed for peak performance today. Push for a PR on bench press!"</p>
+</div>
+</div>
+<button class="mt-8 text-primary-fixed font-label-md uppercase tracking-widest flex items-center gap-2 hover:opacity-80 transition-opacity">
+                        Ask AI Coach <span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Quick Actions Grid -->
+<div class="lg:col-span-5 grid grid-cols-2 gap-4">
+<button class="glass-card p-6 rounded-2xl flex flex-col items-center justify-center gap-4 hover:bg-primary-container/10 transition-colors group">
+<span class="material-symbols-outlined text-primary-fixed text-4xl group-hover:scale-110 transition-transform" data-icon="restaurant_menu">restaurant_menu</span>
+<span class="font-label-sm uppercase font-bold tracking-tighter text-center">Generate Diet</span>
+</button>
+<button class="glass-card p-6 rounded-2xl flex flex-col items-center justify-center gap-4 hover:bg-primary-container/10 transition-colors group">
+<span class="material-symbols-outlined text-primary-fixed text-4xl group-hover:scale-110 transition-transform" data-icon="monitor_weight">monitor_weight</span>
+<span class="font-label-sm uppercase font-bold tracking-tighter text-center">Log Weight</span>
+</button>
+<button class="glass-card p-6 rounded-2xl flex flex-col items-center justify-center gap-4 hover:bg-primary-container/10 transition-colors group">
+<span class="material-symbols-outlined text-primary-fixed text-4xl group-hover:scale-110 transition-transform" data-icon="psychology">psychology</span>
+<span class="font-label-sm uppercase font-bold tracking-tighter text-center">Mental Prep</span>
+</button>
+<button class="glass-card p-6 rounded-2xl flex flex-col items-center justify-center gap-4 hover:bg-primary-container/10 transition-colors group">
+<span class="material-symbols-outlined text-primary-fixed text-4xl group-hover:scale-110 transition-transform" data-icon="history">history</span>
+<span class="font-label-sm uppercase font-bold tracking-tighter text-center">Past PRs</span>
+</button>
+</div>
+</section>
+<!-- Upcoming Challenges -->
+<section class="space-y-6">
+<div class="flex justify-between items-center">
+<h3 class="font-headline-md text-headline-md text-white uppercase tracking-tighter">Upcoming Challenges</h3>
+<span class="text-on-surface-variant font-label-md cursor-pointer hover:text-white transition-colors">View All</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="glass-card p-6 rounded-2xl border-t-2 border-primary-fixed/20 hover:border-primary-fixed transition-all cursor-pointer">
+<div class="flex justify-between items-center mb-6">
+<span class="bg-primary-fixed/10 text-primary-fixed px-3 py-1 rounded text-label-sm font-bold">LIVE</span>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="military_tech">military_tech</span>
+</div>
+<h4 class="font-headline-md text-headline-md text-white mb-2">Summer Shred '24</h4>
+<p class="text-on-surface-variant text-body-md mb-6">Burn 15k calories in 30 days. Unlock exclusive gear.</p>
+<div class="flex justify-between text-label-sm mb-2">
+<span>Progress</span>
+<span class="text-primary-fixed">62%</span>
+</div>
+<div class="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+<div class="h-full bg-primary-fixed" style="width: 62%"></div>
+</div>
+</div>
+<div class="glass-card p-6 rounded-2xl border-t-2 border-white/5 hover:border-secondary transition-all cursor-pointer">
+<div class="flex justify-between items-center mb-6">
+<span class="bg-white/5 text-on-surface-variant px-3 py-1 rounded text-label-sm font-bold">2 DAYS LEFT</span>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="groups">groups</span>
+</div>
+<h4 class="font-headline-md text-headline-md text-white mb-2">Iron Brotherhood</h4>
+<p class="text-on-surface-variant text-body-md mb-6">Community lifting challenge. Average 4 workouts/week.</p>
+<div class="flex -space-x-3">
+<img alt="Member 1" class="w-8 h-8 rounded-full border-2 border-background" data-alt="Close up portrait of a male fitness enthusiast, high contrast lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDia2pNjtYY9khciSbDG7qFc0l12F8qM-SM8CIXBVYOP9D3iTPWjjGvAX9s5PQpa7Dje8GFVKY1-QTB7svr_2BT2vX095RQyKGVqe34SnpRaUOXqjc0cNoOgL4_VK9OehABNJB1x8vYI7xLrTO1Nu00LNW_YUASgYlnPhXFKqa5knYwyfOt0tml3Tonw6xMSNnswZUQjoQfAXT5YG_yFuxjLUYbXRhb5JRRR_fe7NdOtZsF_AxWcA95A9T32ux_Wwi5n1eG__g7VA"/>
+<img alt="Member 2" class="w-8 h-8 rounded-full border-2 border-background" data-alt="Close up portrait of a female fitness enthusiast, neon lighting effects." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA24OTD3k8uVFwSmaszMiCPEtfxYCusJkimsgjdNiwpV-mNPFX0Ee2l2HdE4H00SN7aJtUx3COpgx_KKnsKh0tQVDMwCkxyhnY_LJTu5cRFu1Kq9k8L2iPI0wRAYf4RmkXKjW9Jb7AK4avMFHnP2gSj9iN5YkVz-xW6JfmQc5zdCxYtB7thRHXrfnchSd-Dg8igeTuAUVWZ44Jj6BKUamUnewcyEFr1XYEib5wKWRK1QNvXWSPVGs89QJQNlVlThZtdBmfX8abq76k"/>
+<div class="w-8 h-8 rounded-full bg-surface-container-highest border-2 border-background flex items-center justify-center text-[10px] font-bold">+241</div>
+</div>
+</div>
+<div class="glass-card p-6 rounded-2xl border-t-2 border-white/5 bg-gradient-to-br from-transparent to-primary-fixed/5 group">
+<div class="flex justify-between items-center mb-6">
+<span class="bg-secondary-container/20 text-secondary px-3 py-1 rounded text-label-sm font-bold uppercase">Pro Elite Only</span>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="lock_open">lock_open</span>
+</div>
+<h4 class="font-headline-md text-headline-md text-white mb-2 italic">Olympic Prep</h4>
+<p class="text-on-surface-variant text-body-md mb-6">Direct coaching from Elite Tier Velocity mentors.</p>
+<button class="w-full py-3 rounded-xl border border-primary-fixed/30 text-primary-fixed font-label-md uppercase font-bold hover:bg-primary-fixed hover:text-black transition-all">Join Program</button>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Nav Bar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 w-full rounded-t-xl z-50 bg-surface-container-lowest/80 backdrop-blur-3xl border-t border-white/10 shadow-[0_-10px_30px_rgba(0,0,0,0.3)] flex justify-around items-center h-20 px-2">
+<a class="flex flex-col items-center justify-center text-primary-fixed relative after:content-[''] after:absolute after:-bottom-1 after:w-1 after:h-1 after:bg-primary-fixed after:rounded-full active:scale-90 duration-150">
+<span class="material-symbols-outlined" data-icon="home" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-label-sm text-label-sm mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary-fixed active:scale-90 duration-150">
+<span class="material-symbols-outlined" data-icon="exercise">exercise</span>
+<span class="font-label-sm text-label-sm mt-1">Workouts</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary-fixed active:scale-90 duration-150">
+<span class="material-symbols-outlined" data-icon="smart_toy">smart_toy</span>
+<span class="font-label-sm text-label-sm mt-1">AI Buddy</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary-fixed active:scale-90 duration-150">
+<span class="material-symbols-outlined" data-icon="equalizer">equalizer</span>
+<span class="font-label-sm text-label-sm mt-1">Stats</span>
+</a>
+</nav>
+<script>
+        // Simple micro-interaction for glass cards
+        document.querySelectorAll('.glass-card').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+            });
+        });
+    </script>
+</body></html>
