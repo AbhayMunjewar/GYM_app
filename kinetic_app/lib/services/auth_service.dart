@@ -91,7 +91,7 @@ class AuthService extends ChangeNotifier {
     } catch (e) {
       _isLoading = false;
       notifyListeners();
-      return 'Failed to connect to the authentication server.';
+      return 'Login Error: $e';
     }
   }
 
@@ -131,10 +131,10 @@ class AuthService extends ChangeNotifier {
         }
         return body['message'] ?? 'Registration failed.';
       }
-    } catch (_) {
+    } catch (e) {
       _isLoading = false;
       notifyListeners();
-      return 'Connection timed out during registration.';
+      return 'Registration Error: $e';
     }
   }
 

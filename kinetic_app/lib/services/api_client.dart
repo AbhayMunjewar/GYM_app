@@ -17,11 +17,13 @@ class ApiClient {
       if (Platform.isAndroid) {
         // We are using `adb reverse tcp:8000 tcp:8000` to tunnel the connection
         // directly from the phone to the laptop via USB. This makes the connection lightning fast!
+        // It also bypasses the Windows Defender Firewall.
         return 'http://127.0.0.1:8000';
       }
     } catch (_) {}
     return 'http://127.0.0.1:8000';
   }
+
 
   Future<Map<String, String>> _getHeaders({bool requireAuth = true}) async {
     final headers = {
@@ -137,6 +139,8 @@ class ApiClient {
       }
     }
     return response;
+  }
+
   // ---- MEMBER APIs ----
   Future<http.Response> getMembers({String query = ''}) async {
     return get('/api/members/?$query');
@@ -176,4 +180,61 @@ class ApiClient {
     }
     return response;
   }
+
+  // ---- MEMBERSHIP PLANS APIs ----
+  Future<http.Response> getMembershipPlans({String query = ''}) async {
+    return get('/api/memberships/plans/?$query');
+  }
+
+  Future<http.Response> createMembershipPlan(Map<String, dynamic> data) async {
+    return post('/api/memberships/plans/', data);
+  }
+
+  Future<http.Response> updateMembershipPlan(String id, Map<String, dynamic> data) async {
+    final url = Uri.parse('$baseUrl/api/memberships/plans/$id/');
+    final headers = await _getHeaders(requireAuth: true);
+    final jsonBody = jsonEncode(data);
+
+    var response = await http.patch(url, headers: headers, body: jsonBody);
+    if (response.statusCode == 401) {
+      final refreshed = await _attemptTokenRefresh();
+      if (refreshed) {
+        final retryHeaders = await _getHeaders(requireAuth: true);
+        response = await http.patch(url, headers: retryHeaders, body: jsonBody);
+      }
+    }
+    return response;
+  }
+
+  Future<http.Response> deleteMembershipPlan(String id) async {
+    final url = Uri.parse('$baseUrl/api/memberships/plans/$id/');
+    final headers = await _getHeaders(requireAuth: true);
+
+    var response = await http.delete(url, headers: headers);
+    if (response.statusCode == 401) {
+      final refreshed = await _attemptTokenRefresh();
+      if (refreshed) {
+        final retryHeaders = await _getHeaders(requireAuth: true);
+        response = await http.delete(url, headers: retryHeaders);
+      }
+    }
+    return response;
+  }
+
+  // ---- MEMBERSHIP ASSIGNMENTS APIs ----
+  Future<http.Response> assignMembership(Map<String, dynamic> data) async {
+    return post('/api/memberships/assignments/', data);
+  }
+
+  Future<http.Response> getDashboardStats() async {
+    return get('/api/memberships/assignments/dashboard-stats/');
+  }
+
+  // ==== ATTENDANCE MODULE ====
+  Future<http.Response> checkInAttendance(Map<String, dynamic> data) async { return post('/api/attendance/check-in/', data); }
+  Future<http.Response> checkOutAttendance(Map<String, dynamic> data) async { return post('/api/attendance/check-out/', data); }
+  Future<http.Response> getAttendanceLogs({String? date, String? status, String? search}) async { String query = '?'; if (date != null) query += 'date=&'; if (status != null) query += 'status=&'; if (search != null) query += 'search=&'; return get('/api/attendance/'); }
+  Future<http.Response> getMemberDashboardAttendance() async { return get('/api/attendance/dashboard/member/'); }
+  Future<http.Response> getOwnerDashboardAttendance() async { return get('/api/attendance/dashboard/owner/'); }
+  Future<http.Response> getAttendanceAnalytics() async { return get('/api/attendance/reports/analytics/'); }
 }

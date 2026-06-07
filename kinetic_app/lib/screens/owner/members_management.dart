@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_client.dart';
 import '../../models/member.dart';
+import '../../models/membership_plan.dart';
 
 class MembersManagement extends StatefulWidget {
   const MembersManagement({super.key});
@@ -77,6 +78,24 @@ class _MembersManagementState extends State<MembersManagement> {
     );
   }
 
+  void _showAssignPlanSheet(Member member) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (context) {
+        return _AssignPlanSheet(
+          member: member,
+          onAssigned: () {
+            context.pop();
+            _fetchMembers();
+          },
+        );
+      },
+    );
+  }
+
   Future<void> _deleteMember(Member member) async {
     final bool confirm = await showDialog(
       context: context,
@@ -107,6 +126,44 @@ class _MembersManagementState extends State<MembersManagement> {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
         setState(() => _isLoading = false);
       }
+    }
+  }
+
+  Future<void> _manualCheckIn(Member member) async {
+    setState(() => _isLoading = true);
+    try {
+      final res = await _apiClient.checkInAttendance({'member_id': member.id});
+      if (res.statusCode == 201) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${member.fullName} checked in', style: const TextStyle(color: Colors.white))));
+      } else {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: ${res.body}', style: const TextStyle(color: Colors.white)), backgroundColor: Colors.red));
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e', style: const TextStyle(color: Colors.white)), backgroundColor: Colors.red));
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _manualCheckOut(Member member) async {
+    setState(() => _isLoading = true);
+    try {
+      final res = await _apiClient.checkOutAttendance({'member_id': member.id});
+      if (res.statusCode == 200) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${member.fullName} checked out', style: const TextStyle(color: Colors.white))));
+      } else {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: ${res.body}', style: const TextStyle(color: Colors.white)), backgroundColor: Colors.red));
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e', style: const TextStyle(color: Colors.white)), backgroundColor: Colors.red));
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
@@ -185,9 +242,15 @@ class _MembersManagementState extends State<MembersManagement> {
                                         _showMemberFormSheet(existingMember: member);
                                       } else if (value == 'delete') {
                                         _deleteMember(member);
+                                      } else if (value == 'check_in') {
+                                        _manualCheckIn(member);
+                                      } else if (value == 'check_out') {
+                                        _manualCheckOut(member);
                                       }
                                     },
                                     itemBuilder: (context) => [
+                                      const PopupMenuItem(value: 'check_in', child: Text('Check In', style: TextStyle(color: AppColors.primaryFixed))),
+                                      const PopupMenuItem(value: 'check_out', child: Text('Check Out', style: TextStyle(color: Colors.orange))),
                                       const PopupMenuItem(value: 'edit', child: Text('Edit', style: TextStyle(color: AppColors.white))),
                                       const PopupMenuItem(value: 'delete', child: Text('Delete', style: TextStyle(color: Colors.red))),
                                     ],
@@ -378,6 +441,137 @@ class _MemberFormSheetState extends State<_MemberFormSheet> {
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
         ),
         validator: requiredField ? (val) => val!.isEmpty ? 'Required' : null : null,
+      ),
+    );
+  }
+}
+
+class _AssignPlanSheet extends StatefulWidget {
+  final Member member;
+  final VoidCallback onAssigned;
+
+  const _AssignPlanSheet({required this.member, required this.onAssigned});
+
+  @override
+  State<_AssignPlanSheet> createState() => _AssignPlanSheetState();
+}
+
+class _AssignPlanSheetState extends State<_AssignPlanSheet> {
+  final ApiClient _apiClient = ApiClient();
+  List<MembershipPlan> _plans = [];
+  bool _isLoading = true;
+  String _errorMessage = '';
+  String? _selectedPlanId;
+  bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchPlans();
+  }
+
+  Future<void> _fetchPlans() async {
+    try {
+      final response = await _apiClient.getMembershipPlans(query: 'is_active=true');
+      if (response.statusCode == 200) {
+        final body = jsonDecode(response.body);
+        if (body['success'] == true) {
+          final List dynamicList = body['data']['results'] ?? body['data'];
+          setState(() {
+            _plans = dynamicList.map((p) => MembershipPlan.fromJson(p)).toList();
+            if (_plans.isNotEmpty) {
+              _selectedPlanId = _plans.first.id;
+            }
+          });
+        } else {
+          setState(() => _errorMessage = body['message'] ?? 'Failed to load plans');
+        }
+      } else {
+        setState(() => _errorMessage = 'Failed to load plans');
+      }
+    } catch (e) {
+      setState(() => _errorMessage = 'Network error: $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _assignPlan() async {
+    if (_selectedPlanId == null) return;
+    setState(() => _isSaving = true);
+
+    try {
+      final res = await _apiClient.assignMembership({
+        'member_id': widget.member.id,
+        'membership_plan_id': _selectedPlanId,
+      });
+
+      if (res.statusCode == 200 || res.statusCode == 201) {
+        widget.onAssigned();
+      } else {
+        if (!mounted) return;
+        final errData = jsonDecode(res.body);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(errData['message'] ?? 'Assignment failed'), backgroundColor: Colors.red));
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
+    } finally {
+      setState(() => _isSaving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 24,
+        right: 24,
+        top: 24,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text('ASSIGN PLAN TO ${widget.member.fullName.toUpperCase()}', style: const TextStyle(color: AppColors.primaryFixed, fontSize: 18, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 24),
+          if (_isLoading)
+            const Center(child: CircularProgressIndicator(color: AppColors.primaryFixed))
+          else if (_errorMessage.isNotEmpty)
+            Text(_errorMessage, style: const TextStyle(color: Colors.red))
+          else if (_plans.isEmpty)
+            const Text('No active plans available. Please create one first.', style: TextStyle(color: AppColors.onSurfaceVariant))
+          else ...[
+            DropdownButtonFormField<String>(
+              value: _selectedPlanId,
+              dropdownColor: const Color(0xFF201F1F),
+              style: const TextStyle(color: AppColors.white),
+              decoration: InputDecoration(
+                labelText: 'Select Membership Plan',
+                labelStyle: const TextStyle(color: AppColors.onSurfaceVariant),
+                filled: true,
+                fillColor: const Color(0xFF201F1F),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+              ),
+              items: _plans.map((p) => DropdownMenuItem(value: p.id, child: Text('${p.planName} (\$${p.price} / ${p.durationDays}d)'))).toList(),
+              onChanged: (val) => setState(() => _selectedPlanId = val),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: _isSaving || _selectedPlanId == null ? null : _assignPlan,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryFixed,
+                foregroundColor: AppColors.background,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: _isSaving 
+                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.background))
+                  : const Text('ASSIGN PLAN', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            ),
+          ],
+        ],
       ),
     );
   }

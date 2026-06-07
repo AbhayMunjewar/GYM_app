@@ -1,9 +1,80 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/app_theme.dart';
+import '../../services/api_client.dart';
 
-class MemberDashboard extends StatelessWidget {
+class MemberDashboard extends StatefulWidget {
   const MemberDashboard({super.key});
+
+  @override
+  State<MemberDashboard> createState() => _MemberDashboardState();
+}
+
+class _MemberDashboardState extends State<MemberDashboard> {
+  final ApiClient _apiClient = ApiClient();
+  bool _isLoading = true;
+  bool _isCheckedIn = false;
+  bool _isCheckedOut = false;
+  int _currentStreak = 0;
+  int? _memberId;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchDashboardData();
+  }
+
+  Future<void> _fetchDashboardData() async {
+    try {
+      final res = await _apiClient.getMemberDashboardAttendance();
+      if (res.statusCode == 200) {
+        final body = jsonDecode(res.body);
+        if (body['success'] == true) {
+          final data = body['data'];
+          setState(() {
+            _isCheckedIn = data['is_checked_in'];
+            _isCheckedOut = data['is_checked_out'];
+            _currentStreak = data['streak_info']['current_streak'];
+            _memberId = data['member_id'];
+          });
+        }
+      }
+    } catch (_) {
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _handleCheckIn() async {
+    if (_memberId == null) return;
+    try {
+      final res = await _apiClient.checkInAttendance({'member_id': _memberId});
+      if (res.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Checked In successfully')));
+        _fetchDashboardData();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: ${res.body}')));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+    }
+  }
+
+  Future<void> _handleCheckOut() async {
+    if (_memberId == null) return;
+    try {
+      final res = await _apiClient.checkOutAttendance({'member_id': _memberId});
+      if (res.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Checked Out successfully')));
+        _fetchDashboardData();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: ${res.body}')));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,11 +89,15 @@ class MemberDashboard extends StatelessWidget {
         ],
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
+        child: _isLoading 
+          ? const Center(child: CircularProgressIndicator(color: AppColors.primaryFixed))
+          : SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              _buildAttendanceCard(),
+              const SizedBox(height: 16),
               _buildMetricCard(context, 'Next Session', 'Upper Body Power', Icons.fitness_center),
               const SizedBox(height: 16),
               _buildMetricCard(context, 'Nutrition', '1,850 / 2,400 kcal', Icons.restaurant),
@@ -51,6 +126,63 @@ class MemberDashboard extends StatelessWidget {
         ),
       ),
       bottomNavigationBar: _buildBottomNav(context, 0),
+    );
+  }
+
+  Widget _buildAttendanceCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(color: const Color(0xFF201F1F), borderRadius: BorderRadius.circular(16)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Daily Check-in', style: TextStyle(color: AppColors.onSurfaceVariant, fontSize: 16)),
+              Row(
+                children: [
+                  const Icon(Icons.local_fire_department, color: Colors.orange, size: 20),
+                  const SizedBox(width: 4),
+                  Text('$_currentStreak Day Streak', style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold)),
+                ],
+              )
+            ],
+          ),
+          const SizedBox(height: 16),
+          if (!_isCheckedIn)
+            ElevatedButton(
+              onPressed: _handleCheckIn,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryFixed,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: const Text('Check In', style: TextStyle(color: AppColors.onPrimaryFixed, fontWeight: FontWeight.bold)),
+            )
+          else if (!_isCheckedOut)
+            ElevatedButton(
+              onPressed: _handleCheckOut,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: const Text('Check Out', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            )
+          else
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: Colors.green.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.green),
+              ),
+              child: const Text('Checked Out for Today', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+            ),
+        ],
+      ),
     );
   }
 

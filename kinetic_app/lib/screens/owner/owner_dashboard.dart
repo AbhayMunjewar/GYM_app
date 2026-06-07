@@ -1,9 +1,59 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/app_theme.dart';
+import '../../services/api_client.dart';
 
-class OwnerDashboard extends StatelessWidget {
+class OwnerDashboard extends StatefulWidget {
   const OwnerDashboard({super.key});
+
+  @override
+  State<OwnerDashboard> createState() => _OwnerDashboardState();
+}
+
+class _OwnerDashboardState extends State<OwnerDashboard> {
+  final ApiClient _apiClient = ApiClient();
+  
+  String _revenue = '\$0.00';
+  String _membersCount = '0';
+  String _checkInsCount = '0';
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchStats();
+  }
+
+  Future<void> _fetchStats() async {
+    try {
+      final response = await _apiClient.getDashboardStats();
+      if (response.statusCode == 200) {
+        final body = jsonDecode(response.body);
+        if (body['success'] == true) {
+          final data = body['data'];
+          setState(() {
+            _revenue = '\$${data['total_revenue']}';
+            _membersCount = data['total_active_memberships'].toString();
+          });
+        }
+      }
+
+      final response2 = await _apiClient.getOwnerDashboardAttendance();
+      if (response2.statusCode == 200) {
+        final body2 = jsonDecode(response2.body);
+        if (body2['success'] == true) {
+          final data2 = body2['data'];
+          setState(() {
+            _checkInsCount = data2['present_today'].toString();
+          });
+        }
+      }
+    } catch (_) {
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,15 +73,19 @@ class OwnerDashboard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _buildMetricCard(context, 'Total Revenue', '\$124,500', Icons.attach_money),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(child: _buildMetricCard(context, 'Members', '1,240', Icons.people)),
-                  const SizedBox(width: 16),
-                  Expanded(child: _buildMetricCard(context, 'Check-ins', '342 Today', Icons.how_to_reg)),
-                ],
-              ),
+              if (_isLoading)
+                const Center(child: CircularProgressIndicator(color: AppColors.primaryFixed))
+              else ...[
+                _buildMetricCard(context, 'Total Revenue', _revenue, Icons.attach_money),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(child: _buildMetricCard(context, 'Active Memberships', _membersCount, Icons.people)),
+                    const SizedBox(width: 16),
+                    Expanded(child: _buildMetricCard(context, 'Check-ins', '$_checkInsCount Today', Icons.how_to_reg)),
+                  ],
+                ),
+              ],
               const SizedBox(height: 32),
               const Text('OPERATIONS', style: TextStyle(color: AppColors.onSurfaceVariant, fontWeight: FontWeight.bold, letterSpacing: 2)),
               const SizedBox(height: 16),

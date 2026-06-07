@@ -1,9 +1,43 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/app_theme.dart';
+import '../../services/api_client.dart';
 
-class AnalyticsReports extends StatelessWidget {
+class AnalyticsReports extends StatefulWidget {
   const AnalyticsReports({super.key});
+
+  @override
+  State<AnalyticsReports> createState() => _AnalyticsReportsState();
+}
+
+class _AnalyticsReportsState extends State<AnalyticsReports> {
+  final ApiClient _apiClient = ApiClient();
+  bool _isLoading = true;
+  List<dynamic> _peakHours = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchAnalytics();
+  }
+
+  Future<void> _fetchAnalytics() async {
+    try {
+      final res = await _apiClient.getAttendanceAnalytics();
+      if (res.statusCode == 200) {
+        final body = jsonDecode(res.body);
+        if (body['success'] == true) {
+          setState(() {
+            _peakHours = body['data']['peak_hours'] ?? [];
+          });
+        }
+      }
+    } catch (_) {
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,12 +74,22 @@ class AnalyticsReports extends StatelessWidget {
                 decoration: BoxDecoration(color: const Color(0xFF201F1F), borderRadius: BorderRadius.circular(16)),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text('Peak Hours', style: TextStyle(color: AppColors.white, fontWeight: FontWeight.bold)),
-                    SizedBox(height: 16),
-                    Text('1. 06:00 PM - 08:00 PM', style: TextStyle(color: AppColors.onSurfaceVariant)),
-                    SizedBox(height: 8),
-                    Text('2. 07:00 AM - 09:00 AM', style: TextStyle(color: AppColors.onSurfaceVariant)),
+                  children: [
+                    const Text('Peak Hours', style: TextStyle(color: AppColors.white, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 16),
+                    if (_isLoading)
+                      const Center(child: CircularProgressIndicator(color: AppColors.primaryFixed))
+                    else if (_peakHours.isEmpty)
+                      const Text('Not enough data to determine peak hours.', style: TextStyle(color: AppColors.onSurfaceVariant))
+                    else
+                      ..._peakHours.asMap().entries.map((entry) {
+                        int idx = entry.key;
+                        var ph = entry.value;
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8.0),
+                          child: Text('${idx + 1}. ${ph['time_range']} (${ph['count']} check-ins)', style: const TextStyle(color: AppColors.onSurfaceVariant)),
+                        );
+                      }),
                   ],
                 ),
               ),
