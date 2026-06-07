@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'gyms',
     'members',
     'memberships',
+    'attendance',
 ]
 
 MIDDLEWARE = [

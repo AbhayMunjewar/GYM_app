@@ -41,7 +41,14 @@ class MembershipPlanViewSet(viewsets.ModelViewSet):
         return success_response("Membership plan deleted successfully.", status_code=status.HTTP_200_OK)
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+        gym = Gym.objects.filter(owner=request.user, is_deleted=False).first()
+        if not gym:
+            return failure_response("No active gym found for owner.", status_code=status.HTTP_404_NOT_FOUND)
+            
+        data = request.data.copy() if hasattr(request.data, 'copy') else dict(request.data)
+        data['gym_id'] = gym.id
+
+        serializer = self.get_serializer(data=data)
         if serializer.is_valid():
             self.perform_create(serializer)
             return success_response("Membership plan created.", data=serializer.data, status_code=status.HTTP_201_CREATED)
@@ -50,7 +57,12 @@ class MembershipPlanViewSet(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        
+        data = request.data.copy() if hasattr(request.data, 'copy') else dict(request.data)
+        if 'gym_id' not in data:
+            data['gym_id'] = instance.gym.id
+
+        serializer = self.get_serializer(instance, data=data, partial=partial)
         if serializer.is_valid():
             self.perform_update(serializer)
             return success_response("Membership plan updated.", data=serializer.data, status_code=status.HTTP_200_OK)
