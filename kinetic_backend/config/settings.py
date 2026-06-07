@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'permissions',
     'gyms',
     'members',
+    'memberships',
 ]
 
 MIDDLEWARE = [
