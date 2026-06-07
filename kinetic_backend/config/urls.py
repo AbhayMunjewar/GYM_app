@@ -27,9 +27,10 @@ urlpatterns = [
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     
-    # Auth routing
+    # API Endpoints
     path('api/auth/', include('accounts.urls')),
     path('api/gyms/', include('gyms.urls')),
+    path('api/members/', include('members.urls')),
     
     # Role-based dashboard routes
     path('api/owner/dashboard/', OwnerDashboardView.as_view(), name='owner_dashboard'),
