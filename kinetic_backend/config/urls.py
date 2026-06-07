@@ -29,10 +29,10 @@ urlpatterns = [
     
     # Auth routing
     path('api/auth/', include('accounts.urls')),
+    path('api/gyms/', include('gyms.urls')),
     
     # Role-based dashboard routes
     path('api/owner/dashboard/', OwnerDashboardView.as_view(), name='owner_dashboard'),
     path('api/trainer/dashboard/', TrainerDashboardView.as_view(), name='trainer_dashboard'),
     path('api/member/dashboard/', MemberDashboardView.as_view(), name='member_dashboard'),
 ]
-

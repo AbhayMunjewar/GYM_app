@@ -1,5 +1,4 @@
 from rest_framework import permissions
-from accounts.models import UserRole
 
 class MemberPermission(permissions.BasePermission):
     message = "You do not have permission to access this resource."
@@ -8,5 +7,5 @@ class MemberPermission(permissions.BasePermission):
         return bool(
             request.user and 
             request.user.is_authenticated and 
-            request.user.role == UserRole.MEMBER
+            request.user.role == 'MEMBER'
         )

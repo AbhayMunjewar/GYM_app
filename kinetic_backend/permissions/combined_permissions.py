@@ -1,5 +1,4 @@
 from rest_framework import permissions
-from accounts.models import UserRole
 
 class OwnerOrTrainerPermission(permissions.BasePermission):
     message = "You do not have permission to access this resource."
@@ -8,7 +7,7 @@ class OwnerOrTrainerPermission(permissions.BasePermission):
         return bool(
             request.user and 
             request.user.is_authenticated and 
-            request.user.role in [UserRole.OWNER, UserRole.TRAINER]
+            request.user.role in ['OWNER', 'TRAINER']
         )
 
 class TrainerOrMemberPermission(permissions.BasePermission):
@@ -18,7 +17,7 @@ class TrainerOrMemberPermission(permissions.BasePermission):
         return bool(
             request.user and 
             request.user.is_authenticated and 
-            request.user.role in [UserRole.TRAINER, UserRole.MEMBER]
+            request.user.role in ['TRAINER', 'MEMBER']
         )
 
 class OwnerOrTrainerOrMemberPermission(permissions.BasePermission):
@@ -28,5 +27,5 @@ class OwnerOrTrainerOrMemberPermission(permissions.BasePermission):
         return bool(
             request.user and 
             request.user.is_authenticated and 
-            request.user.role in [UserRole.OWNER, UserRole.TRAINER, UserRole.MEMBER]
+            request.user.role in ['OWNER', 'TRAINER', 'MEMBER']
         )

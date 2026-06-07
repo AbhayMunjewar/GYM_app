@@ -28,6 +28,9 @@ INSTALLED_APPS = [
     
     # Local apps
     'accounts',
+    'core',
+    'permissions',
+    'gyms',
 ]
 
 MIDDLEWARE = [
