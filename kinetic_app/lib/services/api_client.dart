@@ -15,9 +15,9 @@ class ApiClient {
     }
     try {
       if (Platform.isAndroid) {
-        // Using the host machine's Wi-Fi IP address so physical devices on the same subnet can connect.
-        // Falls back to 10.0.2.2 if needed.
-        return 'http://10.175.158.4:8000';
+        // We are using `adb reverse tcp:8000 tcp:8000` to tunnel the connection
+        // directly from the phone to the laptop via USB. This makes the connection lightning fast!
+        return 'http://127.0.0.1:8000';
       }
     } catch (_) {}
     return 'http://127.0.0.1:8000';
@@ -126,6 +126,44 @@ class ApiClient {
 
   Future<http.Response> deleteGym(String id) async {
     final url = Uri.parse('$baseUrl/api/gyms/$id/');
+    final headers = await _getHeaders(requireAuth: true);
+
+    var response = await http.delete(url, headers: headers);
+    if (response.statusCode == 401) {
+      final refreshed = await _attemptTokenRefresh();
+      if (refreshed) {
+        final retryHeaders = await _getHeaders(requireAuth: true);
+        response = await http.delete(url, headers: retryHeaders);
+      }
+    }
+    return response;
+  // ---- MEMBER APIs ----
+  Future<http.Response> getMembers({String query = ''}) async {
+    return get('/api/members/?$query');
+  }
+
+  Future<http.Response> createMember(Map<String, dynamic> data) async {
+    return post('/api/members/', data);
+  }
+
+  Future<http.Response> updateMember(String id, Map<String, dynamic> data) async {
+    final url = Uri.parse('$baseUrl/api/members/$id/');
+    final headers = await _getHeaders(requireAuth: true);
+    final jsonBody = jsonEncode(data);
+
+    var response = await http.patch(url, headers: headers, body: jsonBody);
+    if (response.statusCode == 401) {
+      final refreshed = await _attemptTokenRefresh();
+      if (refreshed) {
+        final retryHeaders = await _getHeaders(requireAuth: true);
+        response = await http.patch(url, headers: retryHeaders, body: jsonBody);
+      }
+    }
+    return response;
+  }
+
+  Future<http.Response> deleteMember(String id) async {
+    final url = Uri.parse('$baseUrl/api/members/$id/');
     final headers = await _getHeaders(requireAuth: true);
 
     var response = await http.delete(url, headers: headers);
