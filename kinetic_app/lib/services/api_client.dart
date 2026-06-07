@@ -17,7 +17,7 @@ class ApiClient {
       if (Platform.isAndroid) {
         // Using the host machine's Wi-Fi IP address so physical devices on the same subnet can connect.
         // Falls back to 10.0.2.2 if needed.
-        return 'http://192.168.1.35:8000';
+        return 'http://10.175.158.4:8000';
       }
     } catch (_) {}
     return 'http://127.0.0.1:8000';
@@ -97,5 +97,45 @@ class ApiClient {
     await prefs.remove('access_token');
     await prefs.remove('refresh_token');
     return false;
+  }
+
+  // ---- GYM APIs ----
+  Future<http.Response> createGym(Map<String, dynamic> data) async {
+    return post('/api/gyms/', data);
+  }
+
+  Future<http.Response> getGyms() async {
+    return get('/api/gyms/');
+  }
+
+  Future<http.Response> updateGym(String id, Map<String, dynamic> data) async {
+    final url = Uri.parse('$baseUrl/api/gyms/$id/');
+    final headers = await _getHeaders(requireAuth: true);
+    final jsonBody = jsonEncode(data);
+
+    var response = await http.patch(url, headers: headers, body: jsonBody);
+    if (response.statusCode == 401) {
+      final refreshed = await _attemptTokenRefresh();
+      if (refreshed) {
+        final retryHeaders = await _getHeaders(requireAuth: true);
+        response = await http.patch(url, headers: retryHeaders, body: jsonBody);
+      }
+    }
+    return response;
+  }
+
+  Future<http.Response> deleteGym(String id) async {
+    final url = Uri.parse('$baseUrl/api/gyms/$id/');
+    final headers = await _getHeaders(requireAuth: true);
+
+    var response = await http.delete(url, headers: headers);
+    if (response.statusCode == 401) {
+      final refreshed = await _attemptTokenRefresh();
+      if (refreshed) {
+        final retryHeaders = await _getHeaders(requireAuth: true);
+        response = await http.delete(url, headers: retryHeaders);
+      }
+    }
+    return response;
   }
 }

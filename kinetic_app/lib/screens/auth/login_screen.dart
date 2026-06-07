@@ -297,7 +297,18 @@ class _LoginScreenState extends State<LoginScreen> {
                       _localLoading = false;
                     });
                     if (err == null) {
-                      setState(() => isOtp = true);
+                      if (!mounted) return;
+                      // Navigate to role-specific dashboard
+                      final role = authService.currentRole;
+                      String dashboard;
+                      if (role == UserRole.owner) {
+                        dashboard = '/owner/dashboard';
+                      } else if (role == UserRole.trainer) {
+                        dashboard = '/trainer/dashboard';
+                      } else {
+                        dashboard = '/member/dashboard';
+                      }
+                      context.go(dashboard);
                     } else {
                       setState(() {
                         _errorMessage = err;
@@ -315,17 +326,31 @@ class _LoginScreenState extends State<LoginScreen> {
                       _localLoading = false;
                     });
                     if (err == null) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Registration successful! Please login.'),
-                          backgroundColor: AppColors.primaryFixed,
-                        ),
-                      );
+                      // Auto-login after successful registration
+                      final loginErr = await authService.login(email, password);
                       setState(() {
-                        isLogin = true;
-                        _errorMessage = null;
-                        _passwordController.clear();
+                        _localLoading = false;
                       });
+                      if (loginErr == null && mounted) {
+                        // Navigate to the correct dashboard based on role
+                        final role = authService.currentRole;
+                        String dashboard;
+                        if (role == UserRole.owner) {
+                          dashboard = '/owner/dashboard';
+                        } else if (role == UserRole.trainer) {
+                          dashboard = '/trainer/dashboard';
+                        } else {
+                          dashboard = '/member/dashboard';
+                        }
+                        context.go(dashboard);
+                      } else {
+                        // Auto-login failed, fall back to login tab
+                        setState(() {
+                          isLogin = true;
+                          _errorMessage = loginErr ?? 'Auto-login failed. Please login manually.';
+                          _passwordController.clear();
+                        });
+                      }
                     } else {
                       setState(() {
                         _errorMessage = err;
