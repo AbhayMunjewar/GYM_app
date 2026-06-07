@@ -28,19 +28,23 @@ class _MemberDashboardState extends State<MemberDashboard> {
   Future<void> _fetchDashboardData() async {
     try {
       final res = await _apiClient.getMemberDashboardAttendance();
+      print('MemberDashboard response: ${res.statusCode} - ${res.body}');
       if (res.statusCode == 200) {
         final body = jsonDecode(res.body);
         if (body['success'] == true) {
           final data = body['data'];
           setState(() {
-            _isCheckedIn = data['is_checked_in'];
-            _isCheckedOut = data['is_checked_out'];
-            _currentStreak = data['streak_info']['current_streak'];
+            _isCheckedIn = data['is_checked_in'] ?? false;
+            _isCheckedOut = data['is_checked_out'] ?? false;
+            _currentStreak = data['streak_info']['current_streak'] ?? 0;
             _memberId = data['member_id'];
           });
         }
+      } else {
+        print('Error fetching member dashboard: ${res.body}');
       }
-    } catch (_) {
+    } catch (e) {
+      print('Exception in MemberDashboard: $e');
     } finally {
       setState(() => _isLoading = false);
     }

@@ -26,6 +26,7 @@ class _ProfileSettingsState extends State<ProfileSettings> {
   Future<void> _fetchLogs() async {
     try {
       final res = await _apiClient.getAttendanceLogs();
+      print('ProfileSettings response: ${res.statusCode} - ${res.body}');
       if (res.statusCode == 200) {
         final body = jsonDecode(res.body);
         if (body['success'] == true) {
@@ -33,8 +34,11 @@ class _ProfileSettingsState extends State<ProfileSettings> {
             _logs = body['data']['results'] ?? [];
           });
         }
+      } else {
+        print('Error fetching profile logs: ${res.body}');
       }
-    } catch (_) {
+    } catch (e) {
+      print('Exception in ProfileSettings: $e');
     } finally {
       setState(() => _isLoading = false);
     }
