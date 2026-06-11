@@ -24,7 +24,11 @@ def custom_exception_handler(exc, context):
         elif isinstance(exc, drf_exceptions.NotAuthenticated):
             message = "Authentication credentials were not provided."
         elif isinstance(exc, drf_exceptions.PermissionDenied):
-            message = "You do not have permission to access this resource."
+            # Preserve custom permission denied messages
+            if hasattr(exc, 'detail') and isinstance(exc.detail, str) and exc.detail != "You do not have permission to perform this action.":
+                message = str(exc.detail)
+            else:
+                message = "You do not have permission to access this resource."
         elif hasattr(exc, 'detail') and isinstance(exc.detail, str):
             message = exc.detail
 
