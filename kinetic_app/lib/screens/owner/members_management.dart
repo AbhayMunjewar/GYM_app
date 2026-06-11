@@ -226,13 +226,13 @@ class _MembersManagementState extends State<MembersManagement> {
                                   ),
                                   const SizedBox(width: 16),
                                   Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(member.fullName, style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold)),
-                                        Text('${member.email} • ${member.status}', style: const TextStyle(color: AppColors.primaryFixed, fontSize: 12)),
-                                      ],
-                                    ),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(member.fullName, style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold)),
+                                          Text('${member.email} • ${member.status}${member.activePlanName != null ? ' • ${member.activePlanName}' : ''}', style: const TextStyle(color: AppColors.primaryFixed, fontSize: 12)),
+                                        ],
+                                      ),
                                   ),
                                   PopupMenuButton<String>(
                                     icon: const Icon(Icons.more_vert, color: AppColors.onSurfaceVariant),
@@ -246,9 +246,12 @@ class _MembersManagementState extends State<MembersManagement> {
                                         _manualCheckIn(member);
                                       } else if (value == 'check_out') {
                                         _manualCheckOut(member);
+                                      } else if (value == 'assign_plan') {
+                                        _showAssignPlanSheet(member);
                                       }
                                     },
                                     itemBuilder: (context) => [
+                                      const PopupMenuItem(value: 'assign_plan', child: Text('Assign Plan', style: TextStyle(color: Colors.blueAccent))),
                                       const PopupMenuItem(value: 'check_in', child: Text('Check In', style: TextStyle(color: AppColors.primaryFixed))),
                                       const PopupMenuItem(value: 'check_out', child: Text('Check Out', style: TextStyle(color: Colors.orange))),
                                       const PopupMenuItem(value: 'edit', child: Text('Edit', style: TextStyle(color: AppColors.white))),
@@ -507,6 +510,8 @@ class _AssignPlanSheetState extends State<_AssignPlanSheet> {
       });
 
       if (res.statusCode == 200 || res.statusCode == 201) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Plan assigned successfully!', style: TextStyle(color: Colors.white)), backgroundColor: AppColors.primaryFixed));
         widget.onAssigned();
       } else {
         if (!mounted) return;

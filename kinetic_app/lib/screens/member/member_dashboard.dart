@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_client.dart';
 
@@ -54,11 +55,12 @@ class _MemberDashboardState extends State<MemberDashboard> {
     if (_memberId == null) return;
     try {
       final res = await _apiClient.checkInAttendance({'member_id': _memberId});
-      if (res.statusCode == 201) {
+      if (res.statusCode == 201 || res.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Checked In successfully')));
         _fetchDashboardData();
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: ${res.body}')));
+        final body = jsonDecode(res.body);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(body['message'] ?? 'Failed to check in')));
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
@@ -73,10 +75,72 @@ class _MemberDashboardState extends State<MemberDashboard> {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Checked Out successfully')));
         _fetchDashboardData();
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: ${res.body}')));
+        final body = jsonDecode(res.body);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(body['message'] ?? 'Failed to check out')));
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+    }
+  }
+
+  void _openQRScanner() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.background,
+      builder: (context) {
+        return SizedBox(
+          height: MediaQuery.of(context).size.height * 0.7,
+          child: Column(
+            children: [
+              const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Text('Scan Gym QR', style: TextStyle(color: AppColors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+              ),
+              Expanded(
+                child: MobileScanner(
+                  onDetect: (capture) {
+                    final List<Barcode> barcodes = capture.barcodes;
+                    if (barcodes.isNotEmpty) {
+                      final String code = barcodes.first.rawValue ?? '';
+                      if (code.isNotEmpty) {
+                        context.pop();
+                        _handleQRCheckIn(code);
+                      }
+                    }
+                  },
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () => context.pop(),
+                child: const Text('Cancel'),
+              ),
+              const SizedBox(height: 24),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _handleQRCheckIn(String qrToken) async {
+    setState(() => _isLoading = true);
+    try {
+      final res = await _apiClient.scanQRCode({'qr_token': qrToken});
+      if (res.statusCode == 201 || res.statusCode == 200) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('QR Check In successful!', style: TextStyle(color: Colors.white)), backgroundColor: Colors.green));
+        _fetchDashboardData();
+      } else {
+        if (!mounted) return;
+        final body = jsonDecode(res.body);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(body['message'] ?? 'Failed to check in'), backgroundColor: Colors.red));
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
@@ -89,6 +153,7 @@ class _MemberDashboardState extends State<MemberDashboard> {
         elevation: 0,
         title: const Text('MEMBER DASHBOARD', style: TextStyle(color: AppColors.primaryFixed, fontWeight: FontWeight.bold)),
         actions: [
+          IconButton(icon: const Icon(Icons.notifications, color: AppColors.white), onPressed: () => context.push('/notifications')),
           IconButton(icon: const Icon(Icons.person, color: AppColors.white), onPressed: () => context.push('/member/profile')),
         ],
       ),
@@ -121,6 +186,7 @@ class _MemberDashboardState extends State<MemberDashboard> {
                   _buildNavCard(context, 'AI Gym Buddy', Icons.smart_toy, '/member/ai-buddy'),
                   _buildNavCard(context, 'AI Form Check', Icons.camera_alt, '/member/ai-form-check'),
                   _buildNavCard(context, 'Progress Tracker', Icons.trending_up, '/member/progress-tracker'),
+                  _buildNavCard(context, 'Billing & Payments', Icons.payment, '/member/billing'),
                   _buildNavCard(context, 'Challenges', Icons.emoji_events, '/member/challenges'),
                   _buildNavCard(context, 'Rewards', Icons.star, '/member/rewards'),
                 ],
@@ -155,14 +221,32 @@ class _MemberDashboardState extends State<MemberDashboard> {
           ),
           const SizedBox(height: 16),
           if (!_isCheckedIn)
-            ElevatedButton(
-              onPressed: _handleCheckIn,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryFixed,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              ),
-              child: const Text('Check In', style: TextStyle(color: AppColors.onPrimaryFixed, fontWeight: FontWeight.bold)),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _handleCheckIn,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryFixed,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    child: const Text('Manual In', style: TextStyle(color: AppColors.onPrimaryFixed, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _openQRScanner,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    child: const Text('Scan QR', style: TextStyle(color: AppColors.background, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
             )
           else if (!_isCheckedOut)
             ElevatedButton(

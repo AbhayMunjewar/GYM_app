@@ -15,13 +15,10 @@ class ApiClient {
     }
     try {
       if (Platform.isAndroid) {
-        // We are using `adb reverse tcp:8000 tcp:8000` to tunnel the connection
-        // directly from the phone to the laptop via USB. This makes the connection lightning fast!
-        // It also bypasses the Windows Defender Firewall.
-        return 'http://127.0.0.1:8000';
+        return 'http://192.168.1.35:8000';
       }
     } catch (_) {}
-    return 'http://127.0.0.1:8000';
+    return 'http://192.168.1.35:8000';
   }
 
 
@@ -237,4 +234,43 @@ class ApiClient {
   Future<http.Response> getMemberDashboardAttendance() async { return get('/api/attendance/dashboard/member/'); }
   Future<http.Response> getOwnerDashboardAttendance() async { return get('/api/attendance/dashboard/owner/'); }
   Future<http.Response> getAttendanceAnalytics() async { return get('/api/attendance/reports/analytics/'); }
+
+  // ==== QR ATTENDANCE MODULE ====
+  Future<http.Response> generateQRCode(Map<String, dynamic> data) async { return post('/api/qr-attendance/generate/', data); }
+  Future<http.Response> scanQRCode(Map<String, dynamic> data) async { return post('/api/qr-attendance/scan/', data); }
+
+  // ==== BILLING MODULE ====
+  Future<http.Response> getBillingSettings() async { return get('/api/billing/settings/'); }
+  Future<http.Response> updateBillingSettings(Map<String, dynamic> data) async { 
+    final url = Uri.parse('$baseUrl/api/billing/settings/');
+    final headers = await _getHeaders(requireAuth: true);
+    final jsonBody = jsonEncode(data);
+    var response = await http.patch(url, headers: headers, body: jsonBody);
+    if (response.statusCode == 401) {
+      if (await _attemptTokenRefresh()) {
+        response = await http.patch(url, headers: await _getHeaders(requireAuth: true), body: jsonBody);
+      }
+    }
+    return response;
+  }
+  Future<http.Response> getInvoices() async { return get('/api/billing/invoices/'); }
+  Future<http.Response> createInvoice(Map<String, dynamic> data) async { return post('/api/billing/invoices/', data); }
+  Future<http.Response> getPayments() async { return get('/api/billing/payments/'); }
+  Future<http.Response> recordPayment(Map<String, dynamic> data) async { return post('/api/billing/payments/record/', data); }
+  Future<http.Response> acknowledgePayment(String paymentId, Map<String, dynamic> data) async { return post('/api/billing/payments/$paymentId/acknowledge/', data); }
+  Future<http.Response> getBillingAnalytics() async { return get('/api/billing/analytics/'); }
+
+  // ==== NOTIFICATIONS ====
+  Future<http.Response> getNotifications() async { return get('/api/billing/notifications/'); }
+  Future<http.Response> markNotificationRead(String id) async { 
+    final url = Uri.parse('$baseUrl/api/billing/notifications/$id/read/');
+    final headers = await _getHeaders(requireAuth: true);
+    var response = await http.patch(url, headers: headers);
+    if (response.statusCode == 401) {
+      if (await _attemptTokenRefresh()) {
+        response = await http.patch(url, headers: await _getHeaders(requireAuth: true));
+      }
+    }
+    return response;
+  }
 }

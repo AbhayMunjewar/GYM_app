@@ -10,6 +10,9 @@ import 'screens/auth/login_screen.dart';
 import 'screens/auth/forgot_password_screen.dart';
 import 'screens/auth/onboarding_screen.dart';
 
+// Shared
+import 'screens/notifications_screen.dart';
+
 // Member
 import 'screens/member/member_dashboard.dart';
 import 'screens/member/workout_center.dart';
@@ -22,6 +25,7 @@ import 'screens/member/membership_center.dart';
 import 'screens/member/challenges_leaderboard.dart';
 import 'screens/member/rewards_center.dart';
 import 'screens/member/profile_settings.dart';
+import 'screens/member/member_billing.dart';
 
 // Trainer
 import 'screens/trainer/trainer_dashboard.dart';
@@ -36,7 +40,8 @@ import 'screens/owner/owner_dashboard.dart';
 import 'screens/owner/members_management.dart';
 import 'screens/owner/attendance_management.dart';
 import 'screens/owner/trainer_management.dart';
-import 'screens/owner/billing_payments.dart';
+import 'screens/owner/owner_billing.dart';
+import 'screens/owner/owner_billing_settings.dart';
 import 'screens/owner/analytics_reports.dart';
 import 'screens/owner/challenges_rewards.dart';
 import 'screens/owner/communication_center.dart';
@@ -60,6 +65,9 @@ final GoRouter _router = GoRouter(
     GoRoute(path: '/auth/forgot-password', builder: (context, state) => const ForgotPasswordScreen()),
     GoRoute(path: '/auth/onboarding', builder: (context, state) => const OnboardingScreen()),
     
+    // Shared Routes
+    GoRoute(path: '/notifications', builder: (context, state) => NotificationsScreen()),
+    
     // Member Routes
     GoRoute(path: '/member/dashboard', builder: (context, state) => const MemberDashboard()),
     GoRoute(path: '/member/workout-center', builder: (context, state) => const WorkoutCenter()),
@@ -72,6 +80,7 @@ final GoRouter _router = GoRouter(
     GoRoute(path: '/member/challenges', builder: (context, state) => const ChallengesLeaderboard()),
     GoRoute(path: '/member/rewards', builder: (context, state) => const RewardsCenter()),
     GoRoute(path: '/member/profile', builder: (context, state) => const ProfileSettings()),
+    GoRoute(path: '/member/billing', builder: (context, state) => MemberBillingScreen()),
     
     // Trainer Routes
     GoRoute(path: '/trainer/dashboard', builder: (context, state) => const TrainerDashboard()),
@@ -86,7 +95,8 @@ final GoRouter _router = GoRouter(
     GoRoute(path: '/owner/members', builder: (context, state) => const MembersManagement()),
     GoRoute(path: '/owner/attendance', builder: (context, state) => const AttendanceManagement()),
     GoRoute(path: '/owner/trainers', builder: (context, state) => const TrainerManagement()),
-    GoRoute(path: '/owner/billing', builder: (context, state) => const BillingPayments()),
+    GoRoute(path: '/owner/billing', builder: (context, state) => OwnerBillingScreen()),
+    GoRoute(path: '/owner/billing/settings', builder: (context, state) => OwnerBillingSettingsScreen()),
     GoRoute(path: '/owner/analytics', builder: (context, state) => const AnalyticsReports()),
     GoRoute(path: '/owner/challenges', builder: (context, state) => const ChallengesRewards()),
     GoRoute(path: '/owner/communication', builder: (context, state) => const CommunicationCenter()),

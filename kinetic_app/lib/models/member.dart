@@ -16,6 +16,7 @@ class Member {
   final String? notes;
   final bool isActive;
   final bool isDeleted;
+  final String? activePlanName;
 
   Member({
     required this.id,
@@ -35,6 +36,7 @@ class Member {
     this.notes,
     this.isActive = true,
     this.isDeleted = false,
+    this.activePlanName,
   });
 
   factory Member.fromJson(Map<String, dynamic> json) {
@@ -56,6 +58,7 @@ class Member {
       notes: json['notes'],
       isActive: json['is_active'] ?? true,
       isDeleted: json['is_deleted'] ?? false,
+      activePlanName: json['active_plan_name'],
     );
   }
 

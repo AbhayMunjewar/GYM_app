@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_client.dart';
 
@@ -64,6 +65,7 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
         elevation: 0,
         title: const Text('OWNER HQ', style: TextStyle(color: AppColors.primaryFixed, fontWeight: FontWeight.bold)),
         actions: [
+          IconButton(icon: const Icon(Icons.notifications, color: AppColors.white), onPressed: () => context.push('/notifications')),
           IconButton(icon: const Icon(Icons.settings, color: AppColors.white), onPressed: () => context.push('/owner/settings')),
         ],
       ),
@@ -99,6 +101,7 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
                   _buildNavCard(context, 'Members', Icons.people, '/owner/members'),
                   _buildNavCard(context, 'Trainers', Icons.sports, '/owner/trainers'),
                   _buildNavCard(context, 'Attendance', Icons.how_to_reg, '/owner/attendance'),
+                  _buildNavCard(context, 'QR Check-in', Icons.qr_code, null, onTap: () => _showQRCodeSheet(context)),
                   _buildNavCard(context, 'Billing', Icons.payment, '/owner/billing'),
                   _buildNavCard(context, 'Analytics', Icons.bar_chart, '/owner/analytics'),
                   _buildNavCard(context, 'Challenges', Icons.emoji_events, '/owner/challenges'),
@@ -130,9 +133,11 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
     );
   }
 
-  Widget _buildNavCard(BuildContext context, String title, IconData icon, String route) {
+  Widget _buildNavCard(BuildContext context, String title, IconData icon, String? route, {VoidCallback? onTap}) {
     return GestureDetector(
-      onTap: () => context.push(route),
+      onTap: onTap ?? () {
+        if (route != null) context.push(route);
+      },
       child: Container(
         decoration: BoxDecoration(color: const Color(0xFF201F1F), borderRadius: BorderRadius.circular(16)),
         child: Column(
@@ -143,6 +148,97 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
             Text(title, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold, fontSize: 14)),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showQRCodeSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (context) {
+        return const _QRCodeSheet();
+      },
+    );
+  }
+}
+
+class _QRCodeSheet extends StatefulWidget {
+  const _QRCodeSheet();
+
+  @override
+  State<_QRCodeSheet> createState() => _QRCodeSheetState();
+}
+
+class _QRCodeSheetState extends State<_QRCodeSheet> {
+  final ApiClient _apiClient = ApiClient();
+  String? _qrToken;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _generateQR();
+  }
+
+  Future<void> _generateQR() async {
+    setState(() => _isLoading = true);
+    try {
+      final res = await _apiClient.generateQRCode({'qr_type': 'DYNAMIC'});
+      if (res.statusCode == 201) {
+        final body = jsonDecode(res.body);
+        if (body['success'] == true) {
+          setState(() {
+            _qrToken = body['data']['qr_token'];
+          });
+        }
+      }
+    } catch (_) {
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text('GYM QR CODE', style: TextStyle(color: AppColors.primaryFixed, fontSize: 18, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 24),
+          if (_isLoading)
+            const SizedBox(height: 200, child: Center(child: CircularProgressIndicator(color: AppColors.primaryFixed)))
+          else if (_qrToken != null) ...[
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+              child: QrImageView(
+                data: _qrToken!,
+                version: QrVersions.auto,
+                size: 200.0,
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text('Scan this code using the Kinetic Member app to check in.', textAlign: TextAlign.center, style: TextStyle(color: AppColors.onSurfaceVariant)),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.refresh, color: AppColors.background),
+              label: const Text('REGENERATE QR', style: TextStyle(fontWeight: FontWeight.bold)),
+              onPressed: _generateQR,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryFixed,
+                foregroundColor: AppColors.background,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ] else
+            const Text('Failed to generate QR Code.', style: TextStyle(color: Colors.red)),
+        ],
       ),
     );
   }
