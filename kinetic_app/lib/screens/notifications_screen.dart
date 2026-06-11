@@ -45,14 +45,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text('Notifications', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: AppTheme.cardColor,
+        backgroundColor: const Color(0xFF201F1F),
         iconTheme: IconThemeData(color: Colors.white),
       ),
       body: _isLoading 
-        ? Center(child: CircularProgressIndicator(color: AppTheme.primary))
+        ? Center(child: CircularProgressIndicator(color: AppColors.primaryFixed))
         : _notifications.isEmpty 
           ? Center(child: Text("No notifications.", style: TextStyle(color: Colors.white70)))
           : ListView.builder(
@@ -63,11 +63,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 final isRead = notif['is_read'] ?? false;
                 
                 return Card(
-                  color: isRead ? AppTheme.cardColor : AppTheme.cardColor.withOpacity(0.8),
+                  color: isRead ? const Color(0xFF201F1F) : const Color(0xFF201F1F).withOpacity(0.8),
                   margin: EdgeInsets.only(bottom: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: isRead ? Colors.transparent : AppTheme.primary, width: 1),
+                    side: BorderSide(color: isRead ? Colors.transparent : AppColors.primaryFixed, width: 1),
                   ),
                   child: ListTile(
                     title: Text(notif['title'], style: TextStyle(color: Colors.white, fontWeight: isRead ? FontWeight.normal : FontWeight.bold)),
@@ -83,7 +83,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     trailing: isRead 
                       ? Icon(Icons.check_circle, color: Colors.green, size: 20)
                       : IconButton(
-                          icon: Icon(Icons.mark_email_read, color: AppTheme.primary),
+                          icon: Icon(Icons.mark_email_read, color: AppColors.primaryFixed),
                           onPressed: () => _markAsRead(notif['id']),
                         ),
                   ),

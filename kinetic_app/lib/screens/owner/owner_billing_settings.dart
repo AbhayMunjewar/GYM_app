@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import '../../services/api_client.dart';
 import '../../theme/app_theme.dart';
 
@@ -19,6 +20,19 @@ class _OwnerBillingSettingsScreenState extends State<OwnerBillingSettingsScreen>
   void initState() {
     super.initState();
     _loadSettings();
+    _upiIdController.addListener(_onUpiChanged);
+  }
+
+  @override
+  void dispose() {
+    _upiIdController.removeListener(_onUpiChanged);
+    _upiIdController.dispose();
+    _upiQrController.dispose();
+    super.dispose();
+  }
+
+  void _onUpiChanged() {
+    setState(() {});
   }
 
   Future<void> _loadSettings() async {
@@ -61,55 +75,77 @@ class _OwnerBillingSettingsScreenState extends State<OwnerBillingSettingsScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text('Payment Settings', style: TextStyle(color: Colors.white)),
-        backgroundColor: AppTheme.cardColor,
+        backgroundColor: const Color(0xFF201F1F),
         iconTheme: IconThemeData(color: Colors.white),
       ),
       body: _isLoading 
-        ? Center(child: CircularProgressIndicator(color: AppTheme.primary))
-        : Padding(
+        ? Center(child: CircularProgressIndicator(color: AppColors.primaryFixed))
+        : ListView(
             padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text("Configure your Gym's Payment details so members can pay via UPI.", style: TextStyle(color: Colors.white70)),
-                SizedBox(height: 20),
-                TextField(
-                  controller: _upiIdController,
-                  style: TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                    labelText: 'Gym UPI ID (e.g., gym@okhdfc)',
-                    labelStyle: TextStyle(color: Colors.white70),
-                    filled: true,
-                    fillColor: AppTheme.cardColor,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+            children: [
+              Text("Configure your Gym's Payment details so members can pay via UPI.", style: TextStyle(color: Colors.white70)),
+              SizedBox(height: 20),
+              TextField(
+                controller: _upiIdController,
+                style: TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: 'Gym UPI ID (e.g., gym@okhdfc)',
+                  labelStyle: TextStyle(color: Colors.white70),
+                  filled: true,
+                  fillColor: const Color(0xFF201F1F),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+              SizedBox(height: 16),
+              TextField(
+                controller: _upiQrController,
+                style: TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: 'UPI QR Code URL (Optional)',
+                  labelStyle: TextStyle(color: Colors.white70),
+                  filled: true,
+                  fillColor: const Color(0xFF201F1F),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+              if (_upiIdController.text.isNotEmpty) ...[
+                SizedBox(height: 24),
+                Center(
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: QrImageView(
+                      data: 'upi://pay?pa=${_upiIdController.text}&pn=Gym%20Payment',
+                      version: QrVersions.auto,
+                      size: 160.0,
+                    ),
                   ),
                 ),
-                SizedBox(height: 16),
-                TextField(
-                  controller: _upiQrController,
-                  style: TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                    labelText: 'UPI QR Code URL (Optional)',
-                    labelStyle: TextStyle(color: Colors.white70),
-                    filled: true,
-                    fillColor: AppTheme.cardColor,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                SizedBox(height: 8),
+                Center(
+                  child: Text(
+                    'Preview of Generated UPI QR Code',
+                    style: TextStyle(color: Colors.white54, fontSize: 12),
                   ),
                 ),
-                SizedBox(height: 30),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primary,
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                  ),
-                  onPressed: _isSaving ? null : _saveSettings,
-                  child: _isSaving ? CircularProgressIndicator(color: Colors.white) : Text('Save Settings', style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
-                )
               ],
-            ),
+              SizedBox(height: 30),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryFixed,
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                onPressed: _isSaving ? null : _saveSettings,
+                child: _isSaving ? SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : Text('Save Settings', style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
+              )
+            ],
           ),
     );
   }

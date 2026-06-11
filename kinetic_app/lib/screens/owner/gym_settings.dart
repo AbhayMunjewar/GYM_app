@@ -136,6 +136,18 @@ class _GymSettingsState extends State<GymSettings> {
                   _buildTextField(_pincodeController, 'Pincode', Icons.pin_drop),
                   _buildTextField(_descController, 'Description', Icons.description, maxLines: 3, requiredField: false),
                   
+                  const SizedBox(height: 16),
+                  _buildSectionHeader('Billing & Payments'),
+                  ListTile(
+                    tileColor: const Color(0xFF201F1F),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    leading: const Icon(Icons.payment, color: AppColors.primaryFixed),
+                    title: const Text('Configure UPI & QR Settings', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    subtitle: const Text('Set your Gym\'s UPI ID and QR code for member payments', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                    trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white70, size: 16),
+                    onTap: () => context.push('/owner/billing/settings'),
+                  ),
+
                   const SizedBox(height: 24),
                   ElevatedButton(
                     onPressed: _isSaving ? null : _saveGym,

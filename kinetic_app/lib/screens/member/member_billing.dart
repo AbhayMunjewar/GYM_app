@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import '../../services/api_client.dart';
 import '../../theme/app_theme.dart';
 
@@ -47,19 +48,52 @@ class _MemberBillingScreenState extends State<MemberBillingScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          backgroundColor: AppTheme.cardColor,
+          backgroundColor: const Color(0xFF201F1F),
           title: Text('Pay Invoice (\$${amount})', style: TextStyle(color: Colors.white)),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (_gymSettings != null && _gymSettings!['upi_id'] != null) ...[
+                if (_gymSettings != null && _gymSettings!['upi_id'] != null && _gymSettings!['upi_id'].isNotEmpty) ...[
                   Text('Gym UPI ID:', style: TextStyle(color: Colors.white70)),
                   SelectableText(_gymSettings!['upi_id'], style: TextStyle(color: Colors.blueAccent, fontSize: 18, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 10),
-                  if (_gymSettings!['upi_qr_code'] != null && _gymSettings!['upi_qr_code'].isNotEmpty)
-                    Text('QR Code link: ${_gymSettings!['upi_qr_code']}', style: TextStyle(color: Colors.white54, fontSize: 12)),
+                  SizedBox(height: 16),
+                  Center(
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: QrImageView(
+                        data: 'upi://pay?pa=${_gymSettings!['upi_id']}&pn=Gym%20Payment&am=${amount}&cu=INR',
+                        version: QrVersions.auto,
+                        size: 160.0,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Center(
+                    child: Text('Scan using GPay / PhonePe / Paytm to pay \$${amount}', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                  ),
+                  if (_gymSettings!['upi_qr_code'] != null && _gymSettings!['upi_qr_code'].toString().startsWith('http')) ...[
+                    SizedBox(height: 16),
+                    Text('Or use Gym Custom QR Code:', style: TextStyle(color: Colors.white70)),
+                    SizedBox(height: 8),
+                    Center(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.network(
+                          _gymSettings!['upi_qr_code'],
+                          height: 160,
+                          width: 160,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Text('Failed to load custom QR Code Image', style: TextStyle(color: Colors.red)),
+                        ),
+                      ),
+                    ),
+                  ],
                   Divider(color: Colors.white24),
                 ],
                 Text('Submit Payment Receipt', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -71,7 +105,7 @@ class _MemberBillingScreenState extends State<MemberBillingScreen> {
                     labelText: 'Transaction ID',
                     labelStyle: TextStyle(color: Colors.white70),
                     filled: true,
-                    fillColor: AppTheme.background,
+                    fillColor: AppColors.background,
                   ),
                 ),
                 SizedBox(height: 10),
@@ -82,7 +116,7 @@ class _MemberBillingScreenState extends State<MemberBillingScreen> {
                     labelText: 'Receipt Image URL / Reference',
                     labelStyle: TextStyle(color: Colors.white70),
                     filled: true,
-                    fillColor: AppTheme.background,
+                    fillColor: AppColors.background,
                   ),
                 ),
               ],
@@ -91,7 +125,7 @@ class _MemberBillingScreenState extends State<MemberBillingScreen> {
           actions: [
             TextButton(onPressed: () => Navigator.pop(context), child: Text('Cancel', style: TextStyle(color: Colors.white70))),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary),
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryFixed),
               onPressed: () async {
                 final res = await _apiClient.recordPayment({
                   'invoice_id': invoiceId,
@@ -119,14 +153,14 @@ class _MemberBillingScreenState extends State<MemberBillingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text('My Dues & Payments', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: AppTheme.cardColor,
+        backgroundColor: const Color(0xFF201F1F),
         iconTheme: IconThemeData(color: Colors.white),
       ),
       body: _isLoading 
-        ? Center(child: CircularProgressIndicator(color: AppTheme.primary))
+        ? Center(child: CircularProgressIndicator(color: AppColors.primaryFixed))
         : _invoices.isEmpty 
           ? Center(child: Text("No invoices found.", style: TextStyle(color: Colors.white70)))
           : ListView.builder(
@@ -137,7 +171,7 @@ class _MemberBillingScreenState extends State<MemberBillingScreen> {
                 final isPending = inv['status'] == 'PENDING' || inv['status'] == 'OVERDUE';
                 
                 return Card(
-                  color: AppTheme.cardColor,
+                  color: const Color(0xFF201F1F),
                   margin: EdgeInsets.only(bottom: 12),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   child: Padding(
@@ -168,7 +202,7 @@ class _MemberBillingScreenState extends State<MemberBillingScreen> {
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary),
+                              style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryFixed),
                               onPressed: () => _showPayInvoiceDialog(inv['id'], inv['total_amount']),
                               child: Text('Pay Now', style: TextStyle(color: Colors.white)),
                             ),

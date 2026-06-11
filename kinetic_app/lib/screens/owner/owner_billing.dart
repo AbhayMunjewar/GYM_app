@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../services/api_client.dart';
 import '../../theme/app_theme.dart';
 
@@ -66,23 +67,23 @@ class _OwnerBillingScreenState extends State<OwnerBillingScreen> with SingleTick
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text('Billing & Payments', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: AppTheme.cardColor,
+        backgroundColor: const Color(0xFF201F1F),
         iconTheme: IconThemeData(color: Colors.white),
         actions: [
           IconButton(
             icon: Icon(Icons.settings),
             tooltip: 'Payment Settings',
-            onPressed: () => Navigator.pushNamed(context, '/owner/billing/settings').then((_) => _loadData()),
+            onPressed: () => context.push('/owner/billing/settings').then((_) => _loadData()),
           )
         ],
         bottom: TabBar(
           controller: _tabController,
-          labelColor: AppTheme.primary,
+          labelColor: AppColors.primaryFixed,
           unselectedLabelColor: Colors.white70,
-          indicatorColor: AppTheme.primary,
+          indicatorColor: AppColors.primaryFixed,
           tabs: [
             Tab(text: 'Analytics'),
             Tab(text: 'Invoices'),
@@ -91,7 +92,7 @@ class _OwnerBillingScreenState extends State<OwnerBillingScreen> with SingleTick
         ),
       ),
       body: _isLoading 
-        ? Center(child: CircularProgressIndicator(color: AppTheme.primary))
+        ? Center(child: CircularProgressIndicator(color: AppColors.primaryFixed))
         : TabBarView(
             controller: _tabController,
             children: [
@@ -102,7 +103,7 @@ class _OwnerBillingScreenState extends State<OwnerBillingScreen> with SingleTick
           ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _showCreateInvoiceDialog,
-        backgroundColor: AppTheme.primary,
+        backgroundColor: AppColors.primaryFixed,
         icon: Icon(Icons.add),
         label: Text('Invoice'),
       ),
@@ -130,7 +131,7 @@ class _OwnerBillingScreenState extends State<OwnerBillingScreen> with SingleTick
     return Container(
       padding: EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
+        color: const Color(0xFF201F1F),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(color: Colors.black26, blurRadius: 10, offset: Offset(0, 4)),
@@ -168,7 +169,7 @@ class _OwnerBillingScreenState extends State<OwnerBillingScreen> with SingleTick
         final statusColor = inv['status'] == 'PAID' ? Colors.green : (inv['status'] == 'OVERDUE' ? Colors.red : Colors.orange);
         
         return Card(
-          color: AppTheme.cardColor,
+          color: const Color(0xFF201F1F),
           margin: EdgeInsets.only(bottom: 12),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           child: ListTile(
@@ -191,7 +192,7 @@ class _OwnerBillingScreenState extends State<OwnerBillingScreen> with SingleTick
       itemBuilder: (context, index) {
         final pay = _payments[index];
         return Card(
-          color: AppTheme.cardColor,
+          color: const Color(0xFF201F1F),
           margin: EdgeInsets.only(bottom: 12),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           child: ExpansionTile(
@@ -246,7 +247,7 @@ class _OwnerBillingScreenState extends State<OwnerBillingScreen> with SingleTick
         final amountController = TextEditingController();
         String method = 'CASH';
         return AlertDialog(
-          backgroundColor: AppTheme.cardColor,
+          backgroundColor: const Color(0xFF201F1F),
           title: Text('Record Payment', style: TextStyle(color: Colors.white)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -262,7 +263,7 @@ class _OwnerBillingScreenState extends State<OwnerBillingScreen> with SingleTick
               ),
               DropdownButton<String>(
                 value: method,
-                dropdownColor: AppTheme.cardColor,
+                dropdownColor: const Color(0xFF201F1F),
                 items: ['CASH', 'CARD', 'UPI', 'BANK_TRANSFER'].map((e) => DropdownMenuItem(value: e, child: Text(e, style: TextStyle(color: Colors.white)))).toList(),
                 onChanged: (val) { if(val!=null) method = val; },
               )
