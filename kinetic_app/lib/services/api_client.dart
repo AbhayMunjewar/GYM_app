@@ -273,4 +273,91 @@ class ApiClient {
     }
     return response;
   }
+
+  // ==== TRAINERS MODULE ====
+  Future<http.Response> getTrainers({String query = ''}) async {
+    return get('/api/trainers/?$query');
+  }
+
+  Future<http.Response> createTrainer(Map<String, dynamic> data) async {
+    return post('/api/trainers/', data);
+  }
+
+  Future<http.Response> getTrainer(String id) async {
+    return get('/api/trainers/$id/');
+  }
+
+  Future<http.Response> updateTrainer(String id, Map<String, dynamic> data) async {
+    final url = Uri.parse('$baseUrl/api/trainers/$id/');
+    final headers = await _getHeaders(requireAuth: true);
+    final jsonBody = jsonEncode(data);
+    var response = await http.patch(url, headers: headers, body: jsonBody);
+    if (response.statusCode == 401) {
+      if (await _attemptTokenRefresh()) {
+        response = await http.patch(url, headers: await _getHeaders(requireAuth: true), body: jsonBody);
+      }
+    }
+    return response;
+  }
+
+  Future<http.Response> deleteTrainer(String id) async {
+    final url = Uri.parse('$baseUrl/api/trainers/$id/');
+    final headers = await _getHeaders(requireAuth: true);
+    var response = await http.delete(url, headers: headers);
+    if (response.statusCode == 401) {
+      if (await _attemptTokenRefresh()) {
+        response = await http.delete(url, headers: await _getHeaders(requireAuth: true));
+      }
+    }
+    return response;
+  }
+
+  Future<http.Response> getTrainerAssignments({String query = ''}) async {
+    return get('/api/trainer-assignments/?$query');
+  }
+
+  Future<http.Response> createTrainerAssignment(Map<String, dynamic> data) async {
+    return post('/api/trainer-assignments/', data);
+  }
+
+  Future<http.Response> updateTrainerAssignment(String id, Map<String, dynamic> data) async {
+    final url = Uri.parse('$baseUrl/api/trainer-assignments/$id/');
+    final headers = await _getHeaders(requireAuth: true);
+    final jsonBody = jsonEncode(data);
+    var response = await http.patch(url, headers: headers, body: jsonBody);
+    if (response.statusCode == 401) {
+      if (await _attemptTokenRefresh()) {
+        response = await http.patch(url, headers: await _getHeaders(requireAuth: true), body: jsonBody);
+      }
+    }
+    return response;
+  }
+
+  Future<http.Response> deleteTrainerAssignment(String id) async {
+    final url = Uri.parse('$baseUrl/api/trainer-assignments/$id/');
+    final headers = await _getHeaders(requireAuth: true);
+    var response = await http.delete(url, headers: headers);
+    if (response.statusCode == 401) {
+      if (await _attemptTokenRefresh()) {
+        response = await http.delete(url, headers: await _getHeaders(requireAuth: true));
+      }
+    }
+    return response;
+  }
+
+  Future<http.Response> getTrainerDashboardStats() async {
+    return get('/api/trainers/dashboard/');
+  }
+
+  Future<http.Response> getTrainerMembers(String trainerId, {String query = ''}) async {
+    return get('/api/trainers/$trainerId/members/?$query');
+  }
+
+  Future<http.Response> getOwnerTrainerAnalytics() async {
+    return get('/api/trainers/analytics/owner/');
+  }
+
+  Future<http.Response> getTrainerReports({String type = 'PERFORMANCE'}) async {
+    return get('/api/trainers/reports/?type=$type');
+  }
 }
