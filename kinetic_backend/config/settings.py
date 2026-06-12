@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'attendance',
     'qr_attendance',
     'billing',
+    'trainers',
 ]
 
 MIDDLEWARE = [
