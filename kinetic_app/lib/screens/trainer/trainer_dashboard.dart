@@ -187,7 +187,7 @@ class _TrainerDashboardState extends State<TrainerDashboard> {
       decoration: BoxDecoration(
         color: const Color(0xFF201F1F),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white05),
+        border: Border.all(color: AppColors.white10),
       ),
       child: Row(
         children: [
@@ -228,7 +228,7 @@ class _TrainerDashboardState extends State<TrainerDashboard> {
       decoration: BoxDecoration(
         color: const Color(0xFF201F1F),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white05),
+        border: Border.all(color: AppColors.white10),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -268,7 +268,7 @@ class _TrainerDashboardState extends State<TrainerDashboard> {
         decoration: BoxDecoration(
           color: const Color(0xFF201F1F),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white05),
+          border: Border.all(color: AppColors.white10),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

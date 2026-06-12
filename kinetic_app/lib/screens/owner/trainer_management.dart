@@ -349,7 +349,7 @@ class _TrainerManagementState extends State<TrainerManagement> {
                                       color: const Color(0xFF201F1F),
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
-                                        color: statusStr == 'ACTIVE' ? Colors.white05 : Colors.red.withOpacity(0.2),
+                                        color: statusStr == 'ACTIVE' ? AppColors.white10 : Colors.red.withValues(alpha: 0.2),
                                         width: 1,
                                       ),
                                     ),
@@ -696,7 +696,7 @@ class _TrainerFormSheetState extends State<_TrainerFormSheet> {
                       style: const TextStyle(color: Colors.white),
                       keyboardType: const TextInputType.numberWithOptions(decimal: true),
                       decoration: const InputDecoration(
-                        labelText: 'Salary ($)',
+                        labelText: 'Salary (\$)',
                         labelStyle: TextStyle(color: AppColors.onSurfaceVariant),
                         enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white24)),
                         focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.primaryFixed)),
