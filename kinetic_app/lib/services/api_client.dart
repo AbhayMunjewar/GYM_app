@@ -15,10 +15,10 @@ class ApiClient {
     }
     try {
       if (Platform.isAndroid) {
-        return 'http://192.168.1.34:8000';
+        return 'http://127.0.0.1:8000';
       }
     } catch (_) {}
-    return 'http://192.168.1.34:8000';
+    return 'http://127.0.0.1:8000';
   }
 
 
