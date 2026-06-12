@@ -188,6 +188,7 @@ class TrainerService:
         trainer = Trainer.objects.filter(user=trainer_user, is_deleted=False).first()
         if not trainer:
             return {
+                "trainer_id": None,
                 "assigned_members_count": 0,
                 "active_members_count": 0,
                 "membership_expiring_soon": 0,
@@ -227,6 +228,7 @@ class TrainerService:
             next_client = f"{first_assignment.member.full_name}"
 
         return {
+            "trainer_id": str(trainer.id),
             "assigned_members_count": assigned_members_count,
             "active_members_count": active_members_count,
             "membership_expiring_soon": expiring_soon,
