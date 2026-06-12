@@ -16,7 +16,7 @@ from .serializers import (
     RecordPaymentSerializer, AcknowledgePaymentSerializer, NotificationSerializer
 )
 from .services import BillingService, NotificationService
-from permissions.owner_permission import IsGymOwner
+from core.permissions import IsGymOwner
 
 def get_gym_for_owner(user):
     return Gym.objects.filter(owner=user).first()
@@ -28,12 +28,24 @@ def get_member_for_user(user):
 # PAYMENT SETTINGS (Owner Only)
 # ==========================================
 class GymPaymentSettingsView(APIView):
-    permission_classes = [IsAuthenticated, IsGymOwner]
+    def get_permissions(self):
+        if self.request.method in ['GET', 'HEAD', 'OPTIONS']:
+            return [IsAuthenticated()]
+        return [IsAuthenticated(), IsGymOwner()]
 
     @swagger_auto_schema(operation_summary="Get Gym Payment Settings", responses={200: GymPaymentSettingsSerializer})
     def get(self, request):
-        gym = get_gym_for_owner(request.user)
-        if not gym: return Response({'success': False, 'message': 'Gym not found'}, status=404)
+        if request.user.role == 'OWNER':
+            gym = get_gym_for_owner(request.user)
+        elif request.user.role == 'MEMBER':
+            member = get_member_for_user(request.user)
+            gym = member.gym if member else None
+        else:
+            gym = None
+
+        if not gym: 
+            return Response({'success': False, 'message': 'Gym not found'}, status=404)
+            
         settings = BillingService.get_or_create_payment_settings(gym)
         return Response({'success': True, 'data': GymPaymentSettingsSerializer(settings).data})
 
