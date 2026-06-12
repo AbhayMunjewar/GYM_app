@@ -360,4 +360,70 @@ class ApiClient {
   Future<http.Response> getTrainerReports({String type = 'PERFORMANCE'}) async {
     return get('/api/trainers/reports/?type=$type');
   }
+
+  // ==== WORKOUT SESSIONS MODULE ====
+  Future<http.Response> getGymSessions(String gymId, {String? date}) async {
+    final queryStr = date != null ? '?date=$date' : '';
+    return get('/api/sessions/gym/$gymId/$queryStr');
+  }
+
+  Future<http.Response> getTrainerSessions(String trainerId) async {
+    return get('/api/sessions/trainer/$trainerId/');
+  }
+
+  Future<http.Response> createSession(Map<String, dynamic> data) async {
+    return post('/api/sessions/', data);
+  }
+
+  Future<http.Response> updateSession(String sessionId, Map<String, dynamic> data) async {
+    final url = Uri.parse('$baseUrl/api/sessions/$sessionId/');
+    final headers = await _getHeaders(requireAuth: true);
+    final jsonBody = jsonEncode(data);
+    var response = await http.put(url, headers: headers, body: jsonBody);
+    if (response.statusCode == 401) {
+      if (await _attemptTokenRefresh()) {
+        response = await http.put(url, headers: await _getHeaders(requireAuth: true), body: jsonBody);
+      }
+    }
+    return response;
+  }
+
+  Future<http.Response> deleteSession(String sessionId) async {
+    final url = Uri.parse('$baseUrl/api/sessions/$sessionId/');
+    final headers = await _getHeaders(requireAuth: true);
+    var response = await http.delete(url, headers: headers);
+    if (response.statusCode == 401) {
+      if (await _attemptTokenRefresh()) {
+        response = await http.delete(url, headers: await _getHeaders(requireAuth: true));
+      }
+    }
+    return response;
+  }
+
+  Future<http.Response> bookMember(String sessionId, int memberId) async {
+    return post('/api/bookings/', {
+      'session': sessionId,
+      'member': memberId,
+    });
+  }
+
+  Future<http.Response> getMemberSchedule(int memberId) async {
+    return get('/api/bookings/member/$memberId/');
+  }
+
+  Future<http.Response> cancelBooking(String bookingId) async {
+    final url = Uri.parse('$baseUrl/api/bookings/$bookingId/cancel/');
+    final headers = await _getHeaders(requireAuth: true);
+    var response = await http.put(url, headers: headers);
+    if (response.statusCode == 401) {
+      if (await _attemptTokenRefresh()) {
+        response = await http.put(url, headers: await _getHeaders(requireAuth: true));
+      }
+    }
+    return response;
+  }
+
+  Future<http.Response> getSessionBookings(String sessionId) async {
+    return get('/api/bookings/?session_id=$sessionId');
+  }
 }
