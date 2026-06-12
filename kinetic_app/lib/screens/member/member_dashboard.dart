@@ -189,6 +189,7 @@ class _MemberDashboardState extends State<MemberDashboard> {
                   _buildNavCard(context, 'Billing & Payments', Icons.payment, '/member/billing'),
                   _buildNavCard(context, 'Challenges', Icons.emoji_events, '/member/challenges'),
                   _buildNavCard(context, 'Rewards', Icons.star, '/member/rewards'),
+                  _buildNavCard(context, 'My Schedule', Icons.calendar_month, '/member/schedule'),
                 ],
               ),
             ],

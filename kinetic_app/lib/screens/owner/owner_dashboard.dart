@@ -107,6 +107,7 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
                   _buildNavCard(context, 'Challenges', Icons.emoji_events, '/owner/challenges'),
                   _buildNavCard(context, 'Comms', Icons.campaign, '/owner/communication'),
                   _buildNavCard(context, 'Plans', Icons.card_membership, '/owner/subscription'),
+                  _buildNavCard(context, 'Sessions', Icons.calendar_month, '/owner/sessions'),
                 ],
               ),
             ],

@@ -162,7 +162,7 @@ class _TrainerDashboardState extends State<TrainerDashboard> {
                             crossAxisSpacing: 16,
                             children: [
                               _buildNavCard(context, 'Client Mgmt', Icons.people, '/trainer/clients'),
-                              _buildNavCard(context, 'Schedule', Icons.calendar_month, '/trainer/schedule'),
+                              _buildNavCard(context, 'My Sessions', Icons.calendar_month, '/owner/sessions'),
                               _buildNavCard(context, 'Workout Assign', Icons.fitness_center, '/trainer/workout-assign'),
                               _buildNavCard(context, 'Diet Assign', Icons.restaurant, '/trainer/diet-assign'),
                             ],

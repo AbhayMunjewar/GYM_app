@@ -48,6 +48,13 @@ import 'screens/owner/communication_center.dart';
 import 'screens/owner/gym_settings.dart';
 import 'screens/owner/subscription_plan.dart';
 
+// Sessions
+import 'screens/sessions/session_list_screen.dart';
+import 'screens/sessions/create_session_screen.dart';
+import 'screens/sessions/session_detail_screen.dart';
+import 'screens/sessions/member_schedule_screen.dart';
+import 'models/workout_session.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await authService.loadSession();
@@ -102,6 +109,12 @@ final GoRouter _router = GoRouter(
     GoRoute(path: '/owner/communication', builder: (context, state) => const CommunicationCenter()),
     GoRoute(path: '/owner/settings', builder: (context, state) => const GymSettings()),
     GoRoute(path: '/owner/subscription', builder: (context, state) => const SubscriptionPlan()),
+    
+    // Sessions
+    GoRoute(path: '/owner/sessions', builder: (context, state) => const SessionListScreen()),
+    GoRoute(path: '/owner/sessions/create', builder: (context, state) => const CreateSessionScreen()),
+    GoRoute(path: '/owner/sessions/detail', builder: (context, state) => SessionDetailScreen(session: state.extra as WorkoutSession)),
+    GoRoute(path: '/member/schedule', builder: (context, state) => const MemberScheduleScreen()),
   ],
 );
 
