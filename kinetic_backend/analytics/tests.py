@@ -110,12 +110,12 @@ class AnalyticsTestBase(TestCase):
         # Create progress data
         ProgressMeasurement.objects.create(
             member=self.member, weight_kg=75.0,
-            body_fat_percentage=20.0,
+            body_fat_percentage=20.0, height_cm=180.0,
             recorded_date=date.today() - timedelta(days=30)
         )
         ProgressMeasurement.objects.create(
             member=self.member, weight_kg=73.5,
-            body_fat_percentage=19.0,
+            body_fat_percentage=19.0, height_cm=180.0,
             recorded_date=date.today()
         )
 

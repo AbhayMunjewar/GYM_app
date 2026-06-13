@@ -76,9 +76,9 @@ class OwnerAnalyticsService:
         ).count()
 
         return {
-            'total_revenue': str(total_revenue),
-            'monthly_revenue': str(monthly_revenue),
-            'pending_dues': str(pending_dues),
+            'total_revenue': f"{total_revenue:.2f}",
+            'monthly_revenue': f"{monthly_revenue:.2f}",
+            'pending_dues': f"{pending_dues:.2f}",
             'overdue_invoices': overdue_count,
         }
 
@@ -227,7 +227,7 @@ class OwnerAnalyticsService:
 
             trend.append({
                 'month': month_start.strftime('%b %Y'),
-                'revenue': str(revenue),
+                'revenue': f"{revenue:.2f}",
             })
 
         return trend
@@ -245,7 +245,7 @@ class OwnerAnalyticsService:
                 'plan_name': plan.plan_name,
                 'plan_id': str(plan.id),
                 'active_count': count,
-                'price': str(plan.price),
+                'price': f"{plan.price:.2f}",
             })
         return distribution
 
