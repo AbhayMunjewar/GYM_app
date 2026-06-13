@@ -1,6 +1,7 @@
 from django.utils import timezone
 from .models import GymPaymentSettings, Invoice, Payment
-from accounts.models import Notification, User
+from accounts.models import User
+from notifications.services import NotificationService
 from decimal import Decimal
 
 class BillingService:
@@ -34,8 +35,8 @@ class BillingService:
         
         member_user = User.objects.filter(email=member.email).first()
         if member_user:
-            NotificationService.send_notification(
-                user=member_user,
+            NotificationService.create_notification(
+                recipient=member_user,
                 title="New Invoice Generated",
                 message=f"An invoice of {amount} has been generated. Due date: {due_date}."
             )
@@ -63,8 +64,8 @@ class BillingService:
         if status == 'ACKNOWLEDGED':
             BillingService._update_invoice_status(invoice)
         else:
-            NotificationService.send_notification(
-                user=invoice.gym.owner,
+            NotificationService.create_notification(
+                recipient=invoice.gym.owner,
                 title="Payment Receipt Submitted",
                 message=f"Member {invoice.member.full_name} submitted a payment receipt for Invoice {str(invoice.id)[:8]}."
             )
@@ -80,8 +81,8 @@ class BillingService:
             
             member_user = User.objects.filter(email=payment.member.email).first()
             if member_user:
-                NotificationService.send_notification(
-                    user=member_user,
+                NotificationService.create_notification(
+                    recipient=member_user,
                     title="Payment Acknowledged",
                     message=f"Your payment of {payment.amount_paid} has been acknowledged by the gym owner."
                 )
@@ -94,8 +95,8 @@ class BillingService:
             payment.save()
             member_user = User.objects.filter(email=payment.member.email).first()
             if member_user:
-                NotificationService.send_notification(
-                    user=member_user,
+                NotificationService.create_notification(
+                    recipient=member_user,
                     title="Payment Rejected",
                     message=f"Your payment of {payment.amount_paid} was rejected. Reason: {reason}"
                 )
@@ -147,25 +148,4 @@ class BillingService:
             "pending_dues": str(pending_dues),
         }
 
-class NotificationService:
-    @staticmethod
-    def send_notification(user, title, message):
-        return Notification.objects.create(
-            user=user,
-            title=title,
-            message=message
-        )
 
-    @staticmethod
-    def get_unread_notifications(user):
-        return Notification.objects.filter(user=user, is_read=False)
-
-    @staticmethod
-    def mark_as_read(notification_id, user):
-        try:
-            notif = Notification.objects.get(id=notification_id, user=user)
-            notif.is_read = True
-            notif.save()
-            return True
-        except Notification.DoesNotExist:
-            return False

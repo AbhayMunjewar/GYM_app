@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import GymPaymentSettings, Invoice, Payment
-from accounts.models import Notification
+
 
 class GymPaymentSettingsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -45,8 +45,3 @@ class AcknowledgePaymentSerializer(serializers.Serializer):
     action = serializers.ChoiceField(choices=['ACKNOWLEDGE', 'REJECT'])
     reason = serializers.CharField(required=False, allow_blank=True)
 
-class NotificationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Notification
-        fields = ['id', 'title', 'message', 'is_read', 'created_at']
-        read_only_fields = ['id', 'title', 'message', 'created_at']

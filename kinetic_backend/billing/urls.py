@@ -6,9 +6,7 @@ from .views import (
     PaymentListView,
     RecordPaymentView,
     AcknowledgePaymentView,
-    RevenueAnalyticsView,
-    NotificationListView,
-    MarkNotificationReadView
+    RevenueAnalyticsView
 )
 
 urlpatterns = [
@@ -26,8 +24,4 @@ urlpatterns = [
     
     # Analytics
     path('analytics/', RevenueAnalyticsView.as_view(), name='billing-analytics'),
-    
-    # Notifications (Can be accessed globally, grouping under billing for now)
-    path('notifications/', NotificationListView.as_view(), name='notification-list'),
-    path('notifications/<uuid:pk>/read/', MarkNotificationReadView.as_view(), name='notification-read'),
 ]
