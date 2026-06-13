@@ -45,8 +45,8 @@ class CommunityPostViewSet(viewsets.ModelViewSet):
             except (Gym.DoesNotExist, ValueError):
                 raise serializers.ValidationError("Invalid gym ID or you do not own this gym.")
 
-        # Save post via service pattern to handle announcement alerts
-        CommunityService.create_post(
+        # Save post via service pattern to handle announcement alerts and set instance
+        serializer.instance = CommunityService.create_post(
             author=user,
             gym=gym,
             post_type=serializer.validated_data.get('post_type', 'GENERAL'),
