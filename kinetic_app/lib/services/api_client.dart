@@ -526,4 +526,115 @@ class ApiClient {
   Future<http.Response> getDietLogs() async {
     return get('/api/diet-logs/');
   }
+
+  // ==== PROGRESS TRACKING MODULE ====
+  Future<http.Response> getMeasurements({String? memberId}) async {
+    final query = memberId != null ? '?member_id=$memberId' : '';
+    return get('/api/progress/measurements/$query');
+  }
+
+  Future<http.Response> createMeasurement(Map<String, dynamic> data) async {
+    return post('/api/progress/measurements/', data);
+  }
+
+  Future<http.Response> deleteMeasurement(String id) async {
+    final url = Uri.parse('$baseUrl/api/progress/measurements/$id/');
+    final headers = await _getHeaders(requireAuth: true);
+    var response = await http.delete(url, headers: headers);
+    if (response.statusCode == 401) {
+      if (await _attemptTokenRefresh()) {
+        response = await http.delete(url, headers: await _getHeaders(requireAuth: true));
+      }
+    }
+    return response;
+  }
+
+  Future<http.Response> getProgressPhotos({String? memberId, String? photoType}) async {
+    final params = <String>[];
+    if (memberId != null) params.add('member_id=$memberId');
+    if (photoType != null) params.add('photo_type=$photoType');
+    final query = params.isNotEmpty ? '?${params.join('&')}' : '';
+    return get('/api/progress/photos/$query');
+  }
+
+  Future<http.Response> uploadProgressPhoto({
+    required String photoType,
+    required String filePath,
+    String? memberId,
+    String? notes,
+  }) async {
+    final url = Uri.parse('$baseUrl/api/progress/photos/');
+    final request = http.MultipartRequest('POST', url);
+    final headers = await _getHeaders(requireAuth: true);
+    request.headers.addAll(headers);
+    request.fields['photo_type'] = photoType;
+    if (memberId != null) request.fields['member'] = memberId;
+    if (notes != null) request.fields['notes'] = notes;
+    request.files.add(await http.MultipartFile.fromPath('image', filePath));
+    final streamedResponse = await request.send();
+    return http.Response.fromStream(streamedResponse);
+  }
+
+  Future<http.Response> deleteProgressPhoto(String id) async {
+    final url = Uri.parse('$baseUrl/api/progress/photos/$id/');
+    final headers = await _getHeaders(requireAuth: true);
+    var response = await http.delete(url, headers: headers);
+    if (response.statusCode == 401) {
+      if (await _attemptTokenRefresh()) {
+        response = await http.delete(url, headers: await _getHeaders(requireAuth: true));
+      }
+    }
+    return response;
+  }
+
+  Future<http.Response> getGoals({String? memberId, String? status}) async {
+    final params = <String>[];
+    if (memberId != null) params.add('member_id=$memberId');
+    if (status != null) params.add('status=$status');
+    final query = params.isNotEmpty ? '?${params.join('&')}' : '';
+    return get('/api/progress/goals/$query');
+  }
+
+  Future<http.Response> createGoal(Map<String, dynamic> data) async {
+    return post('/api/progress/goals/', data);
+  }
+
+  Future<http.Response> updateGoal(String id, Map<String, dynamic> data) async {
+    final url = Uri.parse('$baseUrl/api/progress/goals/$id/');
+    final headers = await _getHeaders(requireAuth: true);
+    final jsonBody = jsonEncode(data);
+    var response = await http.patch(url, headers: headers, body: jsonBody);
+    if (response.statusCode == 401) {
+      if (await _attemptTokenRefresh()) {
+        response = await http.patch(url, headers: await _getHeaders(requireAuth: true), body: jsonBody);
+      }
+    }
+    return response;
+  }
+
+  Future<http.Response> deleteGoal(String id) async {
+    final url = Uri.parse('$baseUrl/api/progress/goals/$id/');
+    final headers = await _getHeaders(requireAuth: true);
+    var response = await http.delete(url, headers: headers);
+    if (response.statusCode == 401) {
+      if (await _attemptTokenRefresh()) {
+        response = await http.delete(url, headers: await _getHeaders(requireAuth: true));
+      }
+    }
+    return response;
+  }
+
+  Future<http.Response> getProgressAnalytics({String? memberId}) async {
+    final query = memberId != null ? '?member_id=$memberId' : '';
+    return get('/api/progress/analytics/$query');
+  }
+
+  Future<http.Response> compareProgress({String? memberId, String? startDate, String? endDate}) async {
+    final params = <String>[];
+    if (memberId != null) params.add('member_id=$memberId');
+    if (startDate != null) params.add('start_date=$startDate');
+    if (endDate != null) params.add('end_date=$endDate');
+    final query = params.isNotEmpty ? '?${params.join('&')}' : '';
+    return get('/api/progress/compare/$query');
+  }
 }
