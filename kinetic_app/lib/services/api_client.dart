@@ -656,4 +656,65 @@ class ApiClient {
   Future<http.Response> getMemberAnalytics() async {
     return get('/api/analytics/member/');
   }
+
+  // ==== GAMIFICATION SYSTEM APIs ====
+  Future<http.Response> getPointsBalance() async {
+    return get('/api/rewards/points/');
+  }
+
+  Future<http.Response> getPointsHistory() async {
+    return get('/api/rewards/history/');
+  }
+
+  Future<http.Response> getStreaks() async {
+    return get('/api/rewards/streaks/');
+  }
+
+  Future<http.Response> getBadges() async {
+    return get('/api/rewards/badges/');
+  }
+
+  Future<http.Response> getMyBadges() async {
+    return get('/api/rewards/my-badges/');
+  }
+
+  Future<http.Response> getRewardCatalog() async {
+    return get('/api/rewards/catalog/');
+  }
+
+  Future<http.Response> redeemReward(String catalogId) async {
+    return post('/api/rewards/redeem/', {'reward_id': catalogId});
+  }
+
+  Future<http.Response> getRedemptionHistory() async {
+    return get('/api/rewards/redemptions/');
+  }
+
+  Future<http.Response> approveRedemption(String id) async {
+    return post('/api/rewards/redemptions/$id/approve/', {});
+  }
+
+  Future<http.Response> rejectRedemption(String id, {String reason = ''}) async {
+    return post('/api/rewards/redemptions/$id/reject/', {'reason': reason});
+  }
+
+  Future<http.Response> getChallenges() async {
+    return get('/api/challenges/');
+  }
+
+  Future<http.Response> joinChallenge(String challengeId) async {
+    return post('/api/challenges/join/', {'challenge_id': challengeId});
+  }
+
+  Future<http.Response> getMyJoinedChallenges() async {
+    return get('/api/challenges/my/');
+  }
+
+  Future<http.Response> getChallengeDetail(String id) async {
+    return get('/api/challenges/$id/');
+  }
+
+  Future<http.Response> getLeaderboard({String period = 'all_time'}) async {
+    return get('/api/leaderboards/?period=$period');
+  }
 }

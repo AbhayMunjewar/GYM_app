@@ -19,6 +19,8 @@ class _MemberDashboardState extends State<MemberDashboard> {
   bool _isCheckedOut = false;
   int _currentStreak = 0;
   int? _memberId;
+  int _pointsBalance = 0;
+  int? _rank;
 
   // Diet tracking metrics
   int _consumedCalories = 0;
@@ -98,6 +100,35 @@ class _MemberDashboardState extends State<MemberDashboard> {
               _daysRemaining = aData['membership']?['days_remaining'] ?? 0;
               _planName = aData['membership']?['plan_name'];
             });
+          }
+        }
+      } catch (_) {}
+
+      // Fetch Gamification points balance
+      try {
+        final pointsRes = await _apiClient.getPointsBalance();
+        if (pointsRes.statusCode == 200) {
+          final pointsBody = jsonDecode(pointsRes.body);
+          if (pointsBody['success'] == true) {
+            setState(() {
+              _pointsBalance = pointsBody['data']['balance'] ?? 0;
+            });
+          }
+        }
+      } catch (_) {}
+
+      // Fetch Gamification personal rank
+      try {
+        final leaderboardRes = await _apiClient.getLeaderboard(period: 'all_time');
+        if (leaderboardRes.statusCode == 200) {
+          final lbBody = jsonDecode(leaderboardRes.body);
+          if (lbBody['success'] == true) {
+            final myRank = lbBody['data']['my_rank'];
+            if (myRank != null) {
+              setState(() {
+                _rank = myRank['rank'];
+              });
+            }
           }
         }
       } catch (_) {}
@@ -223,6 +254,8 @@ class _MemberDashboardState extends State<MemberDashboard> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _buildAttendanceCard(),
+              const SizedBox(height: 16),
+              _buildPointsAndRankCard(),
               const SizedBox(height: 16),
               _buildMetricCard(context, 'Next Session', 'Upper Body Power', Icons.fitness_center),
               const SizedBox(height: 16),
@@ -425,6 +458,66 @@ class _MemberDashboardState extends State<MemberDashboard> {
             Text(title, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold, fontSize: 14)),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildPointsAndRankCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.primaryFixed.withOpacity(0.15),
+            AppColors.primaryFixed.withOpacity(0.05),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        border: Border.all(color: AppColors.primaryFixed.withOpacity(0.3)),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryFixed.withOpacity(0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.star, color: AppColors.primaryFixed, size: 28),
+              ),
+              const SizedBox(width: 16),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('REWARD POINTS', style: TextStyle(color: AppColors.onSurfaceVariant, fontSize: 12, fontWeight: FontWeight.w600, letterSpacing: 1.2)),
+                  const SizedBox(height: 4),
+                  Text('$_pointsBalance pts', style: const TextStyle(color: AppColors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                ],
+              ),
+            ],
+          ),
+          if (_rank != null)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.white.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: AppColors.white.withOpacity(0.15)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.emoji_events, color: Colors.amber, size: 18),
+                  const SizedBox(width: 6),
+                  Text('Rank #$_rank', style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                ],
+              ),
+            ),
+        ],
       ),
     );
   }
