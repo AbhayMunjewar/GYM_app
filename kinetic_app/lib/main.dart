@@ -24,6 +24,7 @@ import 'screens/member/progress_tracker.dart';
 import 'screens/member/membership_center.dart';
 import 'screens/member/challenges_leaderboard.dart';
 import 'screens/member/rewards_center.dart';
+import 'screens/member/community_feed_screen.dart';
 import 'screens/member/profile_settings.dart';
 import 'screens/member/member_billing.dart';
 
@@ -86,6 +87,7 @@ final GoRouter _router = GoRouter(
     GoRoute(path: '/member/membership', builder: (context, state) => const MembershipCenter()),
     GoRoute(path: '/member/challenges', builder: (context, state) => const ChallengesLeaderboard()),
     GoRoute(path: '/member/rewards', builder: (context, state) => const RewardsCenter()),
+    GoRoute(path: '/member/community', builder: (context, state) => const CommunityFeedScreen()),
     GoRoute(path: '/member/profile', builder: (context, state) => const ProfileSettings()),
     GoRoute(path: '/member/billing', builder: (context, state) => MemberBillingScreen()),
     

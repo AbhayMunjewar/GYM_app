@@ -429,6 +429,7 @@ class _TrainerDashboardState extends State<TrainerDashboard> {
                               _buildNavCard(context, 'My Sessions', Icons.calendar_month, '/owner/sessions'),
                               _buildNavCard(context, 'Workout Assign', Icons.fitness_center, '/trainer/workout-assign'),
                               _buildNavCard(context, 'Diet Assign', Icons.restaurant, '/trainer/diet-assign'),
+                              _buildNavCard(context, 'Community Hub', Icons.forum, '/member/community'),
                             ],
                           ),
                         ],

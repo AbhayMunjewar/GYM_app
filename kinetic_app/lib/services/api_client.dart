@@ -69,6 +69,38 @@ class ApiClient {
     return response;
   }
 
+  Future<http.Response> patch(String path, Map<String, dynamic> body, {bool requireAuth = true}) async {
+    final url = Uri.parse('$baseUrl$path');
+    final headers = await _getHeaders(requireAuth: requireAuth);
+    final jsonBody = jsonEncode(body);
+
+    var response = await http.patch(url, headers: headers, body: jsonBody);
+    if (response.statusCode == 401 && requireAuth) {
+      final refreshed = await _attemptTokenRefresh();
+      if (refreshed) {
+        final retryHeaders = await _getHeaders(requireAuth: true);
+        response = await http.patch(url, headers: retryHeaders, body: jsonBody);
+      }
+    }
+    return response;
+  }
+
+  Future<http.Response> delete(String path, {bool requireAuth = true}) async {
+    final url = Uri.parse('$baseUrl$path');
+    final headers = await _getHeaders(requireAuth: requireAuth);
+
+    var response = await http.delete(url, headers: headers);
+    if (response.statusCode == 401 && requireAuth) {
+      final refreshed = await _attemptTokenRefresh();
+      if (refreshed) {
+        final retryHeaders = await _getHeaders(requireAuth: true);
+        response = await http.delete(url, headers: retryHeaders);
+      }
+    }
+    return response;
+  }
+
+
   Future<bool> _attemptTokenRefresh() async {
     final prefs = await SharedPreferences.getInstance();
     final refreshToken = prefs.getString('refresh_token');
@@ -717,4 +749,46 @@ class ApiClient {
   Future<http.Response> getLeaderboard({String period = 'all_time'}) async {
     return get('/api/leaderboards/?period=$period');
   }
+
+  // ==== COMMUNITY MODULE APIs ====
+  Future<http.Response> getCommunityFeed({int page = 1}) async {
+    return get('/api/community/feed/?page=$page');
+  }
+
+  Future<http.Response> createCommunityPost(Map<String, dynamic> data) async {
+    return post('/api/community/posts/', data);
+  }
+
+  Future<http.Response> reactToPost(String postId, String reactionType) async {
+    return post('/api/community/posts/$postId/react/', {'reaction_type': reactionType});
+  }
+
+  Future<http.Response> deleteReaction(String postId) async {
+    return delete('/api/community/posts/$postId/react/');
+  }
+
+  Future<http.Response> getPostComments(String postId, {int page = 1}) async {
+    return get('/api/community/posts/$postId/comments/?page=$page');
+  }
+
+  Future<http.Response> addComment(String postId, Map<String, dynamic> data) async {
+    return post('/api/community/posts/$postId/comments/', data);
+  }
+
+  Future<http.Response> editComment(String commentId, Map<String, dynamic> data) async {
+    return patch('/api/community/comments/$commentId/', data);
+  }
+
+  Future<http.Response> deleteComment(String commentId) async {
+    return delete('/api/community/comments/$commentId/');
+  }
+
+  Future<http.Response> getCommunityEvents({int page = 1}) async {
+    return get('/api/community/events/?page=$page');
+  }
+
+  Future<http.Response> getCommunityAnalytics() async {
+    return get('/api/community/analytics/');
+  }
 }
+
