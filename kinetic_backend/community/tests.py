@@ -269,9 +269,10 @@ class CommunityAPITestCase(APITestCase):
 
     # --- ANALYTICS TESTS ---
     def test_community_analytics_endpoint(self):
+        target_gym = self.owner_user.gyms.first()
         post = CommunityPost.objects.create(
             author=self.member_user_a,
-            gym=self.gym_a,
+            gym=target_gym,
             post_type=PostType.GENERAL,
             title='Gym A Post',
             content='Alpha gym only'

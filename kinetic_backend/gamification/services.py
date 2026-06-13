@@ -19,8 +19,8 @@ class PointsService:
     @staticmethod
     def get_points_balance(member):
         """Returns the current points balance of a member."""
-        last_txn = RewardPointTransaction.objects.filter(member=member).order_by('-created_at').first()
-        return last_txn.points_balance if last_txn else 0
+        agg = RewardPointTransaction.objects.filter(member=member).aggregate(total=Sum('points_earned'))
+        return agg['total'] if agg['total'] is not None else 0
 
     @staticmethod
     @transaction.atomic
