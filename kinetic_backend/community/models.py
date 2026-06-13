@@ -1,9 +1,39 @@
 import uuid
+import json
 from django.db import models
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from gyms.models import Gym
 from members.models import Member
+
+class JSONTextField(models.TextField):
+    """
+    A simple database-agnostic JSON field that uses TextField under the hood.
+    Prevents SQLite JSON_VALID issues on older sqlite installations.
+    """
+    def from_db_value(self, value, expression, connection):
+        if value is None:
+            return {}
+        try:
+            return json.loads(value)
+        except Exception:
+            return {}
+
+    def to_python(self, value):
+        if isinstance(value, (dict, list)):
+            return value
+        if value is None:
+            return {}
+        try:
+            return json.loads(value)
+        except Exception:
+            return {}
+
+    def get_prep_value(self, value):
+        if value is None:
+            return "{}"
+        return json.dumps(value)
+
 
 class PostType(models.TextChoices):
     ACHIEVEMENT = 'ACHIEVEMENT', _('Achievement')
@@ -174,7 +204,7 @@ class CommunityEvent(models.Model):
     )
     title = models.CharField(max_length=255)
     description = models.TextField()
-    metadata = models.JSONField(default=dict, blank=True, null=True)
+    metadata = JSONTextField(default=dict, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
     class Meta:

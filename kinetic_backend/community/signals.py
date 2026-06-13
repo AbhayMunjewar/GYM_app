@@ -6,7 +6,7 @@ from django.utils import timezone
 from gamification.models import MemberBadge, ChallengeParticipation, Streak, StreakType
 from progress_tracking.models import FitnessGoal, ProgressMilestone, GoalStatus
 from .services import CommunityService
-from .models import CommunityEventType
+from .models import CommunityEventType, CommunityEvent
 
 logger = logging.getLogger(__name__)
 
@@ -39,15 +39,12 @@ def handle_challenge_completed(sender, instance, created, **kwargs):
     """
     # Trigger only when completed_at becomes set (meaning they just completed the challenge)
     if instance.completed_at and not created:
-        # Prevent double-posting by checking if we already shared this challenge completion
-        # We can look up community event history or check.
-        # To make it simple, let's check if there is an existing event for this challenge.
-        from .models import CommunityEvent
-        duplicate = CommunityEvent.objects.filter(
+        # Check python-side for duplicates to avoid SQL path lookups
+        events = CommunityEvent.objects.filter(
             member=instance.member,
-            event_type=CommunityEventType.CHALLENGE_COMPLETED,
-            metadata__challenge_id=str(instance.challenge.id)
-        ).exists()
+            event_type=CommunityEventType.CHALLENGE_COMPLETED
+        )
+        duplicate = any(e.metadata.get('challenge_id') == str(instance.challenge.id) for e in events)
         
         if not duplicate:
             try:
@@ -72,12 +69,11 @@ def handle_goal_achieved(sender, instance, created, **kwargs):
     Spawns community event when a member achieves a fitness goal.
     """
     if instance.status == GoalStatus.ACHIEVED:
-        from .models import CommunityEvent
-        duplicate = CommunityEvent.objects.filter(
+        events = CommunityEvent.objects.filter(
             member=instance.member,
-            event_type=CommunityEventType.GOAL_ACHIEVED,
-            metadata__goal_id=str(instance.id)
-        ).exists()
+            event_type=CommunityEventType.GOAL_ACHIEVED
+        )
+        duplicate = any(e.metadata.get('goal_id') == str(instance.id) for e in events)
 
         if not duplicate:
             try:
@@ -124,19 +120,19 @@ def handle_streak_milestone(sender, instance, created, **kwargs):
     """
     Spawns community event when a member hits a streak milestone (e.g. 7, 30, 50, 100 days).
     """
-    # Trigger when current_streak is a milestone and is greater than 0
     milestones = [7, 15, 30, 50, 100, 200, 365]
     if instance.current_streak in milestones:
-        from .models import CommunityEvent
-        # Check if we already created a streak event for this count today
         today = timezone.localdate()
-        duplicate = CommunityEvent.objects.filter(
+        events = CommunityEvent.objects.filter(
             member=instance.member,
             event_type=CommunityEventType.STREAK_ACHIEVED,
-            created_at__date=today,
-            metadata__streak_count=instance.current_streak,
-            metadata__streak_type=instance.streak_type
-        ).exists()
+            created_at__date=today
+        )
+        duplicate = any(
+            e.metadata.get('streak_count') == instance.current_streak and 
+            e.metadata.get('streak_type') == instance.streak_type
+            for e in events
+        )
 
         if not duplicate:
             try:
