@@ -46,7 +46,8 @@ class AnalyticsTestBase(TestCase):
         self.gym = Gym.objects.create(
             owner=self.owner_user, gym_name='Test Gym',
             address='123 Test St', city='TestCity',
-            state='TS', country='TestCountry', zip_code='12345'
+            state='TS', pincode='12345',
+            contact_number='9876543210', email='gym@test.com'
         )
 
         # Create member
@@ -84,6 +85,7 @@ class AnalyticsTestBase(TestCase):
         # Create attendance
         Attendance.objects.create(
             gym=self.gym, member=self.member,
+            membership=self.membership,
             attendance_date=date.today(),
             attendance_status='PRESENT',
             check_in_time=timezone.now()
