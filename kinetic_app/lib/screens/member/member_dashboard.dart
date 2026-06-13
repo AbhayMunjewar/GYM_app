@@ -29,6 +29,11 @@ class _MemberDashboardState extends State<MemberDashboard> {
   double _weightChange = 0.0;
   int _activeGoalsCount = 0;
 
+  // Analytics metrics
+  double _consistencyRate = 0.0;
+  int _daysRemaining = 0;
+  String? _planName;
+
   @override
   void initState() {
     super.initState();
@@ -80,6 +85,22 @@ class _MemberDashboardState extends State<MemberDashboard> {
           }
         }
       }
+
+      // Fetch consolidated member analytics
+      try {
+        final analyticsRes = await _apiClient.getMemberAnalytics();
+        if (analyticsRes.statusCode == 200) {
+          final analyticsBody = jsonDecode(analyticsRes.body);
+          if (analyticsBody['success'] == true) {
+            final aData = analyticsBody['data'];
+            setState(() {
+              _consistencyRate = (aData['attendance']?['consistency_rate_30d'] ?? 0.0).toDouble();
+              _daysRemaining = aData['membership']?['days_remaining'] ?? 0;
+              _planName = aData['membership']?['plan_name'];
+            });
+          }
+        }
+      } catch (_) {}
     } catch (e) {
       print('Exception in MemberDashboard: $e');
     } finally {
@@ -221,6 +242,46 @@ class _MemberDashboardState extends State<MemberDashboard> {
                       ? '${_currentWeight.toStringAsFixed(1)} kg (${_weightChange >= 0 ? '+' : ''}${_weightChange.toStringAsFixed(1)} kg change) • $_activeGoalsCount Active Goals'
                       : 'Log your first weight measurement!',
                   Icons.trending_up,
+                ),
+              ),
+              const SizedBox(height: 16),
+              // Membership & Attendance Analytics Card
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(color: const Color(0xFF201F1F), borderRadius: BorderRadius.circular(16)),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Consistency (30d)', style: TextStyle(color: Colors.white38, fontSize: 11)),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${_consistencyRate.toStringAsFixed(1)}%',
+                            style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold, fontSize: 18),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (_planName != null) Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(_planName ?? '', style: const TextStyle(color: Colors.white38, fontSize: 11)),
+                          const SizedBox(height: 4),
+                          Text(
+                            '$_daysRemaining days left',
+                            style: TextStyle(
+                              color: _daysRemaining <= 7 ? Colors.orange : AppColors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 32),

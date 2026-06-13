@@ -33,6 +33,9 @@ class _TrainerDashboardState extends State<TrainerDashboard> {
   double _goalCompletionRate = 0.0;
   int _activeGoalsCount = 0;
 
+  // Analytics: attendance rate
+  double _attendanceRate30d = 0.0;
+
   @override
   void initState() {
     super.initState();
@@ -130,6 +133,27 @@ class _TrainerDashboardState extends State<TrainerDashboard> {
         _activeGoalsCount = activeGoalsCount;
       });
 
+      // Fetch consolidated trainer analytics
+      try {
+        final analyticsRes = await _apiClient.getTrainerAnalytics();
+        if (analyticsRes.statusCode == 200) {
+          final analyticsBody = jsonDecode(analyticsRes.body);
+          if (analyticsBody['success'] == true) {
+            final aData = analyticsBody['data'];
+            setState(() {
+              _attendanceRate30d = (aData['attendance']?['attendance_rate_30d'] ?? 0.0).toDouble();
+              // Use analytics data as fallback for progress if primary fetch had issues
+              if (membersImprovingCount == 0 && membersStagnatingCount == 0) {
+                _membersImprovingCount = aData['progress']?['members_improving'] ?? 0;
+                _membersStagnatingCount = aData['progress']?['members_stagnating'] ?? 0;
+                _goalCompletionRate = (aData['progress']?['goal_completion_rate'] ?? 0.0).toDouble();
+                _activeGoalsCount = aData['progress']?['active_goals'] ?? 0;
+              }
+            });
+          }
+        }
+      } catch (_) {}
+
     } catch (e) {
       setState(() => _errorMsg = 'Network error: $e');
     } finally {
@@ -220,6 +244,48 @@ class _TrainerDashboardState extends State<TrainerDashboard> {
                                 ),
                               ),
                             ],
+                          ),
+                          const SizedBox(height: 16),
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF201F1F),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: AppColors.white10),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.bar_chart, color: AppColors.primaryFixed, size: 24),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text('Client Attendance Rate (30d)', style: TextStyle(color: AppColors.onSurfaceVariant, fontSize: 11)),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        '${_attendanceRate30d.toStringAsFixed(1)}%',
+                                        style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold, fontSize: 20),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 80,
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(4),
+                                    child: LinearProgressIndicator(
+                                      value: (_attendanceRate30d / 100.0).clamp(0.0, 1.0),
+                                      minHeight: 8,
+                                      backgroundColor: AppColors.white10,
+                                      valueColor: AlwaysStoppedAnimation(
+                                        _attendanceRate30d >= 70 ? Colors.green : (_attendanceRate30d >= 40 ? Colors.orange : Colors.red),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                           const SizedBox(height: 24),
                           Container(

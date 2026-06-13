@@ -643,4 +643,17 @@ class ApiClient {
     final query = params.isNotEmpty ? '?${params.join('&')}' : '';
     return get('/api/progress/compare/$query');
   }
+
+  // ==== ANALYTICS & REPORTING MODULE ====
+  Future<http.Response> getOwnerAnalytics() async {
+    return get('/api/analytics/owner/');
+  }
+
+  Future<http.Response> getTrainerAnalytics() async {
+    return get('/api/analytics/trainer/');
+  }
+
+  Future<http.Response> getMemberAnalytics() async {
+    return get('/api/analytics/member/');
+  }
 }
