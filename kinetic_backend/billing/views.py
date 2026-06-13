@@ -9,13 +9,14 @@ from drf_yasg import openapi
 
 from gyms.models import Gym
 from members.models import Member
-from accounts.models import Notification
+
 from .models import GymPaymentSettings, Invoice, Payment
 from .serializers import (
     GymPaymentSettingsSerializer, InvoiceSerializer, PaymentSerializer,
-    RecordPaymentSerializer, AcknowledgePaymentSerializer, NotificationSerializer
+    RecordPaymentSerializer, AcknowledgePaymentSerializer
 )
-from .services import BillingService, NotificationService
+from .services import BillingService
+from notifications.services import NotificationService
 from core.permissions import IsGymOwner
 
 def get_gym_for_owner(user):
@@ -205,22 +206,4 @@ class RevenueAnalyticsView(APIView):
         return Response({'success': True, 'data': analytics})
 
 
-# ==========================================
-# NOTIFICATIONS
-# ==========================================
-class NotificationListView(generics.ListAPIView):
-    serializer_class = NotificationSerializer
-    permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        return Notification.objects.filter(user=self.request.user)
-
-class MarkNotificationReadView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    @swagger_auto_schema(operation_summary="Mark notification as read")
-    def patch(self, request, pk):
-        success = NotificationService.mark_as_read(pk, request.user)
-        if success:
-            return Response({"success": True, "message": "Marked as read."})
-        return Response({"success": False, "message": "Notification not found."}, status=404)

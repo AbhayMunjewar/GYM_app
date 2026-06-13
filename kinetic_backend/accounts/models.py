@@ -83,19 +83,5 @@ class User(AbstractUser):
         return f"{self.email} ({self.role})"
 
 
-class Notification(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
-    title = models.CharField(_('title'), max_length=255)
-    message = models.TextField(_('message'))
-    is_read = models.BooleanField(_('is read'), default=False)
-    
-    created_at = models.DateTimeField(auto_now_add=True)
 
-    class Meta:
-        db_table = 'notifications'
-        ordering = ['-created_at']
-
-    def __str__(self):
-        return f"{self.title} - {self.user.email}"
 
