@@ -41,12 +41,19 @@ class MembershipPlanViewSet(viewsets.ModelViewSet):
         return success_response("Membership plan deleted successfully.", status_code=status.HTTP_200_OK)
 
     def create(self, request, *args, **kwargs):
-        gym = Gym.objects.filter(owner=request.user, is_deleted=False).first()
-        if not gym:
-            return failure_response("No active gym found for owner.", status_code=status.HTTP_404_NOT_FOUND)
-            
         data = request.data.copy() if hasattr(request.data, 'copy') else dict(request.data)
-        data['gym_id'] = gym.id
+        
+        provided_gym_id = data.get('gym_id')
+        if provided_gym_id:
+            try:
+                gym = Gym.objects.get(id=provided_gym_id, owner=request.user, is_deleted=False)
+            except Gym.DoesNotExist:
+                return failure_response("You do not have permission to create a plan for this gym.", status_code=status.HTTP_400_BAD_REQUEST)
+        else:
+            gym = Gym.objects.filter(owner=request.user, is_deleted=False).first()
+            if not gym:
+                return failure_response("No active gym found for owner.", status_code=status.HTTP_404_NOT_FOUND)
+            data['gym_id'] = gym.id
 
         serializer = self.get_serializer(data=data)
         if serializer.is_valid():
