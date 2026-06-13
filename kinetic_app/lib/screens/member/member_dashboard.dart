@@ -20,6 +20,10 @@ class _MemberDashboardState extends State<MemberDashboard> {
   int _currentStreak = 0;
   int? _memberId;
 
+  // Diet tracking metrics
+  int _consumedCalories = 0;
+  int _targetCalories = 0;
+
   @override
   void initState() {
     super.initState();
@@ -41,8 +45,20 @@ class _MemberDashboardState extends State<MemberDashboard> {
             _memberId = data['member_id'];
           });
         }
-      } else {
-        print('Error fetching member dashboard: ${res.body}');
+      }
+
+      if (_memberId != null) {
+        final dietRes = await _apiClient.getMemberDietProgress(_memberId!);
+        if (dietRes.statusCode == 200) {
+          final dietBody = jsonDecode(dietRes.body);
+          if (dietBody['success'] == true) {
+            final progress = dietBody['data'];
+            setState(() {
+              _consumedCalories = progress['consumed_calories'] ?? 0;
+              _targetCalories = progress['target_calories'] ?? 0;
+            });
+          }
+        }
       }
     } catch (e) {
       print('Exception in MemberDashboard: $e');
@@ -169,7 +185,12 @@ class _MemberDashboardState extends State<MemberDashboard> {
               const SizedBox(height: 16),
               _buildMetricCard(context, 'Next Session', 'Upper Body Power', Icons.fitness_center),
               const SizedBox(height: 16),
-              _buildMetricCard(context, 'Nutrition', '1,850 / 2,400 kcal', Icons.restaurant),
+              _buildMetricCard(
+                context,
+                'Nutrition',
+                _targetCalories > 0 ? '$_consumedCalories / $_targetCalories kcal' : 'No active diet plan',
+                Icons.restaurant,
+              ),
               const SizedBox(height: 32),
               const Text('MODULES', style: TextStyle(color: AppColors.onSurfaceVariant, fontWeight: FontWeight.bold, letterSpacing: 2)),
               const SizedBox(height: 16),

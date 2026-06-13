@@ -426,4 +426,104 @@ class ApiClient {
   Future<http.Response> getSessionBookings(String sessionId) async {
     return get('/api/bookings/?session_id=$sessionId');
   }
+
+  // ==== DIETS MODULE ====
+  Future<http.Response> getFoods({String? search, String? category}) async {
+    String query = '';
+    final params = <String>[];
+    if (search != null && search.isNotEmpty) params.add('search=$search');
+    if (category != null && category.isNotEmpty) params.add('category=$category');
+    if (params.isNotEmpty) query = '?${params.join('&')}';
+    return get('/api/foods/$query');
+  }
+
+  Future<http.Response> createFood(Map<String, dynamic> data) async {
+    return post('/api/foods/', data);
+  }
+
+  Future<http.Response> deleteFood(String id) async {
+    final url = Uri.parse('$baseUrl/api/foods/$id/');
+    final headers = await _getHeaders(requireAuth: true);
+    var response = await http.delete(url, headers: headers);
+    if (response.statusCode == 401) {
+      if (await _attemptTokenRefresh()) {
+        response = await http.delete(url, headers: await _getHeaders(requireAuth: true));
+      }
+    }
+    return response;
+  }
+
+  Future<http.Response> getMealTemplates({String? type}) async {
+    final query = (type != null && type.isNotEmpty) ? '?meal_type=$type' : '';
+    return get('/api/meal-templates/$query');
+  }
+
+  Future<http.Response> createMealTemplate(Map<String, dynamic> data) async {
+    return post('/api/meal-templates/', data);
+  }
+
+  Future<http.Response> deleteMealTemplate(String id) async {
+    final url = Uri.parse('$baseUrl/api/meal-templates/$id/');
+    final headers = await _getHeaders(requireAuth: true);
+    var response = await http.delete(url, headers: headers);
+    if (response.statusCode == 401) {
+      if (await _attemptTokenRefresh()) {
+        response = await http.delete(url, headers: await _getHeaders(requireAuth: true));
+      }
+    }
+    return response;
+  }
+
+  Future<http.Response> getDietPlans({String? search, String? goal}) async {
+    String query = '';
+    final params = <String>[];
+    if (search != null && search.isNotEmpty) params.add('search=$search');
+    if (goal != null && goal.isNotEmpty) params.add('goal=$goal');
+    if (params.isNotEmpty) query = '?${params.join('&')}';
+    return get('/api/diet-plans/$query');
+  }
+
+  Future<http.Response> createDietPlan(Map<String, dynamic> data) async {
+    return post('/api/diet-plans/', data);
+  }
+
+  Future<http.Response> deleteDietPlan(String id) async {
+    final url = Uri.parse('$baseUrl/api/diet-plans/$id/');
+    final headers = await _getHeaders(requireAuth: true);
+    var response = await http.delete(url, headers: headers);
+    if (response.statusCode == 401) {
+      if (await _attemptTokenRefresh()) {
+        response = await http.delete(url, headers: await _getHeaders(requireAuth: true));
+      }
+    }
+    return response;
+  }
+
+  Future<http.Response> getDietAssignments() async {
+    return get('/api/diet-assignments/');
+  }
+
+  Future<http.Response> assignDietPlan(Map<String, dynamic> data) async {
+    return post('/api/diet-assignments/', data);
+  }
+
+  Future<http.Response> getMemberDietProgress(int memberId) async {
+    return get('/api/member-diets/$memberId/progress/');
+  }
+
+  Future<http.Response> logDietMeal(Map<String, dynamic> data) async {
+    return post('/api/diet-logs/', data);
+  }
+
+  Future<http.Response> getDietReports(String type) async {
+    return get('/api/diets/reports/?type=$type');
+  }
+
+  Future<http.Response> getDietPlan(String id) async {
+    return get('/api/diet-plans/$id/');
+  }
+
+  Future<http.Response> getDietLogs() async {
+    return get('/api/diet-logs/');
+  }
 }

@@ -22,6 +22,11 @@ class _TrainerDashboardState extends State<TrainerDashboard> {
   int _todayAttendanceCount = 0;
   String? _nextClient;
 
+  // Diet management states
+  int _activeDietPlansCount = 0;
+  int _assignedDietMembersCount = 0;
+  double _avgDietCompliance = 0.0;
+
   @override
   void initState() {
     super.initState();
@@ -47,12 +52,55 @@ class _TrainerDashboardState extends State<TrainerDashboard> {
             _todayAttendanceCount = stats['today_attendance_present'] ?? 0;
             _nextClient = stats['next_client'];
           });
-        } else {
-          setState(() => _errorMsg = body['message'] ?? 'Failed to load stats');
         }
-      } else {
-        setState(() => _errorMsg = 'Failed to fetch dashboard stats. Code: ${res.statusCode}');
       }
+
+      // Fetch Diet stats
+      int activeDietPlansCount = 0;
+      int assignedDietMembersCount = 0;
+      double avgCompliance = 0.0;
+
+      final plansRes = await _apiClient.getDietPlans();
+      if (plansRes.statusCode == 200) {
+        final body = jsonDecode(plansRes.body);
+        if (body['success'] == true) {
+          final List results = body['data'] is List 
+              ? body['data'] 
+              : (body['data']?['results'] ?? []);
+          activeDietPlansCount = results.length;
+        }
+      }
+
+      final assignmentsRes = await _apiClient.getDietAssignments();
+      if (assignmentsRes.statusCode == 200) {
+        final body = jsonDecode(assignmentsRes.body);
+        if (body['success'] == true) {
+          final List results = body['data'] ?? [];
+          assignedDietMembersCount = results.where((a) => a['status'] == 'ACTIVE').length;
+        }
+      }
+
+      final reportsRes = await _apiClient.getDietReports('TRAINER_PERFORMANCE');
+      if (reportsRes.statusCode == 200) {
+        final body = jsonDecode(reportsRes.body);
+        if (body['success'] == true) {
+          final List results = body['data'] ?? [];
+          if (results.isNotEmpty) {
+            double sum = 0;
+            for (var row in results) {
+              sum += double.tryParse(row['average_compliance_percentage']?.toString() ?? '') ?? 0.0;
+            }
+            avgCompliance = sum / results.length;
+          }
+        }
+      }
+
+      setState(() {
+        _activeDietPlansCount = activeDietPlansCount;
+        _assignedDietMembersCount = assignedDietMembersCount;
+        _avgDietCompliance = avgCompliance;
+      });
+
     } catch (e) {
       setState(() => _errorMsg = 'Network error: $e');
     } finally {
@@ -143,6 +191,69 @@ class _TrainerDashboardState extends State<TrainerDashboard> {
                                 ),
                               ),
                             ],
+                          ),
+                          const SizedBox(height: 24),
+                          Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF201F1F),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: AppColors.white10),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text('Diet compliance stats', style: TextStyle(color: AppColors.onSurfaceVariant, fontSize: 13)),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(color: AppColors.primaryFixed.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
+                                      child: Text(
+                                        '${_avgDietCompliance.toStringAsFixed(1)}% compliance',
+                                        style: const TextStyle(color: AppColors.primaryFixed, fontSize: 11, fontWeight: FontWeight.bold),
+                                      ),
+                                    )
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Text('Diet Plans', style: TextStyle(color: Colors.white38, fontSize: 11)),
+                                          const SizedBox(height: 4),
+                                          Text('$_activeDietPlansCount Plans', style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                                        ],
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Text('Assigned Clients', style: TextStyle(color: Colors.white38, fontSize: 11)),
+                                          const SizedBox(height: 4),
+                                          Text('$_assignedDietMembersCount Members', style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(4),
+                                  child: LinearProgressIndicator(
+                                    value: (_avgDietCompliance / 100.0).clamp(0.0, 1.0),
+                                    minHeight: 6,
+                                    backgroundColor: AppColors.white10,
+                                    valueColor: const AlwaysStoppedAnimation(AppColors.primaryFixed),
+                                  ),
+                                )
+                              ],
+                            ),
                           ),
                           const SizedBox(height: 32),
                           const Text(
