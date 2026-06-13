@@ -27,33 +27,51 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
   }
 
   Future<void> _fetchStats() async {
+    setState(() => _isLoading = true);
+    bool success = false;
     try {
-      final response = await _apiClient.getDashboardStats();
+      final response = await _apiClient.getOwnerAnalytics();
       if (response.statusCode == 200) {
         final body = jsonDecode(response.body);
         if (body['success'] == true) {
           final data = body['data'];
           setState(() {
-            _revenue = '\$${data['total_revenue']}';
-            _membersCount = data['total_active_memberships'].toString();
+            _revenue = '\$${data['revenue']['total_revenue']}';
+            _membersCount = data['memberships']['active_memberships'].toString();
+            _checkInsCount = data['attendance']['today_check_ins'].toString();
           });
+          success = true;
         }
       }
+    } catch (_) {}
 
-      final response2 = await _apiClient.getOwnerDashboardAttendance();
-      if (response2.statusCode == 200) {
-        final body2 = jsonDecode(response2.body);
-        if (body2['success'] == true) {
-          final data2 = body2['data'];
-          setState(() {
-            _checkInsCount = data2['present_today'].toString();
-          });
+    if (!success) {
+      try {
+        final response = await _apiClient.getDashboardStats();
+        if (response.statusCode == 200) {
+          final body = jsonDecode(response.body);
+          if (body['success'] == true) {
+            final data = body['data'];
+            setState(() {
+              _revenue = '\$${data['total_revenue']}';
+              _membersCount = data['total_active_memberships'].toString();
+            });
+          }
         }
-      }
-    } catch (_) {
-    } finally {
-      setState(() => _isLoading = false);
+
+        final response2 = await _apiClient.getOwnerDashboardAttendance();
+        if (response2.statusCode == 200) {
+          final body2 = jsonDecode(response2.body);
+          if (body2['success'] == true) {
+            final data2 = body2['data'];
+            setState(() {
+              _checkInsCount = data2['present_today'].toString();
+            });
+          }
+        }
+      } catch (_) {}
     }
+    setState(() => _isLoading = false);
   }
 
   @override
