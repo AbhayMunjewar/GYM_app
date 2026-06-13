@@ -61,13 +61,15 @@ class AnalyticsTestBase(TestCase):
         self.trainer = Trainer.objects.create(
             user=self.trainer_user, gym=self.gym,
             employee_id='TR001', specialization='Strength',
-            experience_years=3, status='ACTIVE'
+            experience_years=3, status='ACTIVE',
+            joining_date=date.today()
         )
 
         # Assign member to trainer
         self.assignment = TrainerAssignment.objects.create(
             trainer=self.trainer, member=self.member,
-            assigned_by=self.owner_user, status='ACTIVE'
+            assigned_by=self.owner_user, status='ACTIVE',
+            assigned_date=date.today()
         )
 
         # Create membership plan + assignment
