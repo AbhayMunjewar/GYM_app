@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'billing',
     'trainers',
     'workout_sessions',
+    'diets',
 ]
 
 MIDDLEWARE = [

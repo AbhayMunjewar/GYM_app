@@ -208,6 +208,30 @@ class WorkoutSessionDetailView(APIView):
 class SessionBookingListCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
+    def get(self, request):
+        session_id = request.query_params.get('session_id')
+        if not session_id:
+            return failure_response("session_id parameter is required.", status_code=status.HTTP_400_BAD_REQUEST)
+
+        session = get_object_or_404(WorkoutSession, id=session_id, is_deleted=False)
+
+        # Cross-gym checks:
+        if request.user.role == 'OWNER':
+            if session.gym.owner != request.user:
+                return failure_response("Permission Denied.", status_code=status.HTTP_403_FORBIDDEN)
+        elif request.user.role == 'TRAINER':
+            trainer_profile = Trainer.objects.filter(user=request.user, is_deleted=False).first()
+            if not trainer_profile or session.gym != trainer_profile.gym:
+                return failure_response("Permission Denied.", status_code=status.HTTP_403_FORBIDDEN)
+        elif request.user.role == 'MEMBER':
+            member_profile = Member.objects.filter(email=request.user.email, is_deleted=False).first()
+            if not member_profile or session.gym != member_profile.gym:
+                return failure_response("Permission Denied.", status_code=status.HTTP_403_FORBIDDEN)
+
+        bookings = SessionBooking.objects.filter(session=session, status='booked')
+        serializer = SessionBookingSerializer(bookings, many=True)
+        return success_response("Session bookings retrieved successfully", data=serializer.data)
+
     def post(self, request):
         # Role: Owner or Trainer
         if request.user.role not in ['OWNER', 'TRAINER']:

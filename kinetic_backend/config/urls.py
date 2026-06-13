@@ -39,6 +39,7 @@ urlpatterns = [
     path('api/trainer-assignments/', include('trainers.urls_assignments')),
     path('api/sessions/', include('workout_sessions.urls_sessions')),
     path('api/bookings/', include('workout_sessions.urls_bookings')),
+    path('api/', include('diets.urls')),
     
     # Role-based dashboard routes
     path('api/owner/dashboard/', OwnerDashboardView.as_view(), name='owner_dashboard'),
