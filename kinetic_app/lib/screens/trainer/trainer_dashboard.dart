@@ -27,6 +27,12 @@ class _TrainerDashboardState extends State<TrainerDashboard> {
   int _assignedDietMembersCount = 0;
   double _avgDietCompliance = 0.0;
 
+  // Progress & body transformation states
+  int _membersImprovingCount = 0;
+  int _membersStagnatingCount = 0;
+  double _goalCompletionRate = 0.0;
+  int _activeGoalsCount = 0;
+
   @override
   void initState() {
     super.initState();
@@ -40,6 +46,7 @@ class _TrainerDashboardState extends State<TrainerDashboard> {
     });
 
     try {
+      // 1. Fetch dashboard stats to get trainer_id if not already fetched
       final res = await _apiClient.getTrainerDashboardStats();
       if (res.statusCode == 200) {
         final body = jsonDecode(res.body);
@@ -95,10 +102,32 @@ class _TrainerDashboardState extends State<TrainerDashboard> {
         }
       }
 
+      // Fetch Trainer Progress Analytics
+      int membersImprovingCount = 0;
+      int membersStagnatingCount = 0;
+      double goalCompletionRate = 0.0;
+      int activeGoalsCount = 0;
+
+      final progRes = await _apiClient.getProgressAnalytics();
+      if (progRes.statusCode == 200) {
+        final progBody = jsonDecode(progRes.body);
+        if (progBody['success'] == true) {
+          final progData = progBody['data'];
+          membersImprovingCount = progData['members_improving'] ?? 0;
+          membersStagnatingCount = progData['members_stagnating'] ?? 0;
+          goalCompletionRate = (progData['goal_completion_rate'] ?? 0.0).toDouble();
+          activeGoalsCount = progData['active_goals'] ?? 0;
+        }
+      }
+
       setState(() {
         _activeDietPlansCount = activeDietPlansCount;
         _assignedDietMembersCount = assignedDietMembersCount;
         _avgDietCompliance = avgCompliance;
+        _membersImprovingCount = membersImprovingCount;
+        _membersStagnatingCount = membersStagnatingCount;
+        _goalCompletionRate = goalCompletionRate;
+        _activeGoalsCount = activeGoalsCount;
       });
 
     } catch (e) {
@@ -252,6 +281,64 @@ class _TrainerDashboardState extends State<TrainerDashboard> {
                                     valueColor: const AlwaysStoppedAnimation(AppColors.primaryFixed),
                                   ),
                                 )
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF201F1F),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: AppColors.white10),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text('Transformation Analytics', style: TextStyle(color: AppColors.onSurfaceVariant, fontSize: 13)),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(color: AppColors.primaryFixed.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
+                                      child: Text(
+                                        '${_goalCompletionRate.toStringAsFixed(1)}% Goal Success',
+                                        style: const TextStyle(color: AppColors.primaryFixed, fontSize: 11, fontWeight: FontWeight.bold),
+                                      ),
+                                    )
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Text('Clients Improving', style: TextStyle(color: Colors.white38, fontSize: 11)),
+                                          const SizedBox(height: 4),
+                                          Text('$_membersImprovingCount Members', style: const TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.bold, fontSize: 16)),
+                                        ],
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Text('Stagnating/No Data', style: TextStyle(color: Colors.white38, fontSize: 11)),
+                                          const SizedBox(height: 4),
+                                          Text('$_membersStagnatingCount Members', style: const TextStyle(color: Colors.orangeAccent, fontWeight: FontWeight.bold, fontSize: 16)),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  'Active Client Target Goals: $_activeGoalsCount',
+                                  style: const TextStyle(color: AppColors.onSurfaceVariant, fontSize: 11),
+                                ),
                               ],
                             ),
                           ),

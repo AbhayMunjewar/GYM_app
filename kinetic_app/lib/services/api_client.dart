@@ -261,9 +261,9 @@ class ApiClient {
   Future<http.Response> getBillingAnalytics() async { return get('/api/billing/analytics/'); }
 
   // ==== NOTIFICATIONS ====
-  Future<http.Response> getNotifications() async { return get('/api/billing/notifications/'); }
+  Future<http.Response> getNotifications() async { return get('/api/notifications/'); }
   Future<http.Response> markNotificationRead(String id) async { 
-    final url = Uri.parse('$baseUrl/api/billing/notifications/$id/read/');
+    final url = Uri.parse('$baseUrl/api/notifications/$id/read/');
     final headers = await _getHeaders(requireAuth: true);
     var response = await http.patch(url, headers: headers);
     if (response.statusCode == 401) {
@@ -272,6 +272,12 @@ class ApiClient {
       }
     }
     return response;
+  }
+  Future<http.Response> registerDeviceToken(String fcmToken, String deviceType) async {
+    return post('/api/device-tokens/', {
+      'fcm_token': fcmToken,
+      'device_type': deviceType,
+    });
   }
 
   // ==== TRAINERS MODULE ====

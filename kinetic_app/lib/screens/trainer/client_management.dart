@@ -167,75 +167,78 @@ class _ClientManagementState extends State<ClientManagement> {
                                   final double attPct = (client['attendance_percentage'] ?? 0.0).toDouble();
                                   final String status = client['membership_status'] ?? 'ACTIVE';
 
-                                  return Container(
-                                    margin: const EdgeInsets.only(bottom: 16),
-                                    padding: const EdgeInsets.all(16),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFF201F1F),
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(color: AppColors.white10),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Container(
-                                          width: 50,
-                                          height: 50,
-                                          decoration: BoxDecoration(
-                                            color: AppColors.primaryFixed.withOpacity(0.15),
-                                            shape: BoxShape.circle,
+                                  return GestureDetector(
+                                    onTap: () => context.push('/member/progress-tracker', extra: client['id']?.toString()),
+                                    child: Container(
+                                      margin: const EdgeInsets.only(bottom: 16),
+                                      padding: const EdgeInsets.all(16),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF201F1F),
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(color: AppColors.white10),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                            width: 50,
+                                            height: 50,
+                                            decoration: BoxDecoration(
+                                              color: AppColors.primaryFixed.withOpacity(0.15),
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: const Icon(Icons.person, color: AppColors.primaryFixed),
                                           ),
-                                          child: const Icon(Icons.person, color: AppColors.primaryFixed),
-                                        ),
-                                        const SizedBox(width: 16),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                          const SizedBox(width: 16),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  name,
+                                                  style: const TextStyle(
+                                                    color: AppColors.white,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 16,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 4),
+                                                Text(
+                                                  plan,
+                                                  style: const TextStyle(
+                                                    color: AppColors.onSurfaceVariant,
+                                                    fontSize: 12,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          Column(
+                                            crossAxisAlignment: CrossAxisAlignment.end,
                                             children: [
                                               Text(
-                                                name,
-                                                style: const TextStyle(
-                                                  color: AppColors.white,
+                                                '${attPct.toStringAsFixed(0)}% Att',
+                                                style: TextStyle(
+                                                  color: attPct > 70
+                                                      ? AppColors.primaryFixed
+                                                      : Colors.orangeAccent,
                                                   fontWeight: FontWeight.bold,
-                                                  fontSize: 16,
+                                                  fontSize: 14,
                                                 ),
                                               ),
-                                              const SizedBox(height: 4),
                                               Text(
-                                                plan,
-                                                style: const TextStyle(
-                                                  color: AppColors.onSurfaceVariant,
-                                                  fontSize: 12,
+                                                status,
+                                                style: TextStyle(
+                                                  color: status == 'ACTIVE'
+                                                      ? Colors.green
+                                                      : Colors.redAccent,
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.w600,
                                                 ),
                                               ),
                                             ],
                                           ),
-                                        ),
-                                        Column(
-                                          crossAxisAlignment: CrossAxisAlignment.end,
-                                          children: [
-                                            Text(
-                                              '${attPct.toStringAsFixed(0)}% Att',
-                                              style: TextStyle(
-                                                color: attPct > 70
-                                                    ? AppColors.primaryFixed
-                                                    : Colors.orangeAccent,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 14,
-                                              ),
-                                            ),
-                                            Text(
-                                              status,
-                                              style: TextStyle(
-                                                color: status == 'ACTIVE'
-                                                    ? Colors.green
-                                                    : Colors.redAccent,
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
                                   );
                                 },

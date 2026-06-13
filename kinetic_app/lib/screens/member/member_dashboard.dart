@@ -24,6 +24,11 @@ class _MemberDashboardState extends State<MemberDashboard> {
   int _consumedCalories = 0;
   int _targetCalories = 0;
 
+  // Progress tracking metrics
+  double _currentWeight = 0.0;
+  double _weightChange = 0.0;
+  int _activeGoalsCount = 0;
+
   @override
   void initState() {
     super.initState();
@@ -56,6 +61,21 @@ class _MemberDashboardState extends State<MemberDashboard> {
             setState(() {
               _consumedCalories = progress['consumed_calories'] ?? 0;
               _targetCalories = progress['target_calories'] ?? 0;
+            });
+          }
+        }
+
+        // Fetch Progress Analytics
+        final progressRes = await _apiClient.getProgressAnalytics(memberId: _memberId!.toString());
+        if (progressRes.statusCode == 200) {
+          final progressBody = jsonDecode(progressRes.body);
+          if (progressBody['success'] == true) {
+            final pData = progressBody['data'];
+            final summary = pData['transformation_summary'] ?? {};
+            setState(() {
+              _currentWeight = double.tryParse(summary['current_weight']?.toString() ?? '0.0') ?? 0.0;
+              _weightChange = double.tryParse(summary['weight_change']?.toString() ?? '0.0') ?? 0.0;
+              _activeGoalsCount = pData['active_goals_count'] ?? 0;
             });
           }
         }
@@ -190,6 +210,18 @@ class _MemberDashboardState extends State<MemberDashboard> {
                 'Nutrition',
                 _targetCalories > 0 ? '$_consumedCalories / $_targetCalories kcal' : 'No active diet plan',
                 Icons.restaurant,
+              ),
+              const SizedBox(height: 16),
+              GestureDetector(
+                onTap: () => context.push('/member/progress-tracker'),
+                child: _buildMetricCard(
+                  context,
+                  'Weight & Transformation Goals',
+                  _currentWeight > 0.0
+                      ? '${_currentWeight.toStringAsFixed(1)} kg (${_weightChange >= 0 ? '+' : ''}${_weightChange.toStringAsFixed(1)} kg change) • $_activeGoalsCount Active Goals'
+                      : 'Log your first weight measurement!',
+                  Icons.trending_up,
+                ),
               ),
               const SizedBox(height: 32),
               const Text('MODULES', style: TextStyle(color: AppColors.onSurfaceVariant, fontWeight: FontWeight.bold, letterSpacing: 2)),
