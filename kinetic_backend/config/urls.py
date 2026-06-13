@@ -43,6 +43,7 @@ urlpatterns = [
     path('api/progress/', include('progress_tracking.urls')),
     path('api/notifications/', include('notifications.urls')),
     path('api/analytics/', include('analytics.urls')),
+    path('api/', include('gamification.urls')),
     
     # Role-based dashboard routes
     path('api/owner/dashboard/', OwnerDashboardView.as_view(), name='owner_dashboard'),

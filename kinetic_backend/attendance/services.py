@@ -47,6 +47,14 @@ class AttendanceService:
             check_in_time=current_time,
             attendance_status=status
         )
+
+        # Trigger Gamification Event
+        try:
+            from gamification.services import GamificationEngine, ActivityType
+            GamificationEngine.trigger_event(member, ActivityType.ATTENDANCE, reference_id=attendance.id)
+        except Exception:
+            pass
+
         return attendance
 
     @staticmethod

@@ -495,6 +495,15 @@ class DietLogListCreateView(APIView):
             
         if serializer.is_valid():
             log = serializer.save()
+
+            # Trigger Gamification Event on completed meals
+            if log.completed:
+                try:
+                    from gamification.services import GamificationEngine, ActivityType
+                    GamificationEngine.trigger_event(log.member, ActivityType.DIET_COMPLETION, reference_id=log.id)
+                except Exception:
+                    pass
+
             return success_response(
                 "Diet meal logged successfully",
                 data=DietLogSerializer(log).data,

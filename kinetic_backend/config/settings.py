@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'progress_tracking',
     'notifications',
     'analytics',
+    'gamification',
 ]
 
 MIDDLEWARE = [

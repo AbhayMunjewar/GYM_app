@@ -161,6 +161,14 @@ class GoalTrackingService:
             goal.status = GoalStatus.ACHIEVED
         goal.save()
 
+        # Trigger Gamification Event if newly achieved
+        if goal.status == GoalStatus.ACHIEVED:
+            try:
+                from gamification.services import GamificationEngine, ActivityType
+                GamificationEngine.trigger_event(goal.member, ActivityType.GOAL_ACHIEVEMENT, reference_id=goal.id)
+            except Exception:
+                pass
+
     @staticmethod
     def update_goals_for_member(member):
         """
