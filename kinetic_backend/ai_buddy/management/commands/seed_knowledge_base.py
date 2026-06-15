@@ -1403,9 +1403,9 @@ class Command(BaseCommand):
                     'content': content,
                     'article_type': art_type,
                     'difficulty': difficulty,
-                    'tags': tags,
-                    'muscle_groups': muscles,
-                    'equipment': equipment,
+                    'tags': ','.join(tags),
+                    'muscle_groups': ','.join(muscles),
+                    'equipment': ','.join(equipment),
                     'keywords': keywords,
                     'is_featured': is_featured,
                     'is_active': True,
@@ -1423,9 +1423,9 @@ class Command(BaseCommand):
                     ExerciseData.objects.get_or_create(
                         article=article,
                         defaults={
-                            'primary_muscles': muscles[:2] if muscles else [],
-                            'secondary_muscles': muscles[2:] if len(muscles) > 2 else [],
-                            'equipment_needed': equipment,
+                            'primary_muscles': ','.join(muscles[:2]) if muscles else '',
+                            'secondary_muscles': ','.join(muscles[2:]) if len(muscles) > 2 else '',
+                            'equipment_needed': ','.join(equipment),
                         }
                     )
                 except Exception as e:
@@ -1442,7 +1442,7 @@ class Command(BaseCommand):
             try:
                 ex_data, _ = ExerciseData.objects.get_or_create(
                     article=main_article,
-                    defaults={'primary_muscles': main_article.muscle_groups[:2] if main_article.muscle_groups else []}
+                    defaults={'primary_muscles': main_article.muscle_groups[:50]}  # take first 50 chars of CSV
                 )
                 for alt_title in alt_titles:
                     alt_article = article_map.get(alt_title)

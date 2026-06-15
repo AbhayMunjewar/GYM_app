@@ -45,8 +45,8 @@ class KBSearchTestCase(TestCase):
             content="The barbell squat is a compound movement targeting the quadriceps, glutes, and hamstrings.",
             article_type='EXERCISE',
             difficulty='INTERMEDIATE',
-            tags=['squat', 'legs', 'compound'],
-            muscle_groups=['quadriceps', 'glutes'],
+            tags='squat,legs,compound',
+            muscle_groups='quadriceps,glutes',
             keywords='squat legs compound barbell strength',
         )
 
