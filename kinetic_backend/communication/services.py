@@ -326,7 +326,7 @@ class ModerationService:
             if report.content_type == ReportContentType.POST:
                 # GroupPost or CommunityPost
                 GroupPost.objects.filter(id=report.content_id).update(is_deleted=True)
-                CommunityPost.objects.filter(id=report.content_id).update(is_deleted=True, status='HIDDEN')
+                CommunityPost.objects.filter(id=report.content_id).update(is_deleted=True, status='DELETED')
             elif report.content_type == ReportContentType.COMMENT:
                 PostComment.objects.filter(id=report.content_id).delete()
             elif report.content_type == ReportContentType.MESSAGE:
