@@ -36,6 +36,11 @@ class _MemberDashboardState extends State<MemberDashboard> {
   int _daysRemaining = 0;
   String? _planName;
 
+  // Daily AI tip metrics
+  String? _tipTitle;
+  String? _tipContent;
+  String? _tipArticleTitle;
+
   @override
   void initState() {
     super.initState();
@@ -129,6 +134,24 @@ class _MemberDashboardState extends State<MemberDashboard> {
                 _rank = myRank['rank'];
               });
             }
+          }
+        }
+      } catch (_) {}
+
+      // Fetch daily tip
+      try {
+        final tipRes = await _apiClient.getDashboardTip();
+        if (tipRes.statusCode == 200) {
+          final tipBody = jsonDecode(tipRes.body);
+          if (tipBody['success'] == true) {
+            final tData = tipBody['data'];
+            setState(() {
+              _tipTitle = tData['tip_title'];
+              _tipContent = tData['tip_content'];
+              if (tData['related_article'] != null) {
+                _tipArticleTitle = tData['related_article']['title'];
+              }
+            });
           }
         }
       } catch (_) {}
@@ -317,6 +340,10 @@ class _MemberDashboardState extends State<MemberDashboard> {
                   ],
                 ),
               ),
+              if (_tipTitle != null) ...[
+                const SizedBox(height: 16),
+                _buildDailyTipCard(),
+              ],
               const SizedBox(height: 32),
               const Text('MODULES', style: TextStyle(color: AppColors.onSurfaceVariant, fontWeight: FontWeight.bold, letterSpacing: 2)),
               const SizedBox(height: 16),
@@ -542,6 +569,92 @@ class _MemberDashboardState extends State<MemberDashboard> {
         BottomNavigationBarItem(icon: Icon(Icons.restaurant), label: 'Diet'),
         BottomNavigationBarItem(icon: Icon(Icons.trending_up), label: 'Progress'),
       ],
+    );
+  }
+
+  Widget _buildDailyTipCard() {
+    return GestureDetector(
+      onTap: () => context.push('/member/ai-buddy'),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [
+              Color(0xFF1C1B1B),
+              Color(0xFF25241C),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          border: Border.all(color: AppColors.primaryFixed.withOpacity(0.2)),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.lightbulb, color: AppColors.primaryFixed, size: 20),
+                const SizedBox(width: 8),
+                const Text(
+                  "TODAY'S AI FITNESS TIP",
+                  style: TextStyle(
+                    color: AppColors.primaryFixed,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+                const Spacer(),
+                Icon(Icons.arrow_forward_ios, color: AppColors.primaryFixed.withOpacity(0.6), size: 14),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              _tipTitle ?? '',
+              style: const TextStyle(
+                color: AppColors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              _tipContent ?? '',
+              style: const TextStyle(
+                color: AppColors.onSurfaceVariant,
+                fontSize: 14,
+                height: 1.4,
+              ),
+            ),
+            if (_tipArticleTitle != null) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppColors.white10,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.menu_book, color: Colors.blueAccent, size: 14),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        'Read: $_tipArticleTitle',
+                        style: const TextStyle(color: Colors.blueAccent, fontSize: 12, fontWeight: FontWeight.bold),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 }
