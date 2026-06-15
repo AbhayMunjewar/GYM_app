@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'gamification',
     'community',
     'communication',
+    'ai_buddy',
 ]
 
 MIDDLEWARE = [

@@ -12,7 +12,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 
-from core.responses import success_response, error_response
+from core.responses import success_response, failure_response
 from accounts.models import UserRole
 from members.models import Member
 from gyms.models import Gym
@@ -40,7 +40,7 @@ logger = logging.getLogger(__name__)
 def _resolve_member_and_gym(user):
     """
     Resolve the Member record and Gym for the authenticated user.
-    Returns (member, gym) or raises an exception if not found.
+    Returns (member, gym) or (None, None) if not found.
     """
     if user.role == UserRole.MEMBER:
         member = Member.objects.filter(
@@ -68,7 +68,7 @@ class KnowledgeCategoryListView(APIView):
             qs = qs.filter(gym__isnull=True)
 
         serializer = KnowledgeCategorySerializer(qs, many=True)
-        return Response(success_response(serializer.data))
+        return success_response('Knowledge categories retrieved', data=serializer.data)
 
 
 class KnowledgeSearchView(APIView):
@@ -96,21 +96,24 @@ class KnowledgeSearchView(APIView):
                 qs = qs.filter(article_type=article_type)
             if difficulty:
                 qs = qs.filter(difficulty=difficulty)
-            if category_slug:
-                qs = qs.filter(category__slug=category_slug)
             qs = qs.order_by('-is_featured', '-view_count')[:20]
+        elif category_slug and not query:
+            qs = KnowledgeArticle.objects.filter(
+                is_active=True, category__slug=category_slug
+            )
+            if gym:
+                qs = qs.filter(Q(gym__isnull=True) | Q(gym=gym))
+            else:
+                qs = qs.filter(gym__isnull=True)
         else:
             search_svc = KnowledgeBaseSearchService()
-            qs = search_svc.search(query or category_slug, gym=gym, article_type=article_type, difficulty=difficulty, limit=20)
-            if category_slug and not query:
-                qs = KnowledgeArticle.objects.filter(
-                    is_active=True, category__slug=category_slug
-                )
-                if gym:
-                    qs = qs.filter(Q(gym__isnull=True) | Q(gym=gym))
+            qs = search_svc.search(
+                query or category_slug, gym=gym,
+                article_type=article_type, difficulty=difficulty, limit=20
+            )
 
         serializer = KnowledgeArticleListSerializer(qs, many=True)
-        return Response(success_response({'results': serializer.data, 'count': len(serializer.data)}))
+        return success_response('Search results retrieved', data={'results': serializer.data, 'count': len(serializer.data)})
 
 
 class KnowledgeArticleDetailView(APIView):
@@ -130,13 +133,13 @@ class KnowledgeArticleDetailView(APIView):
 
         article = qs.select_related('category', 'exercise_data').first()
         if not article:
-            return Response(error_response('Article not found'), status=status.HTTP_404_NOT_FOUND)
+            return failure_response('Article not found', status_code=status.HTTP_404_NOT_FOUND)
 
         # Increment view count
         KnowledgeArticle.objects.filter(id=article_id).update(view_count=article.view_count + 1)
 
         serializer = KnowledgeArticleDetailSerializer(article)
-        return Response(success_response(serializer.data))
+        return success_response('Article retrieved', data=serializer.data)
 
 
 class AIChatView(APIView):
@@ -146,11 +149,11 @@ class AIChatView(APIView):
     def post(self, request):
         serializer = AIChatRequestSerializer(data=request.data)
         if not serializer.is_valid():
-            return Response(error_response(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
+            return failure_response('Invalid request', errors=serializer.errors)
 
         member, gym = _resolve_member_and_gym(request.user)
         if not member:
-            return Response(error_response('Member profile not found'), status=status.HTTP_404_NOT_FOUND)
+            return failure_response('Member profile not found', status_code=status.HTTP_404_NOT_FOUND)
 
         message = serializer.validated_data['message']
         conversation_id = serializer.validated_data.get('conversation_id')
@@ -190,15 +193,14 @@ class AIChatView(APIView):
             context_data=result.get('context_used', {}),
         )
 
-        # Update conversation title if it's a new one
-        if conversation.title == message[:80]:
-            conversation.save(update_fields=['updated_at'])
+        # Update conversation timestamp
+        conversation.save(update_fields=['updated_at'])
 
-        return Response(success_response({
+        return success_response('AI response generated', data={
             'conversation_id': str(conversation.id),
             'message': AIMessageSerializer(ai_msg).data,
             'detected_intent': result['detected_intent'],
-        }))
+        })
 
 
 class AIConversationListView(APIView):
@@ -208,14 +210,14 @@ class AIConversationListView(APIView):
     def get(self, request):
         member, gym = _resolve_member_and_gym(request.user)
         if not member:
-            return Response(error_response('Member profile not found'), status=status.HTTP_404_NOT_FOUND)
+            return failure_response('Member profile not found', status_code=status.HTTP_404_NOT_FOUND)
 
         conversations = AIConversation.objects.filter(
             member=member, gym=gym
         ).prefetch_related('messages').order_by('-updated_at')[:30]
 
         serializer = AIConversationSerializer(conversations, many=True)
-        return Response(success_response(serializer.data))
+        return success_response('Conversations retrieved', data=serializer.data)
 
 
 class AIConversationDetailView(APIView):
@@ -225,13 +227,13 @@ class AIConversationDetailView(APIView):
     def get(self, request, conversation_id):
         member, gym = _resolve_member_and_gym(request.user)
         if not member:
-            return Response(error_response('Member profile not found'), status=status.HTTP_404_NOT_FOUND)
+            return failure_response('Member profile not found', status_code=status.HTTP_404_NOT_FOUND)
 
         conversation = get_object_or_404(
             AIConversation, id=conversation_id, member=member, gym=gym
         )
         serializer = AIConversationDetailSerializer(conversation)
-        return Response(success_response(serializer.data))
+        return success_response('Conversation messages retrieved', data=serializer.data)
 
 
 class ExerciseAlternativesView(APIView):
@@ -241,7 +243,7 @@ class ExerciseAlternativesView(APIView):
     def post(self, request):
         serializer = ExerciseAlternativeRequestSerializer(data=request.data)
         if not serializer.is_valid():
-            return Response(error_response(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
+            return failure_response('Invalid request', errors=serializer.errors)
 
         gym = None
         if request.user.role == UserRole.MEMBER:
@@ -255,7 +257,7 @@ class ExerciseAlternativesView(APIView):
             constraint=constraint or None,
             gym=gym,
         )
-        return Response(success_response(result))
+        return success_response('Exercise alternatives retrieved', data=result)
 
 
 class BeginnerPlanView(APIView):
@@ -265,10 +267,10 @@ class BeginnerPlanView(APIView):
     def get(self, request):
         member, gym = _resolve_member_and_gym(request.user)
         if not member:
-            return Response(error_response('Member profile not found'), status=status.HTTP_404_NOT_FOUND)
+            return failure_response('Member profile not found', status_code=status.HTTP_404_NOT_FOUND)
 
         plan = BeginnerCoachService.generate_beginner_plan(member=member, gym=gym)
-        return Response(success_response(plan))
+        return success_response('Beginner plan generated', data=plan)
 
 
 class ProgressInsightsView(APIView):
@@ -278,10 +280,10 @@ class ProgressInsightsView(APIView):
     def get(self, request):
         member, gym = _resolve_member_and_gym(request.user)
         if not member:
-            return Response(error_response('Member profile not found'), status=status.HTTP_404_NOT_FOUND)
+            return failure_response('Member profile not found', status_code=status.HTTP_404_NOT_FOUND)
 
         insights = ProgressAnalysisService.generate_insights(member=member)
-        return Response(success_response(insights))
+        return success_response('Progress insights generated', data=insights)
 
 
 class DashboardTipView(APIView):
@@ -294,4 +296,4 @@ class DashboardTipView(APIView):
             member, gym = _resolve_member_and_gym(request.user)
 
         tip = DashboardTipService.get_daily_tip(gym=gym)
-        return Response(success_response(tip))
+        return success_response('Daily tip retrieved', data=tip)
