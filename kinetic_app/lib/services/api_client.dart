@@ -899,5 +899,15 @@ class ApiClient {
   Future<http.Response> resolveReport(String reportId, String actionTaken) async {
     return patch('/api/reports/$reportId/', {'action_taken': actionTaken});
   }
+
+  Future<http.Response> uploadChatFile(String roomId, String filePath) async {
+    final url = Uri.parse('$baseUrl/api/chat/rooms/$roomId/upload/');
+    final request = http.MultipartRequest('POST', url);
+    final headers = await _getHeaders(requireAuth: true);
+    request.headers.addAll(headers);
+    request.files.add(await http.MultipartFile.fromPath('file', filePath));
+    final streamedResponse = await request.send();
+    return http.Response.fromStream(streamedResponse);
+  }
 }
 
