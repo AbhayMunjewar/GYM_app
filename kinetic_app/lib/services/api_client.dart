@@ -909,5 +909,66 @@ class ApiClient {
     final streamedResponse = await request.send();
     return http.Response.fromStream(streamedResponse);
   }
+
+  // ---- AI GYM BUDDY APIs ----
+
+  /// Send a message to the AI Gym Buddy. Returns AI response with sources.
+  Future<http.Response> aiChat(String message, {String? conversationId}) async {
+    final body = <String, dynamic>{'message': message};
+    if (conversationId != null) body['conversation_id'] = conversationId;
+    return post('/api/ai/chat/', body);
+  }
+
+  /// List member's AI conversation history.
+  Future<http.Response> getAIConversations() async {
+    return get('/api/ai/conversations/');
+  }
+
+  /// Get all messages in a specific conversation.
+  Future<http.Response> getAIConversationMessages(String conversationId) async {
+    return get('/api/ai/conversations/$conversationId/messages/');
+  }
+
+  /// Get exercise alternatives for a given exercise name.
+  Future<http.Response> getExerciseAlternatives(String exerciseName, {String? constraint}) async {
+    final body = <String, dynamic>{'exercise_name': exerciseName};
+    if (constraint != null && constraint.isNotEmpty) body['constraint'] = constraint;
+    return post('/api/ai/exercise-alternatives/', body);
+  }
+
+  /// Search the Knowledge Base.
+  Future<http.Response> searchKnowledge(String query, {String? category, String? type, String? difficulty}) async {
+    final params = <String>[];
+    if (query.isNotEmpty) params.add('q=${Uri.encodeComponent(query)}');
+    if (category != null && category.isNotEmpty) params.add('category=${Uri.encodeComponent(category)}');
+    if (type != null && type.isNotEmpty) params.add('type=${Uri.encodeComponent(type)}');
+    if (difficulty != null && difficulty.isNotEmpty) params.add('difficulty=${Uri.encodeComponent(difficulty)}');
+    return get('/api/ai/knowledge/search/?${params.join('&')}');
+  }
+
+  /// Get all Knowledge Base categories.
+  Future<http.Response> getKnowledgeCategories() async {
+    return get('/api/ai/knowledge/categories/');
+  }
+
+  /// Get a specific Knowledge Base article by ID.
+  Future<http.Response> getKnowledgeArticle(String articleId) async {
+    return get('/api/ai/knowledge/articles/$articleId/');
+  }
+
+  /// Get AI-generated 7-day beginner workout plan.
+  Future<http.Response> getBeginnerPlan() async {
+    return get('/api/ai/beginner-plan/');
+  }
+
+  /// Get AI-generated progress insights for the current member.
+  Future<http.Response> getProgressInsights() async {
+    return get('/api/ai/progress-insights/');
+  }
+
+  /// Get today's AI motivational tip for the dashboard.
+  Future<http.Response> getDashboardTip() async {
+    return get('/api/ai/dashboard-tip/');
+  }
 }
 
