@@ -790,5 +790,114 @@ class ApiClient {
   Future<http.Response> getCommunityAnalytics() async {
     return get('/api/community/analytics/');
   }
+
+  // ==== COMMUNICATION SYSTEM APIs ====
+  Future<http.Response> getQuestions() async {
+    return get('/api/questions/');
+  }
+
+  Future<http.Response> askQuestion(Map<String, dynamic> data) async {
+    return post('/api/questions/', data);
+  }
+
+  Future<http.Response> answerQuestion(String questionId, String answer) async {
+    return post('/api/questions/$questionId/answers/', {'answer': answer});
+  }
+
+  Future<http.Response> getGroups() async {
+    return get('/api/groups/');
+  }
+
+  Future<http.Response> createGroup(Map<String, dynamic> data) async {
+    return post('/api/groups/', data);
+  }
+
+  Future<http.Response> joinGroup(String groupId) async {
+    return post('/api/groups/$groupId/join/', {});
+  }
+
+  Future<http.Response> leaveGroup(String groupId) async {
+    return post('/api/groups/$groupId/leave/', {});
+  }
+
+  Future<http.Response> getGroupPosts(String groupId) async {
+    return get('/api/groups/$groupId/posts/');
+  }
+
+  Future<http.Response> createGroupPost(String groupId, String content) async {
+    return post('/api/groups/$groupId/posts/', {'content': content});
+  }
+
+  Future<http.Response> getAnnouncements() async {
+    return get('/api/announcements/');
+  }
+
+  Future<http.Response> createAnnouncement(Map<String, dynamic> data) async {
+    return post('/api/announcements/', data);
+  }
+
+  Future<http.Response> getChatRooms() async {
+    return get('/api/chat/rooms/');
+  }
+
+  Future<http.Response> createChatRoom(String targetUserId) async {
+    return post('/api/chat/rooms/', {'user_id': targetUserId});
+  }
+
+  Future<http.Response> getChatMessages(String roomId, {int page = 1}) async {
+    return get('/api/chat/messages/?room_id=$roomId&page=$page');
+  }
+
+  Future<http.Response> getForumCategories() async {
+    return get('/api/forums/categories/');
+  }
+
+  Future<http.Response> createForumCategory(Map<String, dynamic> data) async {
+    return post('/api/forums/categories/', data);
+  }
+
+  Future<http.Response> getForumTopics() async {
+    return get('/api/forums/topics/');
+  }
+
+  Future<http.Response> createForumTopic(Map<String, dynamic> data) async {
+    return post('/api/forums/topics/', data);
+  }
+
+  Future<http.Response> getForumReplies(String topicId) async {
+    return get('/api/forums/topics/$topicId/replies_list/');
+  }
+
+  Future<http.Response> replyToForumTopic(String topicId, String content) async {
+    return post('/api/forums/topics/$topicId/replies/', {'content': content});
+  }
+
+  Future<http.Response> getEvents() async {
+    return get('/api/events/');
+  }
+
+  Future<http.Response> createEvent(Map<String, dynamic> data) async {
+    return post('/api/events/', data);
+  }
+
+  Future<http.Response> registerForEvent(String eventId) async {
+    return post('/api/events/$eventId/register/', {});
+  }
+
+  Future<http.Response> cancelEventRegistration(String eventId) async {
+    return post('/api/events/$eventId/cancel/', {});
+  }
+
+  Future<http.Response> createReport(Map<String, dynamic> data) async {
+    return post('/api/reports/', data);
+  }
+
+  Future<http.Response> getReports() async {
+    return get('/api/reports/');
+  }
+
+  Future<http.Response> resolveReport(String reportId, String actionTaken) async {
+    return patch('/api/reports/$reportId/', {'action_taken': actionTaken});
+  }
 }
 
