@@ -57,7 +57,7 @@ INTENT_PATTERNS = {
         r'correct way', r'common mistake',
     ],
     'motivation': [
-        r'motivat', r'demotivat', r'give up', r'quit\b', r'tired of', r'bored\b',
+        r'motivat', r'demotivat', r'give up', r'giving up', r'quit\b', r'tired of', r'bored\b',
     ],
 }
 
