@@ -1,4 +1,5 @@
 import uuid
+import json
 from django.db import models
 from django.utils import timezone
 from gyms.models import Gym
@@ -72,11 +73,12 @@ class KnowledgeArticle(models.Model):
     article_type = models.CharField(max_length=30, choices=KnowledgeArticleType.choices, default=KnowledgeArticleType.GENERAL)
     difficulty = models.CharField(max_length=20, choices=KnowledgeDifficulty.choices, default=KnowledgeDifficulty.BEGINNER)
 
-    # Searchable arrays stored as JSON
-    tags = models.JSONField(default=list, blank=True)          # ['squat', 'legs', 'strength']
-    muscle_groups = models.JSONField(default=list, blank=True)  # ['quadriceps', 'hamstrings']
-    equipment = models.JSONField(default=list, blank=True)      # ['barbell', 'rack']
-    keywords = models.TextField(blank=True, help_text='Space-separated keywords for TF-IDF search')
+    # Stored as comma-separated strings for SQLite compatibility
+    # Use tags_list, muscle_groups_list, equipment_list properties for Python list access
+    tags = models.TextField(blank=True, default='', help_text='Comma-separated tags')
+    muscle_groups = models.TextField(blank=True, default='', help_text='Comma-separated muscle groups')
+    equipment = models.TextField(blank=True, default='', help_text='Comma-separated equipment')
+    keywords = models.TextField(blank=True, help_text='Space-separated keywords for search')
 
     is_active = models.BooleanField(default=True)
     is_featured = models.BooleanField(default=False)
@@ -97,14 +99,40 @@ class KnowledgeArticle(models.Model):
     def __str__(self):
         return self.title
 
+    # Helper properties to handle list ↔ CSV conversion
+    @property
+    def tags_list(self):
+        return [t.strip() for t in self.tags.split(',') if t.strip()] if self.tags else []
+
+    @tags_list.setter
+    def tags_list(self, value):
+        self.tags = ','.join(value) if value else ''
+
+    @property
+    def muscle_groups_list(self):
+        return [m.strip() for m in self.muscle_groups.split(',') if m.strip()] if self.muscle_groups else []
+
+    @muscle_groups_list.setter
+    def muscle_groups_list(self, value):
+        self.muscle_groups = ','.join(value) if value else ''
+
+    @property
+    def equipment_list(self):
+        return [e.strip() for e in self.equipment.split(',') if e.strip()] if self.equipment else []
+
+    @equipment_list.setter
+    def equipment_list(self, value):
+        self.equipment = ','.join(value) if value else ''
+
 
 class ExerciseData(models.Model):
     """Extended data for EXERCISE-type KnowledgeArticles."""
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     article = models.OneToOneField(KnowledgeArticle, on_delete=models.CASCADE, related_name='exercise_data')
-    primary_muscles = models.JSONField(default=list)     # ['quadriceps', 'glutes']
-    secondary_muscles = models.JSONField(default=list)   # ['hamstrings', 'core']
-    equipment_needed = models.JSONField(default=list)    # ['barbell', 'squat rack']
+    # CSV stored for SQLite compatibility
+    primary_muscles = models.TextField(blank=True, default='')
+    secondary_muscles = models.TextField(blank=True, default='')
+    equipment_needed = models.TextField(blank=True, default='')
     movement_pattern = models.CharField(max_length=20, choices=MovementPattern.choices, default=MovementPattern.COMPOUND)
     alternatives = models.ManyToManyField(
         KnowledgeArticle,
@@ -114,7 +142,7 @@ class ExerciseData(models.Model):
     )
     common_mistakes = models.TextField(blank=True)
     cues = models.TextField(blank=True, help_text='Coaching cues for form')
-    reps_range = models.CharField(max_length=20, blank=True, default='')  # e.g. '3x8-12'
+    reps_range = models.CharField(max_length=20, blank=True, default='')
     rest_seconds = models.PositiveSmallIntegerField(default=90)
     calories_per_minute = models.FloatField(default=6.0)
 
@@ -123,6 +151,18 @@ class ExerciseData(models.Model):
 
     def __str__(self):
         return f"ExerciseData: {self.article.title}"
+
+    @property
+    def primary_muscles_list(self):
+        return [m.strip() for m in self.primary_muscles.split(',') if m.strip()] if self.primary_muscles else []
+
+    @property
+    def secondary_muscles_list(self):
+        return [m.strip() for m in self.secondary_muscles.split(',') if m.strip()] if self.secondary_muscles else []
+
+    @property
+    def equipment_needed_list(self):
+        return [e.strip() for e in self.equipment_needed.split(',') if e.strip()] if self.equipment_needed else []
 
 
 # ---------------------------------------------------------------------------
@@ -163,7 +203,7 @@ class AIConversation(models.Model):
         db_table = 'ai_conversations'
         ordering = ['-updated_at']
         indexes = [
-            models.Index(fields=['gym', 'member', '-updated_at']),
+            models.Index(fields=['gym', 'member']),
             models.Index(fields=['member', 'conversation_type']),
         ]
 
@@ -176,10 +216,9 @@ class AIMessage(models.Model):
     conversation = models.ForeignKey(AIConversation, on_delete=models.CASCADE, related_name='messages')
     role = models.CharField(max_length=10, choices=MessageRole.choices)
     content = models.TextField()
-    # Snapshot of member context used to generate this response
-    context_data = models.JSONField(default=dict, blank=True)
-    # List of KnowledgeArticle IDs that were cited in this response
-    sources = models.JSONField(default=list, blank=True)
+    # Stored as JSON text for SQLite compatibility
+    context_data = models.TextField(blank=True, default='{}')
+    sources = models.TextField(blank=True, default='[]')  # JSON list of article IDs
     response_source = models.CharField(
         max_length=10,
         choices=ResponseSource.choices,
@@ -198,6 +237,17 @@ class AIMessage(models.Model):
     def __str__(self):
         return f"[{self.role}] {self.content[:60]}"
 
+    @property
+    def sources_list(self):
+        try:
+            return json.loads(self.sources) if self.sources else []
+        except (json.JSONDecodeError, TypeError):
+            return []
+
+    @sources_list.setter
+    def sources_list(self, value):
+        self.sources = json.dumps(value) if value else '[]'
+
 
 class AIInteractionLog(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -213,7 +263,7 @@ class AIInteractionLog(models.Model):
         db_table = 'ai_interaction_logs'
         ordering = ['-created_at']
         indexes = [
-            models.Index(fields=['gym', 'member', '-created_at']),
+            models.Index(fields=['gym', 'member']),
             models.Index(fields=['detected_intent']),
         ]
 
