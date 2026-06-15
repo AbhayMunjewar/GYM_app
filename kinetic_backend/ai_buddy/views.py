@@ -5,6 +5,7 @@ REST API endpoints for the AI Gym Buddy platform.
 All member endpoints require gym-scoped member resolution.
 """
 import logging
+import json
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -188,9 +189,9 @@ class AIChatView(APIView):
             conversation=conversation,
             role=MessageRole.ASSISTANT,
             content=result['content'],
-            sources=result['sources'],
+            sources=json.dumps(result['sources']),
             response_source=result['response_source'],
-            context_data=result.get('context_used', {}),
+            context_data=json.dumps(result.get('context_used', {}))[:5000],
         )
 
         # Update conversation timestamp
