@@ -27,6 +27,8 @@ import 'screens/member/rewards_center.dart';
 import 'screens/member/community_feed_screen.dart';
 import 'screens/member/profile_settings.dart';
 import 'screens/member/member_billing.dart';
+import 'screens/member/chat_rooms_screen.dart';
+import 'screens/member/chat_detail_screen.dart';
 
 // Trainer
 import 'screens/trainer/trainer_dashboard.dart';
@@ -88,8 +90,13 @@ final GoRouter _router = GoRouter(
     GoRoute(path: '/member/challenges', builder: (context, state) => const ChallengesLeaderboard()),
     GoRoute(path: '/member/rewards', builder: (context, state) => const RewardsCenter()),
     GoRoute(path: '/member/community', builder: (context, state) => const CommunityFeedScreen()),
-    GoRoute(path: '/member/profile', builder: (context, state) => const ProfileSettings()),
     GoRoute(path: '/member/billing', builder: (context, state) => MemberBillingScreen()),
+    GoRoute(path: '/member/chat-rooms', builder: (context, state) => const ChatRoomsScreen()),
+    GoRoute(path: '/member/chat/:roomId', builder: (context, state) {
+      final roomId = state.pathParameters['roomId']!;
+      final targetUser = state.extra as Map<String, dynamic>?;
+      return ChatDetailScreen(roomId: roomId, targetUser: targetUser);
+    }),
     
     // Trainer Routes
     GoRoute(path: '/trainer/dashboard', builder: (context, state) => const TrainerDashboard()),
