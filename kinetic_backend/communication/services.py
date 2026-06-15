@@ -346,8 +346,6 @@ class ModerationService:
             if msg:
                 part = msg.room.participants.exclude(user=resolver).first() or msg.room.participants.first()
                 if part:
-                    from members.models import Member
-                    from trainers.models import Trainer
                     p_member = Member.objects.filter(email=part.user.email, is_deleted=False).first()
                     if p_member:
                         content_gym = p_member.gym

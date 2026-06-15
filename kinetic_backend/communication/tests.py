@@ -339,7 +339,7 @@ class CommunicationAPITestCase(APITestCase):
         mock_file = SimpleUploadedFile("workout_plan.pdf", b"mock pdf content", content_type="application/pdf")
         
         # 4. POST file upload
-        url = reverse('chatroom-detail', args=[room.id]) + 'upload/'
+        url = reverse('chatroom-upload', args=[room.id])
         response = self.client.post(url, {'file': mock_file}, format='multipart')
         
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -372,12 +372,9 @@ class CommunicationAPITestCase(APITestCase):
         self.client.force_authenticate(user=self.trainer_user_a)
         resolve_url = reverse('report-detail', args=[report.id])
         resolve_data = {'action_taken': 'HIDE'}
-        response = self.client.post(resolve_url, resolve_data) # wait, we used patch in report-detail?
-        # Let's check view: it has partial_update (patch/put) or update.
-        # Yes, we use patch for resolve_url.
         response = self.client.patch(resolve_url, resolve_data)
         
-        # Should fail / return error since Trainer A is not in Gym B
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        # Should fail / return 404 NotFound since Trainer A cannot see the report from Gym B
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         report.refresh_from_db()
         self.assertEqual(report.status, ReportStatus.PENDING)

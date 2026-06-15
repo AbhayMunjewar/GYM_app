@@ -227,7 +227,7 @@ class ChatRoomViewSet(viewsets.GenericViewSet):
         serializer = self.get_serializer(room)
         return success_response("Chat room created.", data=serializer.data, status_code=status.HTTP_201_CREATED)
 
-    @action(detail=True, methods=['post'], url_path='upload')
+    @action(detail=True, methods=['post'], url_path='upload', url_name='upload')
     def upload_file(self, request, pk=None):
         room = self.get_object()
         file_obj = request.FILES.get('file')
