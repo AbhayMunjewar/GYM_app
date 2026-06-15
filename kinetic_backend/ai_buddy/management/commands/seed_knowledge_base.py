@@ -1453,7 +1453,7 @@ class Command(BaseCommand):
 
         total = KnowledgeArticle.objects.filter(gym__isnull=True).count()
         self.stdout.write(self.style.SUCCESS(
-            f'\n✅ Knowledge Base seeded successfully!'
+            f'\nKnowledge Base seeded successfully!'
             f'\n   Total articles: {total}'
             f'\n   Categories: {KnowledgeCategory.objects.filter(gym__isnull=True).count()}'
             f'\n   Exercise records: {ExerciseData.objects.count()}'
