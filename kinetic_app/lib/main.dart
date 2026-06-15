@@ -90,6 +90,7 @@ final GoRouter _router = GoRouter(
     GoRoute(path: '/member/challenges', builder: (context, state) => const ChallengesLeaderboard()),
     GoRoute(path: '/member/rewards', builder: (context, state) => const RewardsCenter()),
     GoRoute(path: '/member/community', builder: (context, state) => const CommunityFeedScreen()),
+    GoRoute(path: '/member/profile', builder: (context, state) => const ProfileSettings()),
     GoRoute(path: '/member/billing', builder: (context, state) => MemberBillingScreen()),
     GoRoute(path: '/member/chat-rooms', builder: (context, state) => const ChatRoomsScreen()),
     GoRoute(path: '/member/chat/:roomId', builder: (context, state) {
