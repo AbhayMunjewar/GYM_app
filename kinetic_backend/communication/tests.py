@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 from datetime import date, timedelta
 
@@ -326,3 +327,57 @@ class CommunicationAPITestCase(APITestCase):
         # Report should be marked as RESOLVED
         report.refresh_from_db()
         self.assertEqual(report.status, ReportStatus.RESOLVED)
+
+    def test_chat_file_upload(self):
+        # 1. Create a chat room between Trainer A and Member A
+        room = ChatService.get_or_create_room(self.trainer_user_a, self.member_user_a)
+        
+        # 2. Authenticate as Member A
+        self.client.force_authenticate(user=self.member_user_a)
+        
+        # 3. Prepare simple uploaded file
+        mock_file = SimpleUploadedFile("workout_plan.pdf", b"mock pdf content", content_type="application/pdf")
+        
+        # 4. POST file upload
+        url = reverse('chatroom-detail', args=[room.id]) + 'upload/'
+        response = self.client.post(url, {'file': mock_file}, format='multipart')
+        
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIn('file_url', response.data['data'])
+        self.assertEqual(response.data['data']['filename'], "workout_plan.pdf")
+        self.assertEqual(response.data['data']['content_type'], "application/pdf")
+
+    def test_moderation_cross_gym_isolation(self):
+        # 1. Create post in Gym B (Member B)
+        post_b = CommunityPost.objects.create(
+            author=self.member_user_b,
+            gym=self.gym_b,
+            title='Inappropriate Beta Title',
+            content='Spam content Beta'
+        )
+        
+        # 2. Member B reports their post
+        self.client.force_authenticate(user=self.member_user_b)
+        report_url = reverse('report-list')
+        report_data = {
+            'content_type': 'POST',
+            'content_id': str(post_b.id),
+            'reason': 'Beta gym spam.'
+        }
+        response = self.client.post(report_url, report_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        report = Report.objects.get(content_id=post_b.id)
+        
+        # 3. Trainer A (Gym A) tries to resolve Gym B's report
+        self.client.force_authenticate(user=self.trainer_user_a)
+        resolve_url = reverse('report-detail', args=[report.id])
+        resolve_data = {'action_taken': 'HIDE'}
+        response = self.client.post(resolve_url, resolve_data) # wait, we used patch in report-detail?
+        # Let's check view: it has partial_update (patch/put) or update.
+        # Yes, we use patch for resolve_url.
+        response = self.client.patch(resolve_url, resolve_data)
+        
+        # Should fail / return error since Trainer A is not in Gym B
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        report.refresh_from_db()
+        self.assertEqual(report.status, ReportStatus.PENDING)

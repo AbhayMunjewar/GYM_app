@@ -318,6 +318,51 @@ class ModerationService:
         if resolver.role not in ['OWNER', 'TRAINER']:
             raise ValueError("Only moderators can resolve content reports.")
 
+        # Ensure resolver belongs to the same gym as the content/report
+        resolver_gyms = []
+        if resolver.role == 'OWNER':
+            resolver_gyms = list(resolver.gyms.all())
+        elif resolver.role == 'TRAINER':
+            t = Trainer.objects.filter(user=resolver, is_deleted=False).first()
+            if t:
+                resolver_gyms = [t.gym]
+
+        # Find the gym of the reported content
+        content_gym = None
+        if report.content_type == ReportContentType.POST:
+            gp = GroupPost.objects.filter(id=report.content_id).first()
+            if gp:
+                content_gym = gp.group.gym
+            else:
+                cp = CommunityPost.objects.filter(id=report.content_id).first()
+                if cp:
+                    content_gym = cp.gym
+        elif report.content_type == ReportContentType.COMMENT:
+            pc = PostComment.objects.filter(id=report.content_id).first()
+            if pc:
+                content_gym = pc.post.gym
+        elif report.content_type == ReportContentType.MESSAGE:
+            msg = Message.objects.filter(id=report.content_id).first()
+            if msg:
+                part = msg.room.participants.exclude(user=resolver).first() or msg.room.participants.first()
+                if part:
+                    from members.models import Member
+                    from trainers.models import Trainer
+                    p_member = Member.objects.filter(email=part.user.email, is_deleted=False).first()
+                    if p_member:
+                        content_gym = p_member.gym
+                    else:
+                        p_trainer = Trainer.objects.filter(user=part.user, is_deleted=False).first()
+                        if p_trainer:
+                            content_gym = p_trainer.gym
+        elif report.content_type == ReportContentType.FORUM_TOPIC:
+            ft = ForumTopic.objects.filter(id=report.content_id).first()
+            if ft:
+                content_gym = ft.category.gym
+
+        if content_gym and content_gym not in resolver_gyms:
+            raise ValueError("You do not have permission to moderate content from another gym.")
+
         report.status = ReportStatus.RESOLVED
         report.save(update_fields=['status', 'updated_at'])
 

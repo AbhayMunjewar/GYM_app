@@ -2,6 +2,12 @@ from rest_framework import viewsets, generics, status, serializers, permissions
 from rest_framework.views import APIView
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth import get_user_model
+from django.core.files.storage import default_storage
+import os
+import uuid
+
+User = get_user_model()
 
 from core.responses import success_response, failure_response
 from core.pagination import StandardResultsSetPagination
@@ -220,6 +226,29 @@ class ChatRoomViewSet(viewsets.GenericViewSet):
         room = ChatService.get_or_create_room(request.user, target_user)
         serializer = self.get_serializer(room)
         return success_response("Chat room created.", data=serializer.data, status_code=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['post'], url_path='upload')
+    def upload_file(self, request, pk=None):
+        room = self.get_object()
+        file_obj = request.FILES.get('file')
+        if not file_obj:
+            return failure_response("No file provided.", status_code=status.HTTP_400_BAD_REQUEST)
+        
+        name, ext = os.path.splitext(file_obj.name)
+        filename = f"{uuid.uuid4()}{ext}"
+        
+        path = default_storage.save(f"chat_attachments/{filename}", file_obj)
+        file_url = request.build_absolute_uri(default_storage.url(path))
+        
+        return success_response(
+            "File uploaded successfully.",
+            data={
+                "file_url": file_url,
+                "filename": file_obj.name,
+                "content_type": file_obj.content_type
+            },
+            status_code=status.HTTP_201_CREATED
+        )
 
 
 class MessageView(APIView):
