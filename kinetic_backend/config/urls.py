@@ -45,6 +45,7 @@ urlpatterns = [
     path('api/analytics/', include('analytics.urls')),
     path('api/', include('gamification.urls')),
     path('api/community/', include('community.urls')),
+    path('api/', include('communication.urls')),
 
     
     # Role-based dashboard routes
