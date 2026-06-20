@@ -272,6 +272,29 @@ class AIInteractionLog(models.Model):
 
 
 class KnowledgeQA(models.Model):
-    # Dummy to satisfy imports, will be created in second migration
-    pass
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    gym = models.ForeignKey(Gym, on_delete=models.CASCADE, null=True, blank=True, related_name='kb_qas')
+    category = models.ForeignKey(KnowledgeCategory, on_delete=models.CASCADE, related_name='qas')
+    subcategory = models.CharField(max_length=100, blank=True, default='')
+    question = models.TextField()
+    answer = models.TextField()
+    keywords = models.TextField(blank=True, help_text='Space-separated keywords')
+    difficulty = models.CharField(max_length=20, choices=KnowledgeDifficulty.choices, default=KnowledgeDifficulty.BEGINNER)
+    safety_notes = models.TextField(blank=True, default='')
+    related_topics = models.TextField(blank=True, default='', help_text='Comma-separated topics')
+    is_active = models.BooleanField(default=True)
+    language = models.CharField(max_length=10, default='en', help_text='Language code (e.g. en, es, fr)')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'ai_knowledge_qas'
+        ordering = ['question']
+        indexes = [
+            models.Index(fields=['gym', 'category', 'is_active']),
+            models.Index(fields=['language', 'is_active']),
+        ]
+
+    def __str__(self):
+        return self.question[:60]
 
