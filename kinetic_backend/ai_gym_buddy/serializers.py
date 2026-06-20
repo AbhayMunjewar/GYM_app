@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import (
     KnowledgeCategory, KnowledgeArticle, ExerciseData,
-    AIConversation, AIMessage,
+    AIConversation, AIMessage, KnowledgeQA,
 )
 
 
@@ -162,3 +162,37 @@ class AIChatRequestSerializer(serializers.Serializer):
 class ExerciseAlternativeRequestSerializer(serializers.Serializer):
     exercise_name = serializers.CharField(max_length=200)
     constraint = serializers.CharField(max_length=200, required=False, allow_blank=True)
+
+
+class KnowledgeQASerializer(serializers.ModelSerializer):
+    category_name = serializers.CharField(source='category.name', read_only=True)
+
+    class Meta:
+        model = KnowledgeCategory
+        fields = [
+            'id', 'category_name', 'subcategory', 'question', 'answer',
+            'keywords', 'difficulty', 'safety_notes', 'related_topics',
+            'is_active', 'language', 'created_at', 'updated_at'
+        ]
+
+
+class AISearchRequestSerializer(serializers.Serializer):
+    query = serializers.CharField(max_length=500)
+    category = serializers.CharField(max_length=120, required=False, allow_blank=True)
+    difficulty = serializers.CharField(max_length=50, required=False, allow_blank=True)
+
+
+class AIProgressAnalysisRequestSerializer(serializers.Serializer):
+    member_id = serializers.UUIDField(required=False, allow_null=True)
+
+
+class AIGoalCoachingRequestSerializer(serializers.Serializer):
+    goal = serializers.CharField(max_length=100)
+    progress_pct = serializers.FloatField(required=False, default=0.0)
+
+
+class AIBeginnerCoachRequestSerializer(serializers.Serializer):
+    goal = serializers.CharField(max_length=100)
+    fitness_level = serializers.CharField(max_length=50, required=False, default='BEGINNER')
+    attendance_rate = serializers.FloatField(required=False, default=100.0)
+

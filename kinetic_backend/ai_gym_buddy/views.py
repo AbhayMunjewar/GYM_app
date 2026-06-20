@@ -1,9 +1,3 @@
-"""
-AI Buddy Views
-==============
-REST API endpoints for the AI Gym Buddy platform.
-All member endpoints require gym-scoped member resolution.
-"""
 import logging
 import json
 from rest_framework.views import APIView
@@ -11,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
-from django.db.models import Q
+from django.db.models import Q, Count, Avg
 
 from core.responses import success_response, failure_response
 from accounts.models import UserRole
@@ -19,24 +13,27 @@ from members.models import Member
 from gyms.models import Gym
 
 from .models import (
-    KnowledgeArticle, KnowledgeCategory,
-    AIConversation, AIMessage, MessageRole,
+    KnowledgeArticle, KnowledgeCategory, KnowledgeQA,
+    AIConversation, AIMessage, MessageRole, AIInteractionLog,
 )
 from .serializers import (
     KnowledgeCategorySerializer, KnowledgeArticleListSerializer,
     KnowledgeArticleDetailSerializer, AIConversationSerializer,
     AIConversationDetailSerializer, AIChatRequestSerializer,
     ExerciseAlternativeRequestSerializer, AIMessageSerializer,
+    AISearchRequestSerializer, AIProgressAnalysisRequestSerializer,
+    AIGoalCoachingRequestSerializer, AIBeginnerCoachRequestSerializer,
 )
-from .services import (
-    KnowledgeBaseSearchService, AIResponseEngine,
-    ExerciseAlternativeEngine, BeginnerCoachService,
-    ProgressAnalysisService, DashboardTipService,
+from .search_engine import KnowledgeBaseSearchEngine
+from .context_engine import AIContextEngine
+from .recommendation_engine import (
+    ExerciseExplanationEngine, ExerciseAlternativeEngine,
+    BeginnerCoachEngine, ProgressAnalysisEngine, GoalCoachingEngine
 )
+from .services import AIResponseEngine, DashboardTipService
 from .permissions import IsMember, IsMemberOrTrainer, IsAnyGymRole
 
 logger = logging.getLogger(__name__)
-
 
 def _resolve_member_and_gym(user):
     """
@@ -73,48 +70,45 @@ class KnowledgeCategoryListView(APIView):
 
 
 class KnowledgeSearchView(APIView):
-    """GET /api/ai/knowledge/search/?q=&category=&type=&difficulty= — Search KB articles."""
+    """
+    GET /api/ai/knowledge/search/ — Legacy GET search.
+    POST /api/ai/search/ — New search endpoint.
+    """
     permission_classes = [IsAuthenticated, IsAnyGymRole]
 
     def get(self, request):
         query = request.query_params.get('q', '').strip()
         category_slug = request.query_params.get('category', '').strip()
-        article_type = request.query_params.get('type', '').strip().upper() or None
-        difficulty = request.query_params.get('difficulty', '').strip().upper() or None
+        difficulty = request.query_params.get('difficulty', '').strip() or None
 
         gym = None
         if request.user.role == UserRole.MEMBER:
             member, gym = _resolve_member_and_gym(request.user)
 
-        if not query and not category_slug:
-            # Return featured articles
-            qs = KnowledgeArticle.objects.filter(is_active=True)
-            if gym:
-                qs = qs.filter(Q(gym__isnull=True) | Q(gym=gym))
-            else:
-                qs = qs.filter(gym__isnull=True)
-            if article_type:
-                qs = qs.filter(article_type=article_type)
-            if difficulty:
-                qs = qs.filter(difficulty=difficulty)
-            qs = qs.order_by('-is_featured', '-view_count')[:20]
-        elif category_slug and not query:
-            qs = KnowledgeArticle.objects.filter(
-                is_active=True, category__slug=category_slug
-            )
-            if gym:
-                qs = qs.filter(Q(gym__isnull=True) | Q(gym=gym))
-            else:
-                qs = qs.filter(gym__isnull=True)
-        else:
-            search_svc = KnowledgeBaseSearchService()
-            qs = search_svc.search(
-                query or category_slug, gym=gym,
-                article_type=article_type, difficulty=difficulty, limit=20
-            )
+        results = KnowledgeBaseSearchEngine.search(
+            query=query, gym=gym, category_slug=category_slug,
+            difficulty=difficulty, limit=20
+        )
+        return success_response('Search results retrieved', data={'results': results, 'count': len(results)})
 
-        serializer = KnowledgeArticleListSerializer(qs, many=True)
-        return success_response('Search results retrieved', data={'results': serializer.data, 'count': len(serializer.data)})
+    def post(self, request):
+        serializer = AISearchRequestSerializer(data=request.data)
+        if not serializer.is_valid():
+            return failure_response('Invalid search body', errors=serializer.errors)
+
+        query = serializer.validated_data['query']
+        category_slug = serializer.validated_data.get('category')
+        difficulty = serializer.validated_data.get('difficulty') or None
+
+        gym = None
+        if request.user.role == UserRole.MEMBER:
+            member, gym = _resolve_member_and_gym(request.user)
+
+        results = KnowledgeBaseSearchEngine.search(
+            query=query, gym=gym, category_slug=category_slug,
+            difficulty=difficulty, limit=20
+        )
+        return success_response('Search results retrieved', data={'results': results, 'count': len(results)})
 
 
 class KnowledgeArticleDetailView(APIView):
@@ -144,7 +138,7 @@ class KnowledgeArticleDetailView(APIView):
 
 
 class AIChatView(APIView):
-    """POST /api/ai/chat/ — Send a message to the AI Gym Buddy."""
+    """POST /api/ai/chat/ — Send a message to the AI Gym Buddy. Only MEMBER."""
     permission_classes = [IsAuthenticated, IsMember]
 
     def post(self, request):
@@ -222,7 +216,10 @@ class AIConversationListView(APIView):
 
 
 class AIConversationDetailView(APIView):
-    """GET /api/ai/conversations/<id>/messages/ — Get full conversation thread."""
+    """
+    GET /api/ai/conversations/<id>/ — Get conversation details.
+    GET /api/ai/conversations/<id>/messages/ — Get full conversation thread.
+    """
     permission_classes = [IsAuthenticated, IsMember]
 
     def get(self, request, conversation_id):
@@ -253,7 +250,7 @@ class ExerciseAlternativesView(APIView):
         exercise_name = serializer.validated_data['exercise_name']
         constraint = serializer.validated_data.get('constraint', '')
 
-        result = ExerciseAlternativeEngine.get_alternatives(
+        result = ExerciseAlternativeEngine.suggest_alternatives(
             exercise_name,
             constraint=constraint or None,
             gym=gym,
@@ -262,7 +259,10 @@ class ExerciseAlternativesView(APIView):
 
 
 class BeginnerPlanView(APIView):
-    """GET /api/ai/beginner-plan/ — Get a 7-day beginner plan."""
+    """
+    GET /api/ai/beginner-plan/ — Get a 7-day beginner plan.
+    POST /api/ai/beginner-coach/ — Beginner coach suggestions based on goals & fitness level.
+    """
     permission_classes = [IsAuthenticated, IsMember]
 
     def get(self, request):
@@ -273,18 +273,91 @@ class BeginnerPlanView(APIView):
         plan = BeginnerCoachService.generate_beginner_plan(member=member, gym=gym)
         return success_response('Beginner plan generated', data=plan)
 
+    def post(self, request):
+        serializer = AIBeginnerCoachRequestSerializer(data=request.data)
+        if not serializer.is_valid():
+            return failure_response('Invalid request body', errors=serializer.errors)
 
-class ProgressInsightsView(APIView):
-    """GET /api/ai/progress-insights/ — Get AI-generated progress analysis."""
-    permission_classes = [IsAuthenticated, IsMember]
+        goal = serializer.validated_data['goal']
+        level = serializer.validated_data.get('fitness_level', 'BEGINNER')
+        rate = serializer.validated_data.get('attendance_rate', 100.0)
+
+        plan = BeginnerCoachEngine.generate_coach_plan(goal=goal, fitness_level=level, attendance_rate=rate)
+        return success_response('Beginner plan generated', data=plan)
+
+
+class AIProgressAnalysisView(APIView):
+    """
+    GET /api/ai/progress-insights/ — Legacy GET.
+    POST /api/ai/progress-analysis/ — Strict RBAC. Calculates weight trends and insights.
+    """
+    permission_classes = [IsAuthenticated, IsAnyGymRole]
 
     def get(self, request):
+        # Legacy GET endpoint for Member only
+        if request.user.role != UserRole.MEMBER:
+            return failure_response('Only members can query insights directly without a body', status_code=status.HTTP_403_FORBIDDEN)
+        
         member, gym = _resolve_member_and_gym(request.user)
         if not member:
             return failure_response('Member profile not found', status_code=status.HTTP_404_NOT_FOUND)
 
-        insights = ProgressAnalysisService.generate_insights(member=member)
-        return success_response('Progress insights generated', data=insights)
+        context = AIContextEngine.get_member_context(member)
+        analysis = ProgressAnalysisEngine.analyze(context)
+        return success_response('Progress analysis retrieved', data=analysis)
+
+    def post(self, request):
+        serializer = AIProgressAnalysisRequestSerializer(data=request.data)
+        if not serializer.is_valid():
+            return failure_response('Invalid request payload', errors=serializer.errors)
+
+        user_role = request.user.role
+        target_member_id = serializer.validated_data.get('member_id')
+
+        # RBAC checks
+        if user_role == UserRole.MEMBER:
+            # Members can only view their own
+            member, gym = _resolve_member_and_gym(request.user)
+            if not member:
+                return failure_response('Member profile not found', status_code=status.HTTP_404_NOT_FOUND)
+        elif user_role in [UserRole.TRAINER, UserRole.OWNER]:
+            if not target_member_id:
+                return failure_response('Trainers and Owners must specify a member_id', status_code=status.HTTP_400_BAD_REQUEST)
+            # Find and verify scoping
+            member = get_object_or_404(Member, id=target_member_id, is_deleted=False)
+            # Verify owner or trainer belongs to same gym as member
+            if request.user.role == UserRole.TRAINER:
+                # Trainers must belong to same gym
+                trainer_profile = getattr(request.user, 'trainer_profile', None)
+                if not trainer_profile or trainer_profile.gym != member.gym:
+                    return failure_response('Access Denied: Cross-tenant gym boundary violated', status_code=status.HTTP_403_FORBIDDEN)
+            elif request.user.role == UserRole.OWNER:
+                # Owners must own the gym
+                gyms = Gym.objects.filter(owner=request.user)
+                if not gyms.filter(id=member.gym.id).exists():
+                    return failure_response('Access Denied: Gym ownership not verified', status_code=status.HTTP_403_FORBIDDEN)
+        else:
+            return failure_response('Unauthorized role', status_code=status.HTTP_403_FORBIDDEN)
+
+        context = AIContextEngine.get_member_context(member)
+        analysis = ProgressAnalysisEngine.analyze(context)
+        return success_response('Progress analysis completed', data=analysis)
+
+
+class AIGoalCoachingView(APIView):
+    """POST /api/ai/goal-coaching/ — Member-only goal coaching."""
+    permission_classes = [IsAuthenticated, IsMember]
+
+    def post(self, request):
+        serializer = AIGoalCoachingRequestSerializer(data=request.data)
+        if not serializer.is_valid():
+            return failure_response('Invalid payload', errors=serializer.errors)
+
+        goal = serializer.validated_data['goal']
+        progress_pct = serializer.validated_data.get('progress_pct', 0.0)
+
+        coaching = GoalCoachingEngine.generate_coaching(goal=goal, progress_pct=progress_pct)
+        return success_response('Goal coaching insights generated', data=coaching)
 
 
 class DashboardTipView(APIView):
@@ -298,3 +371,40 @@ class DashboardTipView(APIView):
 
         tip = DashboardTipService.get_daily_tip(gym=gym)
         return success_response('Daily tip retrieved', data=tip)
+
+
+class AIAnalyticsView(APIView):
+    """GET /api/ai/analytics/ — AI Usage & Search performance analytics for Gym Owners."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if request.user.role != UserRole.OWNER:
+            return failure_response('Access Denied: Only owners can check analytics.', status_code=status.HTTP_403_FORBIDDEN)
+
+        gyms = Gym.objects.filter(owner=request.user)
+        if not gyms.exists():
+            return failure_response('No gym found for the owner', status_code=status.HTTP_404_NOT_FOUND)
+        
+        gym = gyms.first()
+
+        # Gather interaction telemetry
+        logs = AIInteractionLog.objects.filter(gym=gym)
+        total_queries = logs.count()
+
+        most_asked = logs.values('query').annotate(count=Count('query')).order_by('-count')[:5]
+        popular_intents = logs.values('detected_intent').annotate(count=Count('detected_intent')).order_by('-count')[:5]
+        avg_latency = logs.aggregate(avg=Avg('latency_ms'))['avg'] or 0.0
+
+        # Search success rate (Response sources from KB vs Template defaults)
+        kb_source_count = logs.filter(response_source='KB').count()
+        success_rate = (kb_source_count / total_queries * 100.0) if total_queries > 0 else 100.0
+
+        analytics_data = {
+            'total_interactions': total_queries,
+            'avg_latency_ms': round(avg_latency, 1),
+            'kb_search_success_rate': f"{round(success_rate, 1)}%",
+            'popular_questions': [{'query': q['query'], 'count': q['count']} for q in most_asked],
+            'popular_categories_and_intents': [{'intent': pi['detected_intent'], 'count': pi['count']} for pi in popular_intents]
+        }
+
+        return success_response('AI analytics retrieved', data=analytics_data)
