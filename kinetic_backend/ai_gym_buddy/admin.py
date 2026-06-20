@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (
     KnowledgeCategory, KnowledgeArticle, ExerciseData,
-    AIConversation, AIMessage, AIInteractionLog,
+    AIConversation, AIMessage, AIInteractionLog, KnowledgeQA,
 )
 
 
@@ -49,3 +49,12 @@ class AIInteractionLogAdmin(admin.ModelAdmin):
     list_display = ['member', 'gym', 'detected_intent', 'response_source', 'latency_ms', 'created_at']
     list_filter = ['detected_intent', 'response_source', 'gym']
     readonly_fields = ['created_at']
+
+
+@admin.register(KnowledgeQA)
+class KnowledgeQAAdmin(admin.ModelAdmin):
+    list_display = ['question', 'category', 'subcategory', 'difficulty', 'language', 'is_active', 'gym']
+    list_filter = ['category', 'difficulty', 'language', 'is_active', 'gym']
+    search_fields = ['question', 'answer', 'keywords', 'related_topics']
+    readonly_fields = ['created_at', 'updated_at']
+
