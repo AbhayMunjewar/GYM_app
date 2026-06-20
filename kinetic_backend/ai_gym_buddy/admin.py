@@ -51,10 +51,5 @@ class AIInteractionLogAdmin(admin.ModelAdmin):
     readonly_fields = ['created_at']
 
 
-@admin.register(KnowledgeQA)
-class KnowledgeQAAdmin(admin.ModelAdmin):
-    list_display = ['question', 'category', 'subcategory', 'difficulty', 'language', 'is_active', 'gym']
-    list_filter = ['category', 'difficulty', 'language', 'is_active', 'gym']
-    search_fields = ['question', 'answer', 'keywords', 'related_topics']
-    readonly_fields = ['created_at', 'updated_at']
+# Class registration removed temporarily
 
