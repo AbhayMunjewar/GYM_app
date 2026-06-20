@@ -183,7 +183,7 @@ class AISearchRequestSerializer(serializers.Serializer):
 
 
 class AIProgressAnalysisRequestSerializer(serializers.Serializer):
-    member_id = serializers.UUIDField(required=False, allow_null=True)
+    member_id = serializers.IntegerField(required=False, allow_null=True)
 
 
 class AIGoalCoachingRequestSerializer(serializers.Serializer):

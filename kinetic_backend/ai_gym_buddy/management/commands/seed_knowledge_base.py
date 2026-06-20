@@ -15,9 +15,10 @@ Usage:
 """
 from django.core.management.base import BaseCommand
 from django.utils.text import slugify
-from ai_buddy.models import (
+from ai_gym_buddy.models import (
     KnowledgeCategory, KnowledgeArticle, ExerciseData,
     KnowledgeDifficulty, KnowledgeArticleType, MovementPattern,
+    KnowledgeQA,
 )
 
 
@@ -36,6 +37,23 @@ CATEGORIES = [
     {'name': 'Body Recomposition', 'slug': 'body-recomposition', 'icon': 'trending_up', 'order': 8},
     {'name': 'Strength & Powerlifting', 'slug': 'strength-powerlifting', 'icon': 'hardware', 'order': 9},
     {'name': 'Supplements', 'slug': 'supplements', 'icon': 'science', 'order': 10},
+    
+    # User-requested categories
+    {'name': 'Exercises', 'slug': 'exercises', 'icon': 'fitness_center', 'order': 11},
+    {'name': 'Nutrition', 'slug': 'nutrition', 'icon': 'restaurant', 'order': 12},
+    {'name': 'Fat Loss', 'slug': 'fat-loss', 'icon': 'trending_down', 'order': 13},
+    {'name': 'Muscle Gain', 'slug': 'muscle-gain', 'icon': 'trending_up', 'order': 14},
+    {'name': 'Strength Training', 'slug': 'strength-training', 'icon': 'fitness_center', 'order': 15},
+    {'name': 'Workout Programming', 'slug': 'workout-programming', 'icon': 'calendar_month', 'order': 16},
+    {'name': 'Recovery', 'slug': 'recovery', 'icon': 'self_improvement', 'order': 17},
+    {'name': 'Mobility', 'slug': 'mobility', 'icon': 'accessibility_new', 'order': 18},
+    {'name': 'Cardio', 'slug': 'cardio', 'icon': 'directions_run', 'order': 19},
+    {'name': 'Gym Equipment', 'slug': 'gym-equipment', 'icon': 'hardware', 'order': 20},
+    {'name': 'Beginner Fitness', 'slug': 'beginner-fitness', 'icon': 'school', 'order': 21},
+    {'name': 'Injury Prevention', 'slug': 'injury-prevention', 'icon': 'healing', 'order': 22},
+    {'name': 'Women\'s Fitness', 'slug': 'womens-fitness', 'icon': 'female', 'order': 23},
+    {'name': 'Senior Fitness', 'slug': 'senior-fitness', 'icon': 'elderly', 'order': 24},
+    {'name': 'FAQs', 'slug': 'faqs', 'icon': 'help_outline', 'order': 25},
 ]
 
 # Each article: (category_slug, title, summary, content, type, difficulty, tags, muscles, equipment, keywords, is_featured)
@@ -1356,6 +1374,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         if options['clear']:
             self.stdout.write(self.style.WARNING('Clearing existing knowledge base data...'))
+            KnowledgeQA.objects.all().delete()
             ExerciseData.objects.all().delete()
             KnowledgeArticle.objects.all().delete()
             KnowledgeCategory.objects.all().delete()
@@ -1451,10 +1470,235 @@ class Command(BaseCommand):
             except Exception as e:
                 self.stdout.write(self.style.WARNING(f'  Alternatives error for {main_title}: {e}'))
 
+        # Seed Q&As
+        self.stdout.write('Creating Knowledge Q&As...')
+        qa_data_list = [
+            # 1. Exercises
+            ('exercises', 'Compound', 'What are compound exercises?',
+             'Compound exercises are multi-joint movements that work several muscle groups at the same time. Examples include squats, deadlifts, bench presses, and pull-ups. They are highly efficient for building strength and muscle mass.',
+             'compound multi joint movement squat deadlift bench press pull up', 'BEGINNER',
+             'Always warm up properly and start with light weights to master the form.',
+             'Exercises, Compound Exercises, Strength Training'),
+            ('exercises', 'Hypertrophy', 'How often should I train arms?',
+             'Direct arm training (biceps and triceps) can be done 2-3 times per week. Because arms are heavily involved in compound movements like presses and rows, you do not need excessive volume to see growth.',
+             'arms biceps triceps frequency training curls pushdowns', 'BEGINNER',
+             'Avoid using momentum during arm exercises to maximize muscle engagement.',
+             'Exercises, Isolation Exercises, Muscle Gain'),
+
+            # 2. Nutrition
+            ('nutrition', 'Hydration', 'How much water should I drink daily?',
+             'Aim for 2.7 to 3.7 liters of water daily, depending on your gender, activity level, and climate. Hydration is critical for athletic performance and metabolic processes.',
+             'water hydration daily intake fluid amount drinking', 'BEGINNER',
+             'Check urine color; it should be pale yellow. Darker urine is a sign of dehydration.',
+             'Nutrition, Nutrition & Diet, Recovery'),
+            ('nutrition', 'Macronutrients', 'What are macronutrients?',
+             'Macronutrients are the nutrients your body needs in large amounts for energy and structure: proteins (4 kcal/g), carbohydrates (4 kcal/g), and fats (9 kcal/g).',
+             'macronutrients macros protein carbs fats calories diet', 'BEGINNER',
+             'Focus on nutrient-dense sources rather than highly processed foods.',
+             'Nutrition, Nutrition & Diet'),
+
+            # 3. Fat Loss
+            ('fat-loss', 'Calorie Deficit', 'What is a calorie deficit?',
+             'A calorie deficit is when you consume fewer calories than your body expends. This forces your body to use stored fat for energy, resulting in weight loss.',
+             'calorie deficit fat loss weight loss cutting calories deficit energy expenditure', 'BEGINNER',
+             'A moderate deficit of 300-500 calories is safer and more sustainable than crash dieting.',
+             'Fat Loss, Nutrition, Body Recomposition'),
+            ('fat-loss', 'Recomposition', 'Can I lose fat and gain muscle at the same time?',
+             'Yes, this is known as body recomposition. It is most common in beginners, individuals returning to training, or those with higher body fat percentages, and requires a high-protein diet with structured resistance training.',
+             'lose fat gain muscle recomposition recomp build muscle burn fat simultaneously', 'INTERMEDIATE',
+             'Ensure protein intake remains high (at least 2.0g per kg) to support muscle growth while in a deficit.',
+             'Fat Loss, Muscle Gain, Body Recomposition'),
+
+            # 4. Muscle Gain
+            ('muscle-gain', 'Hypertrophy', 'What is progressive overload?',
+             'Progressive overload is the gradual increase of stress placed upon the body during training. This can be achieved by increasing weight, reps, sets, or decreasing rest time.',
+             'progressive overload hypertrophy progression weight reps sets strength', 'BEGINNER',
+             'Never sacrifice form for heavier weights. Safety and proper execution are paramount.',
+             'Muscle Gain, Strength Training, Workout Programming'),
+            ('muscle-gain', 'Nutrition', 'How much protein is needed for muscle growth?',
+             'A general guideline is to consume 1.6 to 2.2 grams of protein per kilogram of body weight (0.8-1.0g per pound) daily.',
+             'protein muscle growth hypertrophy daily intake amount protein requirements', 'BEGINNER',
+             'Distribute protein intake evenly across 3-5 meals throughout the day.',
+             'Muscle Gain, Nutrition, Nutrition & Diet'),
+
+            # 5. Strength Training
+            ('strength-training', 'Programming', 'What is the 5x5 workout method?',
+             'The 5x5 method involves doing 5 sets of 5 reps on compound lifts like squats, benches, and presses. It focuses on strength adaptations and is highly effective for beginners.',
+             '5x5 strength beginner lift compound barbell squat bench deadlift', 'BEGINNER',
+             'Since 5x5 uses heavy loads, ensure you warm up thoroughly with lighter weights.',
+             'Strength Training, Workout Programming, Strength & Powerlifting'),
+            ('strength-training', 'Hypertrophy', 'Should I lift heavy or light for strength?',
+             'To maximize strength, focus on heavy weights (80-90% of your 1-rep max) for lower rep ranges (1-5 reps) with longer rest intervals (2-5 minutes).',
+             'heavy light strength loading load intensity percentage 1RM', 'INTERMEDIATE',
+             'Lifting heavy requires spotters or safety pins in case of failure.',
+             'Strength Training, Compound Exercises, Strength & Powerlifting'),
+
+            # 6. Workout Programming
+            ('workout-programming', 'Splits', 'What is a split in working out?',
+             'A training split determines how you divide your workouts by muscle groups or movement patterns throughout the week (e.g., Push-Pull-Legs, Upper/Lower, Full Body).',
+             'split workout programs routine schedule training ppl frequency', 'BEGINNER',
+             'Choose a split that fits your schedule consistently rather than the one with the most days.',
+             'Workout Programming, Workout Programs'),
+            ('workout-programming', 'Structure', 'How long should a workout last?',
+             'A standard resistance training session should ideally last 45 to 75 minutes. Keeping workouts within this window helps maintain intensity and avoids excessive fatigue.',
+             'workout length duration time training gym session how long minutes', 'BEGINNER',
+             'Longer workouts are not necessarily better and can lead to diminished returns and overtraining.',
+             'Workout Programming, Recovery'),
+
+            # 7. Recovery
+            ('recovery', 'DOMS', 'What causes muscle soreness (DOMS)?',
+             'Delayed Onset Muscle Soreness (DOMS) is caused by microscopic tears in muscle fibers during exercise, particularly from eccentric (lowering) movements. It is a natural part of the adaptation process.',
+             'soreness muscle sore DOMS recovery pain hurt exercise eccentric', 'BEGINNER',
+             'Light movement, proper hydration, and nutrition can help ease DOMS. Avoid heavy training on extremely sore muscles.',
+             'Recovery, Recovery & Mobility'),
+            ('recovery', 'Sleep', 'How much sleep do I need for fitness recovery?',
+             'Aim for 7 to 9 hours of quality sleep per night. Sleep is when growth hormone release peaks, allowing muscle tissue repair and cognitive recovery.',
+             'sleep recovery rest duration quality growth hormone repair', 'BEGINNER',
+             'Consistent sleep schedules improve recovery quality and overall energy levels.',
+             'Recovery, Recovery & Mobility'),
+
+            # 8. Mobility
+            ('mobility', 'Stretching', 'What is the difference between stretching and mobility?',
+             'Stretching increases muscle length (flexibility), whereas mobility refers to the active control and range of motion around a joint. Both are essential for movement quality.',
+             'stretching mobility flexibility joint range of motion active control difference', 'BEGINNER',
+             'Dynamic stretching is preferred before workouts, while static stretching is better post-workout.',
+             'Mobility, Recovery & Mobility'),
+            ('mobility', 'Ankle', 'How do I improve ankle mobility?',
+             'Ankle mobility can be improved by foam rolling the calves, doing calf stretches, ankle wall-touches, and banded joint distractions.',
+             'ankle mobility joint range stretch calves stiffness squat depth dorsiflexion', 'BEGINNER',
+             'Poor ankle mobility is a common cause of heels lifting or forward lean during squats.',
+             'Mobility, Recovery & Mobility, Exercises'),
+
+            # 9. Cardio
+            ('cardio', 'LISS', 'What is LISS cardio?',
+             'Low-Intensity Steady-State (LISS) cardio involves working at a continuous, moderate pace (50-65% max heart rate) for an extended duration, such as brisk walking or light cycling.',
+             'LISS cardio low intensity steady state walking cycling heart rate', 'BEGINNER',
+             'LISS is excellent for fat loss and active recovery without placing high stress on the joints.',
+             'Cardio, Cardio & Conditioning, Recovery'),
+            ('cardio', 'HIIT', 'Is HIIT or LISS better for fat loss?',
+             'Both are effective. HIIT is time-efficient and boosts post-exercise calorie burn, while LISS is easier on recovery and can be performed more frequently without overtraining.',
+             'HIIT LISS cardio comparison fat loss calorie burn efficiency recovery', 'BEGINNER',
+             'Choose the type that you enjoy and can perform consistently.',
+             'Cardio, Cardio & Conditioning, Fat Loss'),
+
+            # 10. Supplements
+            ('supplements', 'Creatine', 'What does creatine do?',
+             'Creatine monohydrate increases phosphocreatine stores in muscles, allowing for faster ATP regeneration during short bursts of high-intensity exercise, improving power output and muscle mass.',
+             'creatine supplement monohydrate strength power ATP mass performance water retention', 'BEGINNER',
+             'Stay well-hydrated when taking creatine, as it pulls water into muscle cells.',
+             'Supplements, Muscle Gain, Strength Training'),
+            ('supplements', 'Protein', 'Do I need whey protein powder?',
+             'Whey protein is a convenient supplement to help meet your daily protein targets, but it is not mandatory if you consume enough protein from whole food sources.',
+             'whey protein powder supplement shake convenience dietary requirements', 'BEGINNER',
+             'Protein powders are supplements, not replacements for whole food protein sources.',
+             'Supplements, Nutrition, Nutrition & Diet'),
+
+            # 11. Gym Equipment
+            ('gym-equipment', 'Free Weights', 'Are barbells better than dumbbells?',
+             'Neither is universally better. Barbells allow you to lift heavier weights for maximum strength, while dumbbells permit a greater range of motion and help fix strength imbalances.',
+             'barbell dumbbell barbell vs dumbbell free weights equipment comparison strength balance', 'BEGINNER',
+             'Dumbbells require more stabilization, so start with lighter weights than your barbell equivalent.',
+             'Gym Equipment, Exercises, Strength Training'),
+            ('gym-equipment', 'Machines', 'How do I use a smith machine?',
+             'A Smith machine features a barbell fixed within steel rails, allowing only vertical or near-vertical movement. It is useful for stability, hypertrophy, and self-spotting.',
+             'smith machine barbell fixed track rails equipment exercise safety', 'BEGINNER',
+             'Because of the fixed path, ensure your body is aligned properly to avoid joint strain.',
+             'Gym Equipment, Exercises'),
+
+            # 12. Beginner Fitness
+            ('beginner-fitness', 'First Day', 'What should I do on my first day at the gym?',
+             'Focus on getting familiar with the layout, warming up, trying a few basic machine exercises (which have guided paths of motion), and keeping the intensity light to prevent excessive soreness.',
+             'first day beginner gym start onboarding orientation warm up', 'BEGINNER',
+             'Don\'t hesitate to ask gym staff or trainers if you are unsure how to use a machine.',
+             'Beginner Fitness, Beginner Guides, Injury Prevention'),
+            ('beginner-fitness', 'Frequency', 'How many days a week should a beginner work out?',
+             'Starting with 2 to 3 full-body sessions per week is ideal. This allows plenty of recovery time while establishing a consistent habit.',
+             'beginner frequency days per week training volume start routine schedule', 'BEGINNER',
+             'Consistency is more important than duration or frequency when starting out.',
+             'Beginner Fitness, Beginner Guides, Workout Programming'),
+
+            # 13. Injury Prevention
+            ('injury-prevention', 'Bench Press', 'How do I avoid shoulder pain in the bench press?',
+             'Keep your shoulder blades retracted and depressed (pinched together and down), tuck your elbows to a 45-60 degree angle instead of flaring them to 90 degrees, and keep your feet flat.',
+             'bench press shoulder pain injury prevention rotator cuff elbow flare form', 'BEGINNER',
+             'Stop immediately if you feel sharp pain. Check your form or seek a trainer\'s feedback.',
+             'Injury Prevention, Exercises, Compound Exercises'),
+            ('injury-prevention', 'Warm Up', 'What is a proper warm-up?',
+             'A proper warm-up starts with 5-10 minutes of light cardio to increase core body temperature, followed by dynamic stretches and warm-up sets of your target exercises.',
+             'warm up proper preparation dynamic stretch warm up sets injury prevention', 'BEGINNER',
+             'Never stretch static (hold stretches) before lifting, as it can temporarily reduce muscle power.',
+             'Injury Prevention, Beginner Guides, Recovery & Mobility'),
+
+            # 14. Women's Fitness
+            ('womens-fitness', 'Hypertrophy', 'Will lifting weights make women look bulky?',
+             'No. Women generally have much lower testosterone levels than men, making it extremely difficult to build excessive bulk. Weight training builds a toned, strong, and metabolically active physique.',
+             'women female lifting weights bulky muscle tone strength testosterone myth', 'BEGINNER',
+             'Lifting weights is safe and beneficial for women of all ages.',
+             'Women\'s Fitness, Beginner Guides, Muscle Gain'),
+            ('womens-fitness', 'Hormones', 'How does the menstrual cycle affect training?',
+             'During the follicular phase (first half), energy and strength are typically higher due to rising estrogen. During the luteal phase (second half), core temperature is higher, and you may experience more fatigue.',
+             'menstrual cycle period hormones estrogen progesterone strength fatigue energy cycle', 'INTERMEDIATE',
+             'Listen to your body. Deload or reduce intensity during phases where you feel fatigued or experience cramps.',
+             'Women\'s Fitness, Recovery, Workout Programming'),
+
+            # 15. Senior Fitness
+            ('senior-fitness', 'Safety', 'Is strength training safe for seniors?',
+             'Yes, strength training is highly recommended for seniors to combat muscle loss (sarcopenia), improve bone density, enhance balance, and maintain functional independence.',
+             'senior elderly older adults strength training safety sarcopenia bone density balance independence', 'BEGINNER',
+             'Seniors should start under supervision or with a qualified trainer to ensure safety.',
+             'Senior Fitness, Injury Prevention, Beginner Fitness'),
+            ('senior-fitness', 'Exercises', 'What are the best exercises for older adults?',
+             'Functional movements like goblet squats (or chair squats), standing overhead presses with light dumbbells, step-ups, and core stability exercises like bird-dogs.',
+             'exercises older adults seniors functional chair squats bird dogs overhead press light dumbbells', 'BEGINNER',
+             'Focus on balance and joint stability exercises to prevent falls.',
+             'Senior Fitness, Exercises, Mobility'),
+
+            # 16. FAQs
+            ('faqs', 'Fluctuations', 'Why is my weight fluctuating day to day?',
+             'Daily weight fluctuations of 1-2 kg are normal and usually driven by water retention, sodium intake, carbohydrate consumption, digestion, stress, and sleep quality, rather than fat gain.',
+             'weight fluctuation scale day to day water retention sodium carbs digestion stress sleep', 'BEGINNER',
+             'Focus on weekly and monthly weight averages rather than daily scale changes.',
+             'FAQs, Beginner Fitness, Fat Loss'),
+            ('faqs', 'Cardio Timing', 'Should I do cardio before or after weights?',
+             'If your primary goal is building muscle or strength, do weights first when your energy is highest, and follow with cardio. Doing cardio first can deplete glycogen and impair lifting form.',
+             'cardio weights timing sequence before or after muscle building strength fat loss energy', 'BEGINNER',
+             'If you do cardio first, take a break before weights to allow energy recovery.',
+             'FAQs, Workout Programming, Cardio'),
+        ]
+
+        qas_created = 0
+        qas_exists = 0
+        for cat_slug, subcat, question, answer, keywords, diff, safety, related in qa_data_list:
+            cat = category_map.get(cat_slug)
+            if not cat:
+                continue
+            
+            qa, created = KnowledgeQA.objects.get_or_create(
+                question=question,
+                defaults={
+                    'category': cat,
+                    'subcategory': subcat,
+                    'answer': answer,
+                    'keywords': keywords,
+                    'difficulty': diff,
+                    'safety_notes': safety,
+                    'related_topics': related,
+                    'is_active': True,
+                    'language': 'en'
+                }
+            )
+            if created:
+                qas_created += 1
+            else:
+                qas_exists += 1
+
+        self.stdout.write(f'  Q&As: {qas_created} created, {qas_exists} already existed')
+
         total = KnowledgeArticle.objects.filter(gym__isnull=True).count()
         self.stdout.write(self.style.SUCCESS(
             f'\nKnowledge Base seeded successfully!'
             f'\n   Total articles: {total}'
             f'\n   Categories: {KnowledgeCategory.objects.filter(gym__isnull=True).count()}'
             f'\n   Exercise records: {ExerciseData.objects.count()}'
+            f'\n   Q&A records: {KnowledgeQA.objects.count()}'
         ))
