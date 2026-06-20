@@ -211,7 +211,6 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               ),
               const SizedBox(height: 20),
               Row(
-                main Shivaji: MainAxisAlignment.spaceEvenly,
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   _buildAttachmentOption(
