@@ -256,3 +256,53 @@ class SaasTenancyTests(APITestCase):
         # Verify AuditLog logged
         from tenancy.models import AuditLog
         self.assertTrue(AuditLog.objects.filter(action='TRIAL_EXPIRED', tenant=tenant).exists())
+
+    def test_sre_telemetry_health_endpoint(self):
+        response = self.client.get('/api/health/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data['success'])
+        self.assertIn('cpu_usage_pct', response.data['data'])
+        self.assertIn('memory_usage_pct', response.data['data'])
+        self.assertIn('database_latency_ms', response.data['data'])
+
+    def test_custom_exception_handler_format(self):
+        # Access a protected endpoint without auth header to trigger 401 NotAuthenticated
+        response = self.client.get('/api/saas/settings/')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertFalse(response.data['success'])
+        self.assertIn('errors', response.data)
+        self.assertEqual(response.data['message'], "Authentication credentials were not provided.")
+
+    def test_query_count_optimization(self):
+        owner = User.objects.create_user(email='q_owner@gym.com', password='password123', role='OWNER', full_name='Owner Q')
+        tenant = Tenant.objects.create(name='Q Tenant', owner=owner)
+        gym = Gym.objects.create(gym_name='Q Gym', owner=owner, tenant=tenant)
+        Subscription.objects.create(
+            tenant=tenant, plan=self.starter_plan, status='ACTIVE',
+            start_date=datetime.date.today(), end_date=datetime.date.today() + datetime.timedelta(days=30)
+        )
+
+        # Create members with active memberships
+        from members.models import Member
+        from memberships.models import MembershipPlan, MemberMembership
+        plan = MembershipPlan.objects.create(gym=gym, plan_name='Starter', price=999, duration_days=30)
+        
+        for i in range(5):
+            m = Member.objects.create(gym=gym, full_name=f'Member {i}', email=f'm{i}@gym.com')
+            MemberMembership.objects.create(member=m, membership_plan=plan, status='ACTIVE', price_paid=999, start_date=datetime.date.today(), end_date=datetime.date.today() + datetime.timedelta(days=30))
+
+        # Authenticate
+        login_res = self.client.post('/api/auth/login/', {"email": "q_owner@gym.com", "password": "password123"})
+        token = login_res.data['data']['access']
+
+        # Assert database query count is optimized (fetching member list with memberships should not scale N+1)
+        from django.db import connection
+        from django.test.utils import CaptureQueriesContext
+
+        with CaptureQueriesContext(connection) as ctx:
+            response = self.client.get('/api/members/', HTTP_AUTHORIZATION=f'Bearer {token}')
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            self.assertEqual(len(response.data['data']['results']), 5)
+            
+        # N+1 would cause >10 queries; prefetch should complete it in few queries
+        self.assertLess(len(ctx.captured_queries), 8)
