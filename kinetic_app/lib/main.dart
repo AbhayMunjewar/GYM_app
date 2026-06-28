@@ -14,6 +14,14 @@ import 'features/nutrition/screens/grocery_list_screen.dart';
 import 'features/nutrition/screens/compliance_screen.dart';
 import 'features/nutrition/screens/diet_coach_screen.dart';
 
+// SaaS Tenancy Feature
+import 'features/saas/screens/subscription_screen.dart';
+import 'features/saas/screens/billing_screen.dart';
+import 'features/saas/screens/plan_upgrade_screen.dart';
+import 'features/saas/screens/branch_management_screen.dart';
+import 'features/saas/screens/tenant_settings_screen.dart';
+import 'features/saas/screens/super_admin_dashboard.dart';
+
 // Auth
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/forgot_password_screen.dart';
@@ -134,6 +142,14 @@ final GoRouter _router = GoRouter(
     GoRoute(path: '/owner/communication', builder: (context, state) => const CommunicationCenter()),
     GoRoute(path: '/owner/settings', builder: (context, state) => const GymSettings()),
     GoRoute(path: '/owner/subscription', builder: (context, state) => const SubscriptionPlan()),
+    
+    // SaaS Tenancy Routes
+    GoRoute(path: '/owner/saas-subscription', builder: (context, state) => const SaasSubscriptionScreen()),
+    GoRoute(path: '/owner/saas-upgrade', builder: (context, state) => const SaasPlanUpgradeScreen()),
+    GoRoute(path: '/owner/saas-billing', builder: (context, state) => const SaasBillingScreen()),
+    GoRoute(path: '/owner/branches', builder: (context, state) => const SaasBranchManagementScreen()),
+    GoRoute(path: '/owner/tenant-settings', builder: (context, state) => const SaasTenantSettingsScreen()),
+    GoRoute(path: '/superadmin/dashboard', builder: (context, state) => const SaasSuperAdminDashboardScreen()),
     
     // Sessions
     GoRoute(path: '/owner/sessions', builder: (context, state) => const SessionListScreen()),
