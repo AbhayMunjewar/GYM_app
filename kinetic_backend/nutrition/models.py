@@ -25,7 +25,7 @@ class NutritionProfile(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 class DietLog(models.Model):
-    member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='diet_logs')
+    member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='nutrition_diet_logs')
     log_date = models.DateField()
     breakfast_done = models.BooleanField(default=False)
     lunch_done = models.BooleanField(default=False)
