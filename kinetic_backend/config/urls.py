@@ -47,6 +47,7 @@ urlpatterns = [
     path('api/community/', include('community.urls')),
     path('api/', include('communication.urls')),
     path('api/ai/', include('ai_gym_buddy.urls')),
+    path('api/nutrition/', include('nutrition.urls')),
 
     
     # Role-based dashboard routes

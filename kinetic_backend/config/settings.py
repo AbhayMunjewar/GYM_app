@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'community',
     'communication',
     'ai_gym_buddy',
+    'nutrition',
 ]
 
 MIDDLEWARE = [
@@ -217,3 +218,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Anthropic API Key
+ANTHROPIC_API_KEY = config('ANTHROPIC_API_KEY', default='')
+
