@@ -194,3 +194,65 @@ class SaasTenancyTests(APITestCase):
         response = self.client.get('/api/saas/admin/dashboard/', HTTP_AUTHORIZATION=f'Bearer {admin_token}')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('platform_stats', response.data['data'])
+
+    def test_support_tickets_flow(self):
+        # Setup Owner
+        owner = User.objects.create_user(email='ticket_owner@gym.com', password='password123', role='OWNER', full_name='Owner T')
+        tenant = Tenant.objects.create(name='Ticket Tenant', owner=owner)
+        gym = Gym.objects.create(gym_name='Ticket Gym', owner=owner, tenant=tenant)
+        sub = Subscription.objects.create(
+            tenant=tenant, plan=self.starter_plan, status='ACTIVE',
+            start_date=datetime.date.today(), end_date=datetime.date.today() + datetime.timedelta(days=30)
+        )
+
+        # Authenticate
+        login_res = self.client.post('/api/auth/login/', {"email": "ticket_owner@gym.com", "password": "password123"})
+        token = login_res.data['data']['access']
+
+        # Create support ticket
+        payload = {
+            'subject': 'System down',
+            'message': 'Cannot add trainers.'
+        }
+        response = self.client.post('/api/saas/support-tickets/', payload, format='json', HTTP_AUTHORIZATION=f'Bearer {token}')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Verify AuditLog logged
+        from tenancy.models import AuditLog, SupportTicket
+        self.assertTrue(AuditLog.objects.filter(action='SUPPORT_TICKET_CREATE', tenant=tenant).exists())
+        self.assertTrue(SupportTicket.objects.filter(tenant=tenant, subject='System down').exists())
+
+        # Resolve ticket as Super Admin
+        admin_login = self.client.post('/api/auth/login/', {"email": "admin@saas.com", "password": "password123"})
+        admin_token = admin_login.data['data']['access']
+
+        ticket = SupportTicket.objects.get(tenant=tenant)
+        payload_resolve = {'status': 'RESOLVED'}
+        res = self.client.patch(f'/api/saas/admin/support-tickets/{ticket.id}/', payload_resolve, format='json', HTTP_AUTHORIZATION=f'Bearer {admin_token}')
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        
+        ticket.refresh_from_db()
+        self.assertEqual(ticket.status, 'RESOLVED')
+        self.assertTrue(AuditLog.objects.filter(action='SUPPORT_TICKET_RESOLVE', tenant=tenant).exists())
+
+    def test_saas_cron_command(self):
+        # Create expired TRIAL subscription
+        owner = User.objects.create_user(email='cron_owner@gym.com', password='password123', role='OWNER', full_name='Owner C')
+        tenant = Tenant.objects.create(name='Cron Tenant', owner=owner)
+        gym = Gym.objects.create(gym_name='Cron Gym', owner=owner, tenant=tenant)
+        sub = Subscription.objects.create(
+            tenant=tenant, plan=self.starter_plan, status='TRIAL',
+            start_date=datetime.date.today() - datetime.timedelta(days=20),
+            end_date=datetime.date.today() - datetime.timedelta(days=6)
+        )
+
+        from django.core.management import call_command
+        call_command('saas_cron')
+
+        # Verify status transitions to EXPIRED
+        sub.refresh_from_db()
+        self.assertEqual(sub.status, 'EXPIRED')
+
+        # Verify AuditLog logged
+        from tenancy.models import AuditLog
+        self.assertTrue(AuditLog.objects.filter(action='TRIAL_EXPIRED', tenant=tenant).exists())
