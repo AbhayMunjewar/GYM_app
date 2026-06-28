@@ -31,6 +31,10 @@ class MemberService:
             if gym_id:
                 queryset = queryset.filter(gym_id=gym_id)
 
+            branch_id = query_params.get('branch') or query_params.get('branch_id')
+            if branch_id:
+                queryset = queryset.filter(branch_id=branch_id)
+
             # Sorting
             ordering = query_params.get('ordering', '-created_at')
             allowed_ordering = ['full_name', '-full_name', 'join_date', '-join_date', 'created_at', '-created_at']
@@ -53,6 +57,16 @@ class MemberService:
         if not gym:
             raise PermissionDenied("You must create a gym first before adding members.")
         
+        # Limit check
+        tenant = gym.tenant
+        if tenant:
+            subscription = getattr(tenant, 'subscription', None)
+            if subscription:
+                max_m = subscription.plan.max_members
+                current_m = Member.objects.filter(gym=gym, is_deleted=False).count()
+                if current_m >= max_m:
+                    raise PermissionDenied(f"You have reached the maximum limit of {max_m} members for your plan ({subscription.plan.get_name_display()}).")
+
         return Member.objects.create(gym=gym, **validated_data)
 
     @staticmethod

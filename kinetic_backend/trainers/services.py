@@ -86,6 +86,16 @@ class TrainerService:
         if not gym:
             raise ValidationError("A valid gym owned by you is required to register a trainer.")
 
+        # Limit check
+        tenant = gym.tenant
+        if tenant:
+            subscription = getattr(tenant, 'subscription', None)
+            if subscription:
+                max_t = subscription.plan.max_trainers
+                current_t = Trainer.objects.filter(gym=gym, is_deleted=False).count()
+                if current_t >= max_t:
+                    raise PermissionDenied(f"You have reached the maximum limit of {max_t} trainers for your plan ({subscription.plan.get_name_display()}).")
+
         # Check unique employee_id in gym
         employee_id = data.get('employee_id')
         if Trainer.objects.filter(gym=gym, employee_id=employee_id, is_deleted=False).exists():
