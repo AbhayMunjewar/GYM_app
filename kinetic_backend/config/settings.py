@@ -55,6 +55,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'django.middleware.gzip.GZipMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -157,6 +158,20 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ),
     'EXCEPTION_HANDLER': 'core.exceptions.custom_exception_handler',
+    'DEFAULT_PAGINATION_CLASS': 'core.pagination.StandardResultsSetPagination',
+    'DEFAULT_FILTER_BACKENDS': (
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
+    ),
+    'DEFAULT_THROTTLE_CLASSES': (
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ),
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/day',
+        'user': '1000/hour',
+    }
 }
 
 # SimpleJWT Configuration
@@ -172,38 +187,132 @@ SIMPLE_JWT = {
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
 }
 
+# LocMemCache fallback for Redis
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'kinetic-locmem',
+    }
+}
+
+try:
+    import redis
+    redis_url = config('REDIS_URL', default='redis://127.0.0.1:6379/1')
+    r = redis.from_url(redis_url, socket_timeout=1.5)
+    r.ping()
+    CACHES['default'] = {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': redis_url,
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
+    }
+except Exception:
+    import sys
+    print("\n[!] WARNING: Redis is offline. Caching falling back to LocMemCache.\n", file=sys.stderr)
+
+# Celery Configurations
+CELERY_BROKER_URL = config('CELERY_BROKER_URL', default='redis://127.0.0.1:6379/0')
+CELERY_RESULT_BACKEND = config('CELERY_RESULT_BACKEND', default='redis://127.0.0.1:6379/0')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+CELERY_TASK_ALWAYS_EAGER = config('CELERY_TASK_ALWAYS_EAGER', default=True, cast=bool)
+
+# Logs directory initialization
+LOGS_DIR = BASE_DIR / 'logs'
+os.makedirs(LOGS_DIR, exist_ok=True)
+
 # Python Logging Configuration
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'verbose': {
-            'format': '[{asctime}] {levelname} {name} - {message}',
+        'json_style': {
+            'format': '[{asctime}] {levelname} {name} {process:d} {thread:d} - {message}',
             'style': '{',
         },
     },
     'handlers': {
         'console': {
-            'level': 'DEBUG',
+            'level': 'INFO',
             'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
+            'formatter': 'json_style',
         },
-        'file': {
+        'app_file': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'kinetic_backend.log'),
-            'formatter': 'verbose',
+            'filename': LOGS_DIR / 'app.log',
+            'formatter': 'json_style',
+        },
+        'api_file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': LOGS_DIR / 'api.log',
+            'formatter': 'json_style',
+        },
+        'auth_file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': LOGS_DIR / 'auth.log',
+            'formatter': 'json_style',
+        },
+        'billing_file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': LOGS_DIR / 'billing.log',
+            'formatter': 'json_style',
+        },
+        'security_file': {
+            'level': 'WARNING',
+            'class': 'logging.FileHandler',
+            'filename': LOGS_DIR / 'security.log',
+            'formatter': 'json_style',
+        },
+        'celery_file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': LOGS_DIR / 'celery.log',
+            'formatter': 'json_style',
+        },
+        'error_file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': LOGS_DIR / 'errors.log',
+            'formatter': 'json_style',
+        },
+        'audit_file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': LOGS_DIR / 'audit.log',
+            'formatter': 'json_style',
         },
     },
     'loggers': {
         'django': {
-            'handlers': ['console', 'file'],
+            'handlers': ['console', 'app_file'],
             'level': 'INFO',
             'propagate': True,
         },
+        'django.request': {
+            'handlers': ['api_file', 'error_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
         'accounts': {
-            'handlers': ['console', 'file'],
-            'level': 'DEBUG',
+            'handlers': ['auth_file', 'security_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'tenancy': {
+            'handlers': ['billing_file', 'security_file', 'audit_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'celery': {
+            'handlers': ['celery_file', 'error_file'],
+            'level': 'INFO',
             'propagate': False,
         },
     },
@@ -222,6 +331,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+# AWS S3 Storage settings placeholder
+AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID', default='')
+AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY', default='')
+AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME', default='')
+AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME', default='us-east-1')
+
 # Anthropic API Key
 ANTHROPIC_API_KEY = config('ANTHROPIC_API_KEY', default='')
+
 

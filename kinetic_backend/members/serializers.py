@@ -17,6 +17,10 @@ class MemberListSerializer(serializers.ModelSerializer):
         fields = ['id', 'gym_name', 'full_name', 'email', 'phone_number', 'status', 'join_date', 'profile_image', 'active_plan_name']
 
     def get_active_plan_name(self, obj):
+        if hasattr(obj, 'active_memberships_prefetched'):
+            if obj.active_memberships_prefetched:
+                return obj.active_memberships_prefetched[0].membership_plan.plan_name
+            return None
         active_membership = obj.memberships.filter(status='ACTIVE').first()
         if active_membership:
             return active_membership.membership_plan.plan_name

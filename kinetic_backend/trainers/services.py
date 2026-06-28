@@ -257,12 +257,23 @@ class TrainerService:
         """
         List members assigned to a trainer.
         """
+        from django.db.models import Count, Q, Prefetch
+        from memberships.models import MemberMembership
+
         assignments = TrainerAssignment.objects.filter(trainer=trainer, status=AssignmentStatus.ACTIVE)
         member_ids = assignments.values_list('member_id', flat=True)
         queryset = Member.objects.filter(id__in=member_ids, is_deleted=False)
 
-        # Performance caching: prefetch memberships
-        queryset = queryset.prefetch_related('memberships', 'attendances')
+        # Prefetch only active memberships with their plan
+        active_memberships = MemberMembership.objects.filter(status='ACTIVE').select_related('membership_plan')
+
+        # Annotate attendance counts to avoid N+1 queries in loops
+        queryset = queryset.annotate(
+            total_attendance_count=Count('attendances', filter=Q(attendances__is_deleted=False)),
+            present_attendance_count=Count('attendances', filter=Q(attendances__is_deleted=False, attendances__attendance_status__in=['PRESENT', 'LATE']))
+        ).prefetch_related(
+            Prefetch('memberships', queryset=active_memberships, to_attr='active_memberships_prefetched')
+        )
 
         # Custom search/filters
         if query_params:

@@ -17,7 +17,8 @@ class WorkoutSessionSerializer(serializers.ModelSerializer):
         ]
 
     def get_booked_count(self, obj):
-        # We only count active bookings (status='booked')
+        if hasattr(obj, 'annotated_booked_count'):
+            return obj.annotated_booked_count
         return obj.bookings.filter(status='booked').count()
 
 

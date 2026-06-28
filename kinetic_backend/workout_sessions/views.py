@@ -89,7 +89,10 @@ class GymSessionsView(APIView):
         if gym.owner != request.user:
             return failure_response("You do not have permission to view sessions for this gym.", status_code=status.HTTP_403_FORBIDDEN)
 
-        sessions = WorkoutSession.objects.filter(gym=gym, is_deleted=False)
+        from django.db.models import Count, Q
+        sessions = WorkoutSession.objects.filter(gym=gym, is_deleted=False).select_related('trainer__user', 'gym').annotate(
+            annotated_booked_count=Count('bookings', filter=Q(bookings__status='booked'))
+        )
 
         # Optional filter by date
         date_str = request.query_params.get('date')
@@ -123,7 +126,12 @@ class TrainerSessionsView(APIView):
 
         # Return upcoming sessions (session_date >= today)
         today = date.today()
-        sessions = WorkoutSession.objects.filter(trainer=trainer, is_deleted=False, session_date__gte=today)
+        from django.db.models import Count, Q
+        sessions = WorkoutSession.objects.filter(
+            trainer=trainer, is_deleted=False, session_date__gte=today
+        ).select_related('trainer__user', 'gym').annotate(
+            annotated_booked_count=Count('bookings', filter=Q(bookings__status='booked'))
+        )
 
         serializer = WorkoutSessionSerializer(sessions, many=True)
         return success_response("Trainer sessions retrieved successfully", data=serializer.data)
@@ -228,7 +236,9 @@ class SessionBookingListCreateView(APIView):
             if not member_profile or session.gym != member_profile.gym:
                 return failure_response("Permission Denied.", status_code=status.HTTP_403_FORBIDDEN)
 
-        bookings = SessionBooking.objects.filter(session=session, status='booked')
+        bookings = SessionBooking.objects.filter(session=session, status='booked').select_related(
+            'session__trainer__user', 'member'
+        )
         serializer = SessionBookingSerializer(bookings, many=True)
         return success_response("Session bookings retrieved successfully", data=serializer.data)
 
@@ -299,7 +309,9 @@ class MemberBookingsView(APIView):
             member=member,
             session__session_date__gte=today,
             session__is_deleted=False
-        ).exclude(status='cancelled').order_by('session__session_date', 'session__start_time')
+        ).exclude(status='cancelled').select_related(
+            'session__trainer__user', 'member'
+        ).order_by('session__session_date', 'session__start_time')
 
         serializer = SessionBookingSerializer(bookings, many=True)
         return success_response("Member upcoming schedule retrieved", data=serializer.data)

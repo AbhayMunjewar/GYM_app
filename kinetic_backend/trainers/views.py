@@ -309,14 +309,19 @@ class TrainerMembersView(APIView):
         def serialize_member_data(members):
             res_data = []
             for m in members:
-                # Get membership status
-                active_mem = m.memberships.filter(status='ACTIVE').first()
+                # Use prefetched active memberships if present
+                active_mem = None
+                if hasattr(m, 'active_memberships_prefetched') and m.active_memberships_prefetched:
+                    active_mem = m.active_memberships_prefetched[0]
+                else:
+                    active_mem = m.memberships.filter(status='ACTIVE').first()
+
                 mem_status = active_mem.status if active_mem else 'NO_ACTIVE_PLAN'
                 plan_name = active_mem.membership_plan.plan_name if active_mem else None
                 
-                # Calculate Attendance percentage (total present / last 30 days)
-                total_att = m.attendances.filter(is_deleted=False).count()
-                present_att = m.attendances.filter(is_deleted=False, attendance_status__in=['PRESENT', 'LATE']).count()
+                # Fetch pre-computed counts from annotation
+                total_att = getattr(m, 'total_attendance_count', 0)
+                present_att = getattr(m, 'present_attendance_count', 0)
                 att_pct = round((present_att / total_att) * 100, 2) if total_att > 0 else 0.0
 
                 res_data.append({

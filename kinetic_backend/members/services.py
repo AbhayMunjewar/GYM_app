@@ -10,9 +10,15 @@ class MemberService:
         Return members for the gym(s) owned by the user.
         Supports filtering and searching.
         """
+        from django.db.models import Prefetch
+        from memberships.models import MemberMembership
+
         # Get active gyms owned by user
         gyms = Gym.objects.filter(owner=user, is_deleted=False)
-        queryset = Member.objects.filter(gym__in=gyms, is_deleted=False)
+        active_memberships = MemberMembership.objects.filter(status='ACTIVE').select_related('membership_plan')
+        queryset = Member.objects.filter(gym__in=gyms, is_deleted=False).select_related('gym').prefetch_related(
+            Prefetch('memberships', queryset=active_memberships, to_attr='active_memberships_prefetched')
+        )
 
         if query_params:
             search = query_params.get('search')
