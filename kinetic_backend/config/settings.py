@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'communication',
     'ai_gym_buddy',
     'nutrition',
+    'tenancy',
 ]
 
 MIDDLEWARE = [
@@ -58,6 +59,8 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'tenancy.middleware.TenantMiddleware',
+    'tenancy.middleware.SubscriptionEnforcementMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]

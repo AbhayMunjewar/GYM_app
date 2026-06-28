@@ -15,6 +15,7 @@ class Member(models.Model):
     ]
 
     gym = models.ForeignKey(Gym, on_delete=models.CASCADE, related_name='members')
+    branch = models.ForeignKey('gyms.Branch', on_delete=models.SET_NULL, null=True, blank=True, related_name='members')
     full_name = models.CharField(max_length=255)
     email = models.EmailField(max_length=255)
     phone_number = models.CharField(max_length=20)
@@ -38,6 +39,7 @@ class Member(models.Model):
         db_table = 'members'
         indexes = [
             models.Index(fields=['gym', 'is_deleted']),
+            models.Index(fields=['branch', 'is_deleted']),
             models.Index(fields=['email']),
             models.Index(fields=['phone_number']),
             models.Index(fields=['status']),

@@ -20,6 +20,7 @@ class Gym(models.Model):
     email = models.EmailField(_('email address'))
     logo = models.ImageField(_('logo'), upload_to='gym_logos/', null=True, blank=True)
     description = models.TextField(_('description'), null=True, blank=True)
+    tenant = models.ForeignKey('tenancy.Tenant', on_delete=models.CASCADE, related_name='gyms', null=True, blank=True)
     
     is_active = models.BooleanField(_('active status'), default=True)
     is_deleted = models.BooleanField(_('deleted status'), default=False)
@@ -39,6 +40,45 @@ class Gym(models.Model):
 
     def __str__(self):
         return self.gym_name
+
+    def soft_delete(self):
+        self.is_deleted = True
+        self.is_active = False
+        self.save(update_fields=['is_deleted', 'is_active', 'updated_at'])
+
+
+class Branch(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    gym = models.ForeignKey(Gym, on_delete=models.CASCADE, related_name='branches')
+    branch_name = models.CharField(_('branch name'), max_length=255)
+    address = models.TextField(_('address'))
+    city = models.CharField(_('city'), max_length=100)
+    state = models.CharField(_('state'), max_length=100)
+    pincode = models.CharField(_('pincode'), max_length=20)
+    contact_number = models.CharField(_('contact number'), max_length=20)
+    email = models.EmailField(_('email address'))
+    manager = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='managed_branches'
+    )
+    is_active = models.BooleanField(_('active status'), default=True)
+    is_deleted = models.BooleanField(_('deleted status'), default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'branches'
+        verbose_name = _('branch')
+        verbose_name_plural = _('branches')
+        indexes = [
+            models.Index(fields=['gym', 'is_deleted']),
+        ]
+
+    def __str__(self):
+        return f"{self.gym.gym_name} - {self.branch_name}"
 
     def soft_delete(self):
         self.is_deleted = True
