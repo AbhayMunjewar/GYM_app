@@ -220,6 +220,30 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
 CELERY_TASK_ALWAYS_EAGER = config('CELERY_TASK_ALWAYS_EAGER', default=True, cast=bool)
 
+# Celery Beat Scheduler
+CELERY_BEAT_SCHEDULE = {
+    'check-subscriptions-daily': {
+        'task': 'core.tasks.check_expiries_task',
+        'schedule': 86400.0,
+    },
+    'attendance-reminders-daily': {
+        'task': 'core.tasks.send_attendance_reminders_task',
+        'schedule': 86400.0,
+    },
+    'workout-diet-alerts-daily': {
+        'task': 'core.tasks.send_workout_diet_alerts_task',
+        'schedule': 86400.0,
+    },
+    'db-cleanup-weekly': {
+        'task': 'core.tasks.db_log_cleanup_task',
+        'schedule': 604800.0,
+    },
+    'analytics-aggregation-hourly': {
+        'task': 'core.tasks.aggregate_analytics_task',
+        'schedule': 3600.0,
+    },
+}
+
 # Logs directory initialization
 LOGS_DIR = BASE_DIR / 'logs'
 os.makedirs(LOGS_DIR, exist_ok=True)
