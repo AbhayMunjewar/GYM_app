@@ -174,3 +174,51 @@ class PlatformSettings(models.Model):
 
     class Meta:
         db_table = 'platform_settings'
+
+
+import json
+
+class AuditLog(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, null=True, blank=True, related_name='audit_logs')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='saas_audit_logs')
+    action = models.CharField(max_length=255)
+    details_str = models.TextField(default='{}', blank=True, db_column='details')
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def details(self):
+        try:
+            return json.loads(self.details_str)
+        except Exception:
+            return {}
+
+    @details.setter
+    def details(self, value):
+        self.details_str = json.dumps(value)
+
+    class Meta:
+        db_table = 'saas_audit_logs'
+        ordering = ['-created_at']
+
+
+class SupportTicket(models.Model):
+    STATUS_CHOICES = [
+        ('OPEN', 'Open'),
+        ('IN_PROGRESS', 'In Progress'),
+        ('RESOLVED', 'Resolved'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, null=True, blank=True, related_name='support_tickets')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='support_tickets')
+    subject = models.CharField(max_length=255)
+    message = models.TextField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='OPEN')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'support_tickets'
+        ordering = ['-created_at']
