@@ -38,16 +38,34 @@ class ApiClient {
     return headers;
   }
 
+  Future<http.Response> _requestWithTimeoutAndRetry(
+    Future<http.Response> Function() requestFn, {
+    int retries = 2,
+  }) async {
+    int attempt = 0;
+    while (true) {
+      try {
+        return await requestFn().timeout(const Duration(seconds: 15));
+      } catch (e) {
+        attempt++;
+        if (attempt >= retries) {
+          rethrow;
+        }
+        await Future.delayed(Duration(milliseconds: 250 * attempt));
+      }
+    }
+  }
+
   Future<http.Response> get(String path, {bool requireAuth = true}) async {
     final url = Uri.parse('$baseUrl$path');
     final headers = await _getHeaders(requireAuth: requireAuth);
     
-    var response = await http.get(url, headers: headers);
+    var response = await _requestWithTimeoutAndRetry(() => http.get(url, headers: headers));
     if (response.statusCode == 401 && requireAuth) {
       final refreshed = await _attemptTokenRefresh();
       if (refreshed) {
         final retryHeaders = await _getHeaders(requireAuth: true);
-        response = await http.get(url, headers: retryHeaders);
+        response = await _requestWithTimeoutAndRetry(() => http.get(url, headers: retryHeaders));
       }
     }
     return response;
@@ -58,12 +76,12 @@ class ApiClient {
     final headers = await _getHeaders(requireAuth: requireAuth);
     final jsonBody = jsonEncode(body);
 
-    var response = await http.post(url, headers: headers, body: jsonBody);
+    var response = await _requestWithTimeoutAndRetry(() => http.post(url, headers: headers, body: jsonBody));
     if (response.statusCode == 401 && requireAuth) {
       final refreshed = await _attemptTokenRefresh();
       if (refreshed) {
         final retryHeaders = await _getHeaders(requireAuth: true);
-        response = await http.post(url, headers: retryHeaders, body: jsonBody);
+        response = await _requestWithTimeoutAndRetry(() => http.post(url, headers: retryHeaders, body: jsonBody));
       }
     }
     return response;
@@ -74,12 +92,12 @@ class ApiClient {
     final headers = await _getHeaders(requireAuth: requireAuth);
     final jsonBody = jsonEncode(body);
 
-    var response = await http.patch(url, headers: headers, body: jsonBody);
+    var response = await _requestWithTimeoutAndRetry(() => http.patch(url, headers: headers, body: jsonBody));
     if (response.statusCode == 401 && requireAuth) {
       final refreshed = await _attemptTokenRefresh();
       if (refreshed) {
         final retryHeaders = await _getHeaders(requireAuth: true);
-        response = await http.patch(url, headers: retryHeaders, body: jsonBody);
+        response = await _requestWithTimeoutAndRetry(() => http.patch(url, headers: retryHeaders, body: jsonBody));
       }
     }
     return response;
@@ -89,12 +107,12 @@ class ApiClient {
     final url = Uri.parse('$baseUrl$path');
     final headers = await _getHeaders(requireAuth: requireAuth);
 
-    var response = await http.delete(url, headers: headers);
+    var response = await _requestWithTimeoutAndRetry(() => http.delete(url, headers: headers));
     if (response.statusCode == 401 && requireAuth) {
       final refreshed = await _attemptTokenRefresh();
       if (refreshed) {
         final retryHeaders = await _getHeaders(requireAuth: true);
-        response = await http.delete(url, headers: retryHeaders);
+        response = await _requestWithTimeoutAndRetry(() => http.delete(url, headers: retryHeaders));
       }
     }
     return response;
