@@ -284,12 +284,12 @@ class SaasTenancyTests(APITestCase):
 
         # Create members with active memberships
         from members.models import Member
-        from memberships.models import MembershipPlan, MemberMembership
+        from memberships.models import MembershipPlan, Membership
         plan = MembershipPlan.objects.create(gym=gym, plan_name='Starter', price=999, duration_days=30)
         
         for i in range(5):
             m = Member.objects.create(gym=gym, full_name=f'Member {i}', email=f'm{i}@gym.com')
-            MemberMembership.objects.create(member=m, membership_plan=plan, status='ACTIVE', price_paid=999, start_date=datetime.date.today(), end_date=datetime.date.today() + datetime.timedelta(days=30))
+            Membership.objects.create(member=m, membership_plan=plan, status='ACTIVE', price_paid=999, start_date=datetime.date.today(), end_date=datetime.date.today() + datetime.timedelta(days=30))
 
         # Authenticate
         login_res = self.client.post('/api/auth/login/', {"email": "q_owner@gym.com", "password": "password123"})
