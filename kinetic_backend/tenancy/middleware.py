@@ -2,6 +2,7 @@ import logging
 from django.http import JsonResponse
 from rest_framework import status
 from django.utils import timezone
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from accounts.models import UserRole
 from gyms.models import Gym, Branch
 from members.models import Member
@@ -13,6 +14,7 @@ logger = logging.getLogger(__name__)
 class TenantMiddleware:
     """
     Middleware that identifies the active tenant, gym, and branch context for every request.
+    Works for standard Django sessions and DRF Simple-JWT token auth.
     Injects context directly into the request scope:
     - request.tenant
     - request.gym
@@ -26,9 +28,22 @@ class TenantMiddleware:
         request.gym = None
         request.branch = None
 
+        # 1. Attempt DRF JWT authentication if standard request.user is anonymous
         user = request.user
+        if not user or not user.is_authenticated:
+            try:
+                jwt_auth = JWTAuthentication()
+                header = jwt_auth.get_header(request)
+                if header:
+                    raw_token = jwt_auth.get_raw_token(header)
+                    validated_token = jwt_auth.get_validated_token(raw_token)
+                    user = jwt_auth.get_user(validated_token)
+                    request.user = user # Set request.user so subsequent middleware sees it
+            except Exception:
+                pass
+
         if user and user.is_authenticated:
-            # 1. Superuser / Super Admin Check
+            # 2. Superuser / Super Admin Check
             if user.is_superuser:
                 tenant_id = request.headers.get('X-Tenant-ID') or request.GET.get('tenant_id')
                 if tenant_id:
@@ -38,7 +53,7 @@ class TenantMiddleware:
                     except (Tenant.DoesNotExist, ValueError):
                         pass
             
-            # 2. Member Check
+            # 3. Member Check
             elif user.role == UserRole.MEMBER:
                 try:
                     member = Member.objects.get(user=user, is_deleted=False)
@@ -48,7 +63,7 @@ class TenantMiddleware:
                 except Member.DoesNotExist:
                     pass
 
-            # 3. Trainer Check
+            # 4. Trainer Check
             elif user.role == UserRole.TRAINER:
                 try:
                     trainer = Trainer.objects.get(user=user, is_deleted=False)
@@ -58,7 +73,7 @@ class TenantMiddleware:
                 except Trainer.DoesNotExist:
                     pass
 
-            # 4. Gym Owner Check
+            # 5. Gym Owner Check
             elif user.role == UserRole.OWNER:
                 gym = Gym.objects.filter(owner=user, is_deleted=False).first()
                 if gym:

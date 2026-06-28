@@ -1,3 +1,196 @@
-from django.test import TestCase
+import datetime
+from django.contrib.auth import get_user_model
+from rest_framework import status
+from rest_framework.test import APITestCase
+from django.utils import timezone
 
-# Create your tests here.
+from tenancy.models import Tenant, SubscriptionPlan, Subscription, License, Invoice, FeatureFlag
+from gyms.models import Gym, Branch
+from members.models import Member
+from trainers.models import Trainer
+
+User = get_user_model()
+
+class SaasTenancyTests(APITestCase):
+    def setUp(self):
+        # 1. Setup subscription plans
+        self.starter_plan = SubscriptionPlan.objects.create(
+            name='STARTER', max_members=2, max_trainers=1, max_branches=1,
+            ai_features_access=False, community_access=True, analytics_access=False,
+            price_monthly=1499.00, price_yearly=14990.00
+        )
+        self.pro_plan = SubscriptionPlan.objects.create(
+            name='PROFESSIONAL', max_members=10, max_trainers=5, max_branches=3,
+            ai_features_access=True, community_access=True, analytics_access=True,
+            price_monthly=2999.00, price_yearly=29990.00
+        )
+
+        # 2. Setup Super Admin
+        self.admin_user = User.objects.create_superuser(
+            email='admin@saas.com', username='admin_user', password='password123', full_name='Super Admin'
+        )
+
+    def test_tenant_registration_onboarding(self):
+        payload = {
+            'email': 'new_owner@test.com',
+            'password': 'password123',
+            'full_name': 'Gym Owner X',
+            'phone_number': '9876543210',
+            'gym_name': 'Iron Paradise',
+            'address': '123 Health Street',
+            'city': 'Mumbai',
+            'state': 'Maharashtra',
+            'pincode': '400001',
+            'contact_number': '022-123456'
+        }
+
+        response = self.client.post('/api/saas/register/', payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(response.data['success'])
+        self.assertIn('access', response.data['data'])
+
+        # Verify database structures created
+        owner = User.objects.get(email='new_owner@test.com')
+        self.assertEqual(owner.role, 'OWNER')
+        tenant = Tenant.objects.get(owner=owner)
+        self.assertEqual(tenant.name, 'Iron Paradise Enterprise')
+        
+        # Verify Gym created
+        gym = Gym.objects.get(tenant=tenant)
+        self.assertEqual(gym.gym_name, 'Iron Paradise')
+
+        # Verify trial subscription created
+        sub = Subscription.objects.get(tenant=tenant)
+        self.assertEqual(sub.status, 'TRIAL')
+        self.assertEqual(sub.plan.name, 'STARTER')
+
+    def test_tenant_isolation(self):
+        # Create Owner A & Tenant A
+        owner_a = User.objects.create_user(email='owner_a@gym.com', password='password123', role='OWNER', full_name='Owner A')
+        tenant_a = Tenant.objects.create(name='Tenant A', owner=owner_a)
+        gym_a = Gym.objects.create(gym_name='Gym A', owner=owner_a, tenant=tenant_a)
+        sub_a = Subscription.objects.create(
+            tenant=tenant_a, plan=self.starter_plan, status='ACTIVE',
+            start_date=datetime.date.today(), end_date=datetime.date.today() + datetime.timedelta(days=30)
+        )
+        branch_a = Branch.objects.create(gym=gym_a, branch_name='Branch A')
+
+        # Create Owner B & Tenant B
+        owner_b = User.objects.create_user(email='owner_b@gym.com', password='password123', role='OWNER', full_name='Owner B')
+        tenant_b = Tenant.objects.create(name='Tenant B', owner=owner_b)
+        gym_b = Gym.objects.create(gym_name='Gym B', owner=owner_b, tenant=tenant_b)
+        sub_b = Subscription.objects.create(
+            tenant=tenant_b, plan=self.starter_plan, status='ACTIVE',
+            start_date=datetime.date.today(), end_date=datetime.date.today() + datetime.timedelta(days=30)
+        )
+        branch_b = Branch.objects.create(gym=gym_b, branch_name='Branch B')
+
+        # Authenticate Owner A
+        login_res = self.client.post('/api/auth/login/', {"email": "owner_a@gym.com", "password": "password123"})
+        token_a = login_res.data['data']['access']
+
+        # Owner A queries branches -> should only see Branch A
+        response = self.client.get('/api/saas/branches/', HTTP_AUTHORIZATION=f'Bearer {token_a}')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        branch_names = [b['branch_name'] for b in response.data]
+        self.assertIn('Branch A', branch_names)
+        self.assertNotIn('Branch B', branch_names)
+
+    def test_subscription_limits_enforcement(self):
+        # Create Tenant with 2 Members limit
+        owner = User.objects.create_user(email='limit_owner@gym.com', password='password123', role='OWNER', full_name='Owner L')
+        tenant = Tenant.objects.create(name='Limit Tenant', owner=owner)
+        gym = Gym.objects.create(gym_name='Limit Gym', owner=owner, tenant=tenant)
+        sub = Subscription.objects.create(
+            tenant=tenant, plan=self.starter_plan, status='ACTIVE',
+            start_date=datetime.date.today(), end_date=datetime.date.today() + datetime.timedelta(days=30)
+        )
+
+        # Authenticate
+        login_res = self.client.post('/api/auth/login/', {"email": "limit_owner@gym.com", "password": "password123"})
+        token = login_res.data['data']['access']
+
+        # Add 2 members (Should succeed)
+        m1 = Member.objects.create(gym=gym, full_name='Member One', email='m1@gym.com', phone_number='11')
+        m2 = Member.objects.create(gym=gym, full_name='Member Two', email='m2@gym.com', phone_number='22')
+
+        # Add 3rd member -> Should fail with 403 limit error
+        payload = {
+            'full_name': 'Member Three',
+            'email': 'm3@gym.com',
+            'phone_number': '33',
+            'status': 'ACTIVE'
+        }
+        response = self.client.post('/api/members/', payload, format='json', HTTP_AUTHORIZATION=f'Bearer {token}')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertIn('maximum limit', str(response.data['errors']))
+
+    def test_expired_subscription_blocks_operational_requests(self):
+        # Create Tenant with expired subscription
+        owner = User.objects.create_user(email='exp_owner@gym.com', password='password123', role='OWNER', full_name='Owner E')
+        tenant = Tenant.objects.create(name='Expired Tenant', owner=owner)
+        gym = Gym.objects.create(gym_name='Expired Gym', owner=owner, tenant=tenant)
+        
+        # Set subscription expired in the past
+        sub = Subscription.objects.create(
+            tenant=tenant, plan=self.starter_plan, status='EXPIRED',
+            start_date=datetime.date.today() - datetime.timedelta(days=40),
+            end_date=datetime.date.today() - datetime.timedelta(days=10)
+        )
+
+        # Authenticate
+        login_res = self.client.post('/api/auth/login/', {"email": "exp_owner@gym.com", "password": "password123"})
+        token = login_res.data['data']['access']
+
+        # Attempt to create a branch
+        payload = {
+            'branch_name': 'Failed Branch',
+            'address': 'Add', 'city': 'City', 'state': 'State',
+            'pincode': '123', 'contact_number': '123', 'email': 'fb@gym.com'
+        }
+        response = self.client.post('/api/saas/branches/', payload, format='json', HTTP_AUTHORIZATION=f'Bearer {token}')
+        # Should be blocked by SubscriptionEnforcementMiddleware
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        import json
+        resp_data = json.loads(response.content.decode('utf-8'))
+        self.assertIn('expired', resp_data['message'].lower())
+
+    def test_license_key_activation(self):
+        owner = User.objects.create_user(email='license_owner@gym.com', password='password123', role='OWNER', full_name='Owner Lic')
+        tenant = Tenant.objects.create(name='License Tenant', owner=owner)
+        gym = Gym.objects.create(gym_name='License Gym', owner=owner, tenant=tenant)
+        sub = Subscription.objects.create(
+            tenant=tenant, plan=self.starter_plan, status='TRIAL',
+            start_date=datetime.date.today(), end_date=datetime.date.today() + datetime.timedelta(days=14)
+        )
+
+        # Create License Key
+        expiry = datetime.date.today() + datetime.timedelta(days=90)
+        lic = License.objects.create(
+            tenant=tenant, license_key='LIC-XYZ-123', activation_status=False, expiry_date=expiry
+        )
+
+        # Authenticate
+        login_res = self.client.post('/api/auth/login/', {"email": "license_owner@gym.com", "password": "password123"})
+        token = login_res.data['data']['access']
+
+        # Activate
+        payload = {'license_key': 'LIC-XYZ-123'}
+        response = self.client.post('/api/saas/licenses/activate/', payload, format='json', HTTP_AUTHORIZATION=f'Bearer {token}')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data['success'])
+
+        # Verify subscription was extended to the license key expiry
+        sub.refresh_from_db()
+        self.assertEqual(sub.status, 'ACTIVE')
+        self.assertEqual(sub.end_date, expiry)
+
+    def test_super_admin_endpoints(self):
+        # Authenticate Super Admin
+        login_res = self.client.post('/api/auth/login/', {"email": "admin@saas.com", "password": "password123"})
+        admin_token = login_res.data['data']['access']
+
+        # Get Admin platform stats
+        response = self.client.get('/api/saas/admin/dashboard/', HTTP_AUTHORIZATION=f'Bearer {admin_token}')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('platform_stats', response.data['data'])
