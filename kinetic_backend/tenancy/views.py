@@ -1,5 +1,6 @@
 import datetime
 import uuid
+import json
 from rest_framework import views, status, viewsets, permissions
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
@@ -9,10 +10,11 @@ from django.utils import timezone
 from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from core.responses import success_response, failure_response
-from tenancy.models import Tenant, TenantSettings, SubscriptionPlan, Subscription, License, Invoice, BillingHistory, FeatureFlag
+from tenancy.models import Tenant, TenantSettings, SubscriptionPlan, Subscription, License, Invoice, BillingHistory, FeatureFlag, PlatformSettings, AuditLog, SupportTicket
 from tenancy.serializers import (
     RegisterTenantSerializer, SubscriptionSerializer, SubscriptionPlanSerializer,
-    LicenseSerializer, InvoiceSerializer, BillingHistorySerializer, FeatureFlagSerializer, BranchSerializer
+    LicenseSerializer, InvoiceSerializer, BillingHistorySerializer, FeatureFlagSerializer, BranchSerializer,
+    PlatformSettingsSerializer, AuditLogSerializer, SupportTicketSerializer
 )
 from tenancy.permissions import IsSuperAdmin, TenantAccessPermission
 from gyms.models import Gym, Branch
@@ -71,6 +73,30 @@ class RegisterTenantView(views.APIView):
             pincode=data['pincode'],
             contact_number=data['contact_number'],
             email=data['email']
+        )
+
+        # 4b. Create Default Branch (Main Branch / Headquarters)
+        Branch.objects.create(
+            gym=gym,
+            branch_name="Main Branch",
+            address=data['address'],
+            city=data['city'],
+            state=data['state'],
+            pincode=data['pincode'],
+            contact_number=data['contact_number'],
+            email=data['email']
+        )
+
+        # 4c. Log onboarding audit log
+        AuditLog.objects.create(
+            tenant=tenant,
+            user=owner,
+            action="TENANT_REGISTER",
+            details_str=json.dumps({
+                "gym_name": gym.gym_name,
+                "owner_email": owner.email,
+                "ip": request.META.get('REMOTE_ADDR')
+            })
         )
 
         # 5. Populate Default Plans if they don't exist
@@ -206,8 +232,6 @@ class PlanUpgradeView(views.APIView):
         tenant = request.tenant
         subscription = tenant.subscription
 
-        # Check if they are trying to downgrade via upgrade endpoint
-        # If new price is less than current price, handle dynamically
         price = plan.price_monthly if billing_cycle == 'monthly' else plan.price_yearly
         
         # Update Subscription dates
@@ -236,6 +260,19 @@ class PlanUpgradeView(views.APIView):
             tax=tax,
             due_date=today + datetime.timedelta(days=7),
             status='UNPAID'
+        )
+
+        # Log audit log
+        AuditLog.objects.create(
+            tenant=tenant,
+            user=request.user,
+            action="SUBSCRIPTION_UPGRADE",
+            details_str=json.dumps({
+                "plan_name": plan.name,
+                "billing_cycle": billing_cycle,
+                "price": float(price),
+                "invoice_number": invoice_number
+            })
         )
 
         return success_response(
@@ -269,6 +306,16 @@ class PlanDowngradeView(views.APIView):
         FeatureFlag.objects.update_or_create(tenant=tenant, feature_name='AI_GYM_BUDDY', defaults={'is_enabled': plan.ai_features_access})
         FeatureFlag.objects.update_or_create(tenant=tenant, feature_name='ANALYTICS', defaults={'is_enabled': plan.analytics_access})
         FeatureFlag.objects.update_or_create(tenant=tenant, feature_name='COMMUNITY', defaults={'is_enabled': plan.community_access})
+
+        # Log audit log
+        AuditLog.objects.create(
+            tenant=tenant,
+            user=request.user,
+            action="SUBSCRIPTION_DOWNGRADE",
+            details_str=json.dumps({
+                "plan_name": plan.name
+            })
+        )
 
         return success_response(
             message="Plan downgraded successfully. Limit updates are now active.",
@@ -330,6 +377,19 @@ class PayInvoiceView(views.APIView):
         sub.end_date = sub.start_date + datetime.timedelta(days=30)
         sub.save()
 
+        # Log audit log
+        AuditLog.objects.create(
+            tenant=request.tenant,
+            user=request.user,
+            action="BILLING_PAYMENT_SUCCESS",
+            details_str=json.dumps({
+                "invoice_id": str(invoice.id),
+                "invoice_number": invoice.invoice_number,
+                "amount": float(invoice.amount),
+                "ref_id": ref_id
+            })
+        )
+
         return success_response(
             message="Payment checkout simulated successfully.",
             data={
@@ -374,6 +434,18 @@ class LicenseActivateView(views.APIView):
         sub.end_date = license_obj.expiry_date
         sub.save()
 
+        # Log audit log
+        AuditLog.objects.create(
+            tenant=request.tenant,
+            user=request.user,
+            action="LICENSE_ACTIVATE",
+            details_str=json.dumps({
+                "license_id": str(license_obj.id),
+                "license_key": license_obj.license_key,
+                "expiry_date": str(license_obj.expiry_date)
+            })
+        )
+
         return success_response(
             message="License key activated successfully! Subscription extended.",
             data=LicenseSerializer(license_obj).data
@@ -412,11 +484,31 @@ class BranchViewSet(viewsets.ModelViewSet):
                 if current_b >= max_b:
                     raise PermissionDenied(f"You have reached the maximum limit of {max_b} branches for your plan.")
         
-        serializer.save(gym=gym)
+        branch = serializer.save(gym=gym)
+        # Log audit log
+        AuditLog.objects.create(
+            tenant=tenant,
+            user=self.request.user,
+            action="BRANCH_CREATE",
+            details_str=json.dumps({
+                "branch_id": str(branch.id),
+                "branch_name": branch.branch_name
+            })
+        )
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         instance.soft_delete()
+        # Log audit log
+        AuditLog.objects.create(
+            tenant=request.tenant,
+            user=request.user,
+            action="BRANCH_DELETE",
+            details_str=json.dumps({
+                "branch_id": str(instance.id),
+                "branch_name": instance.branch_name
+            })
+        )
         return success_response("Branch soft deleted successfully.")
 
 
@@ -488,7 +580,96 @@ class SuperAdminLicenseGenerateView(views.APIView):
             expiry_date=expiry_date
         )
 
+        # Log audit log
+        AuditLog.objects.create(
+            user=request.user,
+            action="LICENSE_GENERATE",
+            details_str=json.dumps({
+                "tenant_id": str(tenant.id),
+                "license_key": key,
+                "expiry_days": expiry_days
+            })
+        )
+
         return success_response(
             message="License key generated successfully.",
             data=LicenseSerializer(license_obj).data
         )
+
+
+class SupportTicketViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated, TenantAccessPermission]
+    serializer_class = SupportTicketSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == 'OWNER':
+            return SupportTicket.objects.filter(tenant=self.request.tenant)
+        return SupportTicket.objects.filter(user=user, tenant=self.request.tenant)
+
+    def perform_create(self, serializer):
+        ticket = serializer.save(tenant=self.request.tenant, user=self.request.user)
+        # Log audit log
+        AuditLog.objects.create(
+            tenant=self.request.tenant,
+            user=self.request.user,
+            action="SUPPORT_TICKET_CREATE",
+            details_str=json.dumps({
+                "ticket_id": str(ticket.id),
+                "subject": ticket.subject
+            })
+        )
+
+
+class SuperAdminSupportTicketViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated, IsSuperAdmin]
+    serializer_class = SupportTicketSerializer
+    queryset = SupportTicket.objects.all().order_by('-created_at')
+
+    @transaction.atomic
+    def perform_update(self, serializer):
+        ticket = serializer.save()
+        # Log audit log
+        AuditLog.objects.create(
+            tenant=ticket.tenant,
+            user=self.request.user,
+            action="SUPPORT_TICKET_RESOLVE" if ticket.status == 'RESOLVED' else "SUPPORT_TICKET_UPDATE",
+            details_str=json.dumps({
+                "ticket_id": str(ticket.id),
+                "status": ticket.status
+            })
+        )
+
+
+class SuperAdminPlatformSettingsView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated, IsSuperAdmin]
+
+    def get(self, request):
+        settings_obj, _ = PlatformSettings.objects.get_or_create(
+            pk=uuid.UUID('00000000-0000-0000-0000-000000000000'),
+            defaults={'maintenance_mode': False, 'allowed_signups': True, 'default_trial_days': 14}
+        )
+        return success_response(
+            message="Platform settings retrieved",
+            data=PlatformSettingsSerializer(settings_obj).data
+        )
+
+    def patch(self, request):
+        settings_obj, _ = PlatformSettings.objects.get_or_create(
+            pk=uuid.UUID('00000000-0000-0000-0000-000000000000'),
+            defaults={'maintenance_mode': False, 'allowed_signups': True, 'default_trial_days': 14}
+        )
+        serializer = PlatformSettingsSerializer(settings_obj, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            # Log audit log
+            AuditLog.objects.create(
+                user=request.user,
+                action="PLATFORM_SETTINGS_UPDATE",
+                details_str=json.dumps(request.data)
+            )
+            return success_response(
+                message="Platform settings updated successfully",
+                data=serializer.data
+            )
+        return failure_response("Validation error", errors=serializer.errors, status_code=status.HTTP_400_BAD_REQUEST)

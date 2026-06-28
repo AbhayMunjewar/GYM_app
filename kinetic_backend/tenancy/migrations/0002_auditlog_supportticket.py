@@ -36,7 +36,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
                 ('action', models.CharField(max_length=255)),
-                ('details', models.JSONField(blank=True, default=dict)),
+                ('details_str', models.TextField(blank=True, db_column='details', default='{}')),
                 ('ip_address', models.GenericIPAddressField(blank=True, null=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('tenant', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='audit_logs', to='tenancy.tenant')),

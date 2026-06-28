@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from tenancy.models import Tenant, TenantSettings, SubscriptionPlan, Subscription, License, Invoice, BillingHistory, FeatureFlag
+from tenancy.models import Tenant, TenantSettings, SubscriptionPlan, Subscription, License, Invoice, BillingHistory, FeatureFlag, PlatformSettings, AuditLog, SupportTicket
 from gyms.models import Gym, Branch
 
 User = get_user_model()
@@ -62,3 +62,27 @@ class BranchSerializer(serializers.ModelSerializer):
         model = Branch
         fields = '__all__'
         read_only_fields = ['gym']
+
+
+class PlatformSettingsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PlatformSettings
+        fields = '__all__'
+
+
+class AuditLogSerializer(serializers.ModelSerializer):
+    user_email = serializers.EmailField(source='user.email', read_only=True)
+
+    class Meta:
+        model = AuditLog
+        fields = ['id', 'action', 'details', 'ip_address', 'user_email', 'created_at']
+
+
+class SupportTicketSerializer(serializers.ModelSerializer):
+    user_email = serializers.EmailField(source='user.email', read_only=True)
+    tenant_name = serializers.CharField(source='tenant.name', read_only=True)
+
+    class Meta:
+        model = SupportTicket
+        fields = ['id', 'subject', 'message', 'status', 'user_email', 'tenant_name', 'created_at', 'updated_at']
+        read_only_fields = ['user', 'tenant']
