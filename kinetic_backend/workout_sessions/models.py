@@ -8,6 +8,7 @@ from members.models import Member
 class WorkoutSession(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     gym = models.ForeignKey(Gym, on_delete=models.CASCADE, related_name='sessions')
+    branch = models.ForeignKey('gyms.Branch', on_delete=models.SET_NULL, null=True, blank=True, related_name='sessions')
     trainer = models.ForeignKey(Trainer, on_delete=models.CASCADE, related_name='sessions')
     title = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
@@ -24,6 +25,7 @@ class WorkoutSession(models.Model):
         ordering = ['session_date', 'start_time']
         indexes = [
             models.Index(fields=['gym', 'is_deleted']),
+            models.Index(fields=['branch', 'is_deleted']),
             models.Index(fields=['trainer', 'is_deleted']),
             models.Index(fields=['session_date']),
         ]

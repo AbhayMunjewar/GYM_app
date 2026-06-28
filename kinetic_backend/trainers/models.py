@@ -14,6 +14,7 @@ class Trainer(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='trainer_profile')
     gym = models.ForeignKey(Gym, on_delete=models.CASCADE, related_name='trainers')
+    branch = models.ForeignKey('gyms.Branch', on_delete=models.SET_NULL, null=True, blank=True, related_name='trainers')
     employee_id = models.CharField(_('Employee ID'), max_length=50)
     specialization = models.CharField(_('Specialization'), max_length=255, blank=True, null=True)
     experience_years = models.PositiveIntegerField(_('Experience (Years)'), default=0)
@@ -34,6 +35,7 @@ class Trainer(models.Model):
         unique_together = ('gym', 'employee_id')
         indexes = [
             models.Index(fields=['gym', 'is_deleted']),
+            models.Index(fields=['branch', 'is_deleted']),
             models.Index(fields=['employee_id']),
             models.Index(fields=['status']),
         ]

@@ -11,6 +11,7 @@ class Attendance(models.Model):
         LATE = 'LATE', 'Late'
 
     gym = models.ForeignKey(Gym, on_delete=models.CASCADE, related_name='attendances')
+    branch = models.ForeignKey('gyms.Branch', on_delete=models.SET_NULL, null=True, blank=True, related_name='attendances')
     member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='attendances')
     membership = models.ForeignKey(Membership, on_delete=models.CASCADE, related_name='attendances')
     
@@ -39,6 +40,7 @@ class Attendance(models.Model):
             models.Index(fields=['attendance_date']),
             models.Index(fields=['member', 'attendance_date']),
             models.Index(fields=['gym', 'attendance_date']),
+            models.Index(fields=['branch', 'attendance_date']),
         ]
         # We can enforce unique_together conditionally for non-deleted records in the service,
         # but Django 3+ also supports UniqueConstraint with condition.
