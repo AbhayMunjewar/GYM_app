@@ -56,8 +56,8 @@ class SubscriptionPlan(models.Model):
     community_access = models.BooleanField(default=False)
     analytics_access = models.BooleanField(default=False)
     notification_limit = models.IntegerField(default=1000)
-    price_monthly = models.DecimalField(max_digits=10, decimal_digits=2, default=0.00)
-    price_yearly = models.DecimalField(max_digits=10, decimal_digits=2, default=0.00)
+    price_monthly = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    price_yearly = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
     class Meta:
         db_table = 'subscription_plans'
@@ -115,9 +115,9 @@ class Invoice(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name='invoices')
     invoice_number = models.CharField(max_length=50, unique=True)
-    amount = models.DecimalField(max_digits=10, decimal_digits=2)
-    tax = models.DecimalField(max_digits=10, decimal_digits=2, default=0.00)
-    discount = models.DecimalField(max_digits=10, decimal_digits=2, default=0.00)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    tax = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    discount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='UNPAID')
     due_date = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -131,7 +131,7 @@ class BillingHistory(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name='billing_history')
     invoice = models.ForeignKey(Invoice, on_delete=models.SET_NULL, null=True, blank=True, related_name='payments')
-    amount = models.DecimalField(max_digits=10, decimal_digits=2)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
     payment_method = models.CharField(max_length=50)
     transaction_reference = models.CharField(max_length=100, blank=True, null=True)
     status = models.CharField(max_length=50)
