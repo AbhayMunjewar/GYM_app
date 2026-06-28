@@ -44,6 +44,10 @@ class TrainerService:
             if gym_id:
                 queryset = queryset.filter(gym_id=gym_id)
 
+            branch_id = query_params.get('branch') or query_params.get('branch_id')
+            if branch_id:
+                queryset = queryset.filter(branch_id=branch_id)
+
             experience = query_params.get('experience')
             if experience:
                 try:
