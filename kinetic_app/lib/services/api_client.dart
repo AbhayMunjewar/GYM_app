@@ -1010,5 +1010,82 @@ class ApiClient {
       'member_context': context,
     });
   }
+
+  // ==== SAAS TENANCY MODULE ====
+  Future<http.Response> registerTenant(Map<String, dynamic> data) async {
+    return post('/api/saas/register/', data);
+  }
+
+  Future<http.Response> getSubscriptionDetail() async {
+    return get('/api/saas/subscription/');
+  }
+
+  Future<http.Response> upgradePlan(String planId, String billingCycle) async {
+    return post('/api/saas/subscription/upgrade/', {
+      'plan_id': planId,
+      'billing_cycle': billingCycle
+    });
+  }
+
+  Future<http.Response> downgradePlan(String planId) async {
+    return post('/api/saas/subscription/downgrade/', {
+      'plan_id': planId
+    });
+  }
+
+  Future<http.Response> getSaaSInvoices() async {
+    return get('/api/saas/billing/invoices/');
+  }
+
+  Future<http.Response> paySaaSInvoice(String invoiceId) async {
+    return post('/api/saas/billing/pay/', {
+      'invoice_id': invoiceId
+    });
+  }
+
+  Future<http.Response> getSaaSLicenses() async {
+    return get('/api/saas/licenses/');
+  }
+
+  Future<http.Response> activateLicense(String licenseKey) async {
+    return post('/api/saas/licenses/activate/', {
+      'license_key': licenseKey
+    });
+  }
+
+  Future<http.Response> getSaaSFeatureFlags() async {
+    return get('/api/saas/features/');
+  }
+
+  Future<http.Response> getBranches() async {
+    return get('/api/saas/branches/');
+  }
+
+  Future<http.Response> createBranch(Map<String, dynamic> data) async {
+    return post('/api/saas/branches/', data);
+  }
+
+  Future<http.Response> updateBranch(String branchId, Map<String, dynamic> data) async {
+    final url = Uri.parse('$baseUrl/api/saas/branches/$branchId/');
+    final headers = await _getHeaders(requireAuth: true);
+    return http.patch(url, headers: headers, body: jsonEncode(data));
+  }
+
+  Future<http.Response> deleteBranch(String branchId) async {
+    final url = Uri.parse('$baseUrl/api/saas/branches/$branchId/');
+    final headers = await _getHeaders(requireAuth: true);
+    return http.delete(url, headers: headers);
+  }
+
+  Future<http.Response> getSuperAdminDashboard() async {
+    return get('/api/saas/admin/dashboard/');
+  }
+
+  Future<http.Response> generateLicenseKey(String tenantId, int expiryDays) async {
+    return post('/api/saas/admin/licenses/generate/', {
+      'tenant_id': tenantId,
+      'expiry_days': expiryDays
+    });
+  }
 }
 
