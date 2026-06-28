@@ -970,5 +970,45 @@ class ApiClient {
   Future<http.Response> getDashboardTip() async {
     return get('/api/ai/dashboard-tip/');
   }
+
+  // ==== AI NUTRITION & DIET PLANNER ====
+
+  /// POST /api/nutrition/generate-plan/
+  Future<http.Response> generatePlan(Map<String, dynamic> data) async {
+    return post('/api/nutrition/generate-plan/', data);
+  }
+
+  /// POST /api/nutrition/generate-meals/
+  Future<http.Response> generateMeals(Map<String, dynamic> data) async {
+    return post('/api/nutrition/generate-meals/', data);
+  }
+
+  /// POST /api/nutrition/grocery-list/
+  Future<http.Response> getGroceryList(Map<String, dynamic> data) async {
+    return post('/api/nutrition/grocery-list/', data);
+  }
+
+  /// POST /api/nutrition/food-replacement/
+  Future<http.Response> getFoodReplacement(Map<String, dynamic> data) async {
+    return post('/api/nutrition/food-replacement/', data);
+  }
+
+  /// POST /api/nutrition/log/
+  Future<http.Response> logDiet(Map<String, dynamic> data) async {
+    return post('/api/nutrition/log/', data);
+  }
+
+  /// GET /api/nutrition/compliance/?period=period
+  Future<http.Response> getDietCompliance(String period) async {
+    return get('/api/nutrition/compliance/?period=$period');
+  }
+
+  /// POST /api/nutrition/coach/chat/
+  Future<http.Response> chatDietCoach(String message, Map<String, dynamic> context) async {
+    return post('/api/nutrition/coach/chat/', {
+      'message': message,
+      'member_context': context,
+    });
+  }
 }
 

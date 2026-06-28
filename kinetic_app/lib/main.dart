@@ -1,9 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'theme/app_theme.dart';
 import 'screens/landing_page.dart';
 import 'screens/role_selector_screen.dart';
 import 'services/auth_service.dart';
+
+// Nutrition Feature
+import 'features/nutrition/screens/diet_setup_screen.dart';
+import 'features/nutrition/screens/nutrition_dashboard_screen.dart';
+import 'features/nutrition/screens/meal_plan_screen.dart';
+import 'features/nutrition/screens/grocery_list_screen.dart';
+import 'features/nutrition/screens/compliance_screen.dart';
+import 'features/nutrition/screens/diet_coach_screen.dart';
 
 // Auth
 import 'screens/auth/login_screen.dart';
@@ -61,7 +70,7 @@ import 'models/workout_session.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await authService.loadSession();
-  runApp(const KineticApp());
+  runApp(const ProviderScope(child: KineticApp()));
 }
 
 final GoRouter _router = GoRouter(
@@ -82,6 +91,12 @@ final GoRouter _router = GoRouter(
     GoRoute(path: '/member/dashboard', builder: (context, state) => const MemberDashboard()),
     GoRoute(path: '/member/workout-center', builder: (context, state) => const WorkoutCenter()),
     GoRoute(path: '/member/diet-center', builder: (context, state) => const DietCenter()),
+    GoRoute(path: '/member/nutrition-dashboard', builder: (context, state) => const NutritionDashboardScreen()),
+    GoRoute(path: '/member/diet-setup', builder: (context, state) => const DietSetupScreen()),
+    GoRoute(path: '/member/meal-plan', builder: (context, state) => const MealPlanScreen()),
+    GoRoute(path: '/member/grocery-list', builder: (context, state) => const GroceryListScreen()),
+    GoRoute(path: '/member/compliance', builder: (context, state) => const ComplianceScreen()),
+    GoRoute(path: '/member/diet-coach', builder: (context, state) => const DietCoachScreen()),
     GoRoute(path: '/member/exercise-library', builder: (context, state) => const ExerciseLibrary()),
     GoRoute(path: '/member/ai-buddy', builder: (context, state) => const AIGymBuddy()),
     GoRoute(path: '/member/ai-form-check', builder: (context, state) => const AIFormCheck()),

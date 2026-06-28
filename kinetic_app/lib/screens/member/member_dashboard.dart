@@ -356,6 +356,7 @@ class _MemberDashboardState extends State<MemberDashboard> {
                 children: [
                   _buildNavCard(context, 'Workout Center', Icons.fitness_center, '/member/workout-center'),
                   _buildNavCard(context, 'Diet Center', Icons.apple, '/member/diet-center'),
+                  _buildNavCard(context, 'AI Nutrition Planner', Icons.restaurant_menu, '/member/nutrition-dashboard'),
                   _buildNavCard(context, 'Exercise Library', Icons.menu_book, '/member/exercise-library'),
                   _buildNavCard(context, 'AI Gym Buddy', Icons.smart_toy, '/member/ai-buddy'),
                   _buildNavCard(context, 'AI Form Check', Icons.camera_alt, '/member/ai-form-check'),
