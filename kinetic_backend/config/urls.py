@@ -18,9 +18,11 @@ schema_view = get_schema_view(
 )
 
 from accounts.views import OwnerDashboardView, TrainerDashboardView, MemberDashboardView
+from core.views import SREHealthView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/health/', SREHealthView.as_view(), name='sre_health'),
     
     # Swagger & ReDoc endpoints
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
